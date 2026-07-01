@@ -1,0 +1,28 @@
+{
+  "name": "ledgerx-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:web": "npm -w apps/web run dev",
+    "dev": "npm -w apps/web run dev",
+    "build": "npm -w apps/web run build",
+    "build:web": "npm -w apps/web run build",
+    "lint": "npm -w packages/firebase-shared run lint",
+    "lint:fix": "npm -w packages/firebase-shared run lint:fix",
+    "format": "npm -w packages/firebase-shared run format",
+    "type-check": "npm -w packages/firebase-shared run type-check",
+    "install-all": "npm install && npm install -w apps/web",
+    "test": "npm run test:firebase-shared",
+    "test:firebase-shared": "npm -w packages/firebase-shared test --passWithNoTests"
+  },
+  "devDependencies": {
+    "dotenv": "^17.4.2"
+  },
+  "allowScripts": {
+    "fsevents@2.3.3": true,
+    "protobufjs@7.6.5": true
+  }
+}
