@@ -1,0 +1,48 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper function to get the current user's store_id
+    // Note: Firebase evaluates rules against the QUERY, not per-document.
+    // Thus, this get() is only executed once per query (e.g., searchTransactions), avoiding N+1 read bloat.
+    function getStoreId() {
+      return get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.store_id;
+    }
+
+    function getRole() {
+      return get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role;
+    }
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isTenantAdmin() {
+      return isAuthenticated() && getRole() == 'ADMIN';
+    }
+
+    // Users collection: A user can read/write their own profile
+    match /Users/{userId} {
+      allow read, write: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Tenant-isolated collections
+    match /{collectionName}/{docId} {
+      
+      // Standard collections (Accessible to all employees of the store)
+      allow read: if isAuthenticated() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters') && resource.data.store_id == getStoreId();
+      allow create: if isAuthenticated() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters') && request.resource.data.store_id == getStoreId();
+      allow update: if isAuthenticated() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters') && resource.data.store_id == getStoreId() && request.resource.data.store_id == getStoreId();
+
+      // Allow admins to delete documents from their own store (used for Wipe All Data)
+      allow delete: if isTenantAdmin() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters') && resource.data.store_id == getStoreId();
+
+      // Admin-only collections
+      allow read: if isTenantAdmin() && (collectionName == 'Settings' || collectionName == 'VoidLogs') && resource.data.store_id == getStoreId();
+      allow create: if isTenantAdmin() && (collectionName == 'Settings' || collectionName == 'VoidLogs') && request.resource.data.store_id == getStoreId();
+      allow update: if isTenantAdmin() && (collectionName == 'Settings' || collectionName == 'VoidLogs') && resource.data.store_id == getStoreId() && request.resource.data.store_id == getStoreId();
+      allow delete: if isTenantAdmin() && (collectionName == 'Settings' || collectionName == 'VoidLogs') && resource.data.store_id == getStoreId();
+    }
+  }
+}

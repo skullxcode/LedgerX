@@ -1,0 +1,122 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "Customers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store_id", "order": "ASCENDING" },
+        { "fieldPath": "is_deleted", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "Customers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store_id", "order": "ASCENDING" },
+        { "fieldPath": "search_terms", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "is_deleted", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "Customers",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store_id", "order": "ASCENDING" },
+        { "fieldPath": "last_transaction_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "Inventory",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store_id", "order": "ASCENDING" },
+        { "fieldPath": "is_active", "order": "ASCENDING" },
+        { "fieldPath": "is_deleted", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "Inventory",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store_id", "order": "ASCENDING" },
+        { "fieldPath": "is_active", "order": "ASCENDING" },
+        { "fieldPath": "current_stock", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "Inventory",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store_id", "order": "ASCENDING" },
+        { "fieldPath": "search_terms", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "is_active", "order": "ASCENDING" },
+        { "fieldPath": "is_deleted", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "JobCards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store_id", "order": "ASCENDING" },
+        { "fieldPath": "is_deleted", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "JobCards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store_id", "order": "ASCENDING" },
+        { "fieldPath": "customer_id", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "JobCards",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store_id", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "Transactions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store_id", "order": "ASCENDING" },
+        { "fieldPath": "is_deleted", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "Transactions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store_id", "order": "ASCENDING" },
+        { "fieldPath": "customer_id", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "Transactions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store_id", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "Transactions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "store_id", "order": "ASCENDING" },
+        { "fieldPath": "search_terms", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "created_at", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
