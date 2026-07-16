@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { signInWithEmail, signUpWithEmail, sendEmailOTP, verifyEmailOTP, signInWithGoogle, resetPassword } from '@/lib/firebase';
 
-type AuthMode = 'login' | 'signup' | 'forgot_password' | 'otp_sent';
+type AuthMode = 'login' | 'signup' | 'forgot_password' | 'otp_sent' | 'otp_sent_signup';
 
 export const LoginScreen: React.FC = () => {
   const [mode, setMode] = useState<AuthMode>('login');
@@ -37,7 +37,10 @@ export const LoginScreen: React.FC = () => {
     try {
       if (mode === 'signup') {
         if (!businessName) throw new Error("Business Name is required");
-        await signUpWithEmail(email, password, businessName.trim(), email.split('@')[0], '');
+        window.localStorage.setItem('signup_businessName', businessName.trim());
+        window.localStorage.setItem('signup_password', password);
+        await sendEmailOTP(email);
+        setMode('otp_sent_signup');
       } else {
         await signInWithEmail(email, password);
       }
@@ -73,9 +76,32 @@ export const LoginScreen: React.FC = () => {
     setLoading(true);
     setGlobalError('');
     try {
-      const storedBusinessName = window.localStorage.getItem('otp_businessName') || undefined;
-      await verifyEmailOTP(email, otpCode, storedBusinessName);
-      window.localStorage.removeItem('otp_businessName');
+      if (mode === 'otp_sent_signup') {
+        const storedBusinessName = window.localStorage.getItem('signup_businessName') || undefined;
+        const storedPassword = window.localStorage.getItem('signup_password');
+
+        const res = await verifyEmailOTP(email, otpCode, storedBusinessName, email.split('@')[0]);
+        
+        if (!res.isNewUser) {
+           const { getAuth, signOut } = await import('firebase/auth');
+           await signOut(getAuth());
+           throw new Error("An account with this email already exists. Please log in instead.");
+        }
+
+        if (storedPassword) {
+           const { updatePassword, getAuth } = await import('firebase/auth');
+           const auth = getAuth();
+           if (auth.currentUser) {
+              await updatePassword(auth.currentUser, storedPassword);
+           }
+        }
+        window.localStorage.removeItem('signup_businessName');
+        window.localStorage.removeItem('signup_password');
+      } else {
+        const storedBusinessName = window.localStorage.getItem('otp_businessName') || undefined;
+        await verifyEmailOTP(email, otpCode, storedBusinessName, email.split('@')[0]);
+        window.localStorage.removeItem('otp_businessName');
+      }
     } catch (err: any) {
       setGlobalError(err.message || 'Failed to verify OTP.');
     } finally {
@@ -143,7 +169,7 @@ export const LoginScreen: React.FC = () => {
   }
 
   // ── OTP Confirm Screen ────────────────────────────────────────────────────────
-  if (mode === 'otp_sent') {
+  if (mode === 'otp_sent' || mode === 'otp_sent_signup') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
         <div className="w-full max-w-md bg-surface-container-lowest rounded-2xl shadow-xl border border-outline-variant/30 p-8 text-center">
