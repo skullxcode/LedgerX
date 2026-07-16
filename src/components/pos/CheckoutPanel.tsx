@@ -334,7 +334,7 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
       {/* Checkout Footer */}
       <div className="p-6 bg-surface-container-low border-t border-outline-variant">
         {/* Document Settings */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block font-label-md text-label-md text-secondary mb-1.5 uppercase tracking-wider">Doc Type</label>
             <select 
@@ -375,7 +375,7 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
           </div>
         )}
 
-        <div className="mb-6 grid grid-cols-2 gap-4">
+        <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block font-label-md text-label-md text-secondary mb-1.5 uppercase tracking-wider">Document No.</label>
             <input 

@@ -82,7 +82,7 @@ export const JobCardIntake: React.FC<{ onComplete: () => void, onCancel: () => v
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <div className="space-y-2 relative">
             <label className="block font-label-md text-label-md text-secondary">Customer Phone</label>
             <input 
@@ -115,7 +115,7 @@ export const JobCardIntake: React.FC<{ onComplete: () => void, onCancel: () => v
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <div className="space-y-2">
             <label className="block font-label-md text-label-md text-secondary">Address (Optional)</label>
             <input 
@@ -138,7 +138,7 @@ export const JobCardIntake: React.FC<{ onComplete: () => void, onCancel: () => v
 
         <div className="h-px bg-outline-variant/50 w-full my-4"></div>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
           <div className="space-y-2">
             <label className="block font-label-md text-label-md text-secondary">Device Make & Model</label>
             <input 

@@ -200,7 +200,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
               </button>
             </div>
             <div className="space-y-4 mb-6">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-label-md text-secondary mb-1">Item Name *</label>
                   <input className="w-full border border-outline-variant rounded p-2 outline-none focus:border-primary" value={invName} onChange={e => setInvName(e.target.value)} placeholder="e.g. iPhone Screen" />
@@ -210,7 +210,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
                   <input className="w-full border border-outline-variant rounded p-2 outline-none focus:border-primary" value={invCategory} onChange={e => setInvCategory(e.target.value)} placeholder="e.g. Parts" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-label-md text-secondary mb-1">Selling Price (₹) *</label>
                   <input type="number" className="w-full border border-outline-variant rounded p-2 outline-none focus:border-primary" value={invSellPrice} onChange={e => setInvSellPrice(e.target.value)} placeholder="0.00" />
@@ -220,7 +220,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
                   <input type="number" className="w-full border border-outline-variant rounded p-2 outline-none focus:border-primary" value={invPurchasePrice} onChange={e => setInvPurchasePrice(e.target.value)} placeholder="0.00" />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-label-md text-secondary mb-1">GST Rate (%)</label>
                   <select className="w-full border border-outline-variant rounded p-2 outline-none focus:border-primary" value={invGst} onChange={e => setInvGst(e.target.value)}>

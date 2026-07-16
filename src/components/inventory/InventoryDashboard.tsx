@@ -91,14 +91,14 @@ export const InventoryDashboard: React.FC = () => {
   };
 
   return (
-    <div className="p-10 flex-1 flex flex-col overflow-hidden h-full">
+    <div className="p-4 md:p-6 lg:p-10 flex-1 flex flex-col overflow-hidden h-full">
       {/* Page Header */}
       <div className="flex justify-between items-end mb-8">
         <div>
           <h2 className="font-headline-lg text-headline-lg text-primary tracking-tight">Inventory</h2>
           <p className="font-body-md text-body-md text-secondary mt-1">Managing {items.length} items across {activeCategories} {activeCategories === 1 ? 'category' : 'categories'}</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap items-center justify-end gap-3 w-full md:w-auto mt-4 md:mt-0">
           <div className="relative w-64 hidden md:block">
             <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
             <input 
@@ -144,7 +144,7 @@ export const InventoryDashboard: React.FC = () => {
       </div>
 
       {/* Dashboard Summary Bento (Mini) */}
-      <div className="grid grid-cols-5 gap-6 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
         <div className="bg-white border border-outline-variant p-5 rounded-lg flex flex-col justify-between">
           <div>
             <p className="text-[10px] font-label-md text-secondary uppercase tracking-widest mb-3">Total Value</p>

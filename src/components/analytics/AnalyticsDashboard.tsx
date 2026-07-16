@@ -434,8 +434,8 @@ const AnalyticsDashboardInner: React.FC<{ onNavigate?: (tab: string, id?: string
         </div>
 
         {/* Operational Status (Contextual Card) */}
-        <div className="col-span-12 bg-white border border-outline-variant p-6 rounded-lg flex items-center justify-between">
-          <div className="flex items-center gap-6">
+        <div className="col-span-12 bg-white border border-outline-variant p-4 md:p-6 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-6">
             <div className="flex items-center gap-2">
               <span className="relative flex h-3 w-3">
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>

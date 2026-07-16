@@ -55,14 +55,14 @@ export const StatementOfAccount: React.FC<Props> = ({ transactions, dateRange })
       </div>
 
       {/* Customer Info & Summary Grid */}
-      <div className="grid grid-cols-2 gap-8 mb-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 mb-10">
         <div className="border border-gray-300 rounded p-5 bg-gray-50/50">
           <p className="text-xs font-bold uppercase tracking-widest text-gray-500 mb-2 border-b border-gray-200 pb-2">Bill To</p>
           <p className="font-bold text-xl text-black">{primaryCustomer}</p>
           <p className="text-sm text-gray-600 mt-1">Client / Walk-in Customer</p>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="border border-gray-300 rounded p-4 flex flex-col justify-center">
             <p className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">New Charges (Debit)</p>
             <p className="text-lg font-bold mt-1">₹{totalCharges.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>

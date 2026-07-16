@@ -199,7 +199,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClo
         )}
 
         <form onSubmit={handleSubmit} className={`space-y-6 ${isSubmitting || isUploading ? 'pointer-events-none opacity-70' : ''}`}>
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
             <Input 
               label="Product Name"
               placeholder="e.g. Laser Printer X5" 
@@ -224,7 +224,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClo
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6">
             <div className="space-y-1 mb-3">
               <label className="text-label-md font-medium text-on-surface">Type</label>
               <select 
@@ -268,7 +268,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClo
 
           <div className="p-4 bg-surface-container rounded-lg border border-outline-variant/50">
             <h4 className="text-label-lg font-medium text-primary mb-3">Stock Details</h4>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="flex flex-col gap-1 mb-3">
                 <Input 
                   label="Initial Stock"
@@ -302,7 +302,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClo
 
           <div className="p-4 bg-surface-container rounded-lg border border-outline-variant/50">
             <h4 className="text-label-lg font-medium text-primary mb-3">Pricing & Margin</h4>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Input 
                 label="Purchase Price (₹)"
                 type="number"
