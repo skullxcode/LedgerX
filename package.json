@@ -4,7 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
+    "dev:client": "vite",
+    "dev:server": "cd server/api && npm run dev",
     "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview"
@@ -25,6 +27,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "autoprefixer": "^10.5.3",
+    "concurrently": "^10.0.3",
     "oxlint": "^1.71.0",
     "postcss": "^8.5.19",
     "tailwindcss": "^4.3.2",
