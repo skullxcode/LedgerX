@@ -3,6 +3,7 @@ import { POSProvider } from './context/POSContext';
 import { BusinessProvider } from './context/BusinessContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LoginScreen } from './components/auth/LoginScreen';
+import { Toaster } from 'react-hot-toast';
 
 import { SearchDropdown } from './components/pos/SearchDropdown';
 import { CheckoutPanel } from './components/pos/CheckoutPanel';
@@ -303,6 +304,7 @@ function MainApp() {
 function App() {
   return (
     <AuthProvider>
+      <Toaster position="top-right" />
       <MainApp />
     </AuthProvider>
   );

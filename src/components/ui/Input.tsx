@@ -13,10 +13,14 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     const inputClasses = `h-10 px-3 text-body-md border rounded outline-none transition-colors w-full bg-white text-on-surface focus:ring-1 focus:ring-primary ${error ? 'border-error' : 'border-outline-variant focus:border-primary'} ${className}`.replace(/\s+/g, ' ').trim();
     const errorClasses = 'text-label-md text-error';
 
+    const generatedId = React.useId();
+    const inputId = props.id || generatedId;
+
     return (
       <div className={containerClasses} style={style}>
-        {label && <label className={labelClasses}>{label}</label>}
+        {label && <label htmlFor={inputId} className={labelClasses}>{label}</label>}
         <input
+          id={inputId}
           ref={ref}
           className={inputClasses}
           {...props}
