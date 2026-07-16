@@ -97,85 +97,77 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
   };
 
   return (
-    <div className="fixed inset-0 bg-surface-container-low/80 backdrop-blur-sm z-50 overflow-y-auto overflow-x-auto flex justify-center items-start py-12 px-margin-mobile md:px-0 print:static print:bg-white print:p-0 print:block">
+    <div className="fixed inset-0 bg-surface-container-low/80 backdrop-blur-sm z-[100] flex flex-col print:static print:bg-white print:block">
       
-      {/* Controls Container (Hidden on Print) */}
-      <div className="absolute top-4 right-4 flex flex-col gap-2 z-10 print:hidden">
-        <button className="bg-white p-2 rounded-full shadow hover:bg-surface-container transition-colors self-end" onClick={onClose} aria-label="Close document">
-          <span className="material-symbols-outlined text-primary">close</span>
-        </button>
+      {/* Controls Header (Hidden on Print) */}
+      <div className="flex-none bg-white border-b border-outline-variant p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm z-20 print:hidden">
+        <div className="flex items-center gap-4">
+          <button className="bg-surface-container-high p-2 rounded-full hover:bg-surface-container-highest transition-colors" onClick={onClose} aria-label="Close document">
+            <span className="material-symbols-outlined text-primary">close</span>
+          </button>
+          <h2 className="font-headline-sm font-bold text-primary">Document Preview</h2>
+        </div>
         
-        <div className="bg-white border border-outline-variant p-4 rounded-lg shadow-xl mt-4 flex flex-col gap-4 w-64">
-          <div className="flex flex-col gap-2">
-            <h4 className="font-label-md text-label-md text-secondary uppercase tracking-wider">Print Mode</h4>
-            <div className="flex flex-col gap-1 border-b border-outline-variant pb-4">
-              {transaction.document_type === DocumentType.FINAL_SALE && (
-                <>
-                  <button 
-                    className={`py-2 px-3 text-left rounded text-label-md transition-colors ${printMode === DocumentType.FINAL_SALE ? 'bg-primary text-on-primary' : 'hover:bg-surface-container'}`}
-                    onClick={() => setPrintMode(DocumentType.FINAL_SALE)}
-                  >
-                    Tax Invoice
-                  </button>
-                  <button 
-                    className={`py-2 px-3 text-left rounded text-label-md transition-colors ${printMode === 'MEMO' ? 'bg-primary text-on-primary' : 'hover:bg-surface-container'}`}
-                    onClick={() => setPrintMode('MEMO')}
-                  >
-                    Delivery Memo
-                  </button>
-                </>
-              )}
-              {transaction.document_type === DocumentType.QUOTE && (
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex bg-surface-container rounded p-1">
+            {transaction.document_type === DocumentType.FINAL_SALE && (
+              <>
                 <button 
-                  className={`py-2 px-3 text-left rounded text-label-md transition-colors ${printMode === DocumentType.QUOTE ? 'bg-primary text-on-primary' : 'hover:bg-surface-container'}`}
-                  onClick={() => setPrintMode(DocumentType.QUOTE)}
-                >
-                  Quotation
-                </button>
-              )}
-            </div>
-          </div>
-          
-          <div className="flex flex-col gap-2">
-            <button 
-              className="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary rounded font-label-md text-label-md transition-all active:opacity-80 justify-center" 
-              onClick={() => window.print()}
-            >
-              <span className="material-symbols-outlined text-[18px]">print</span>
-              Print Document
-            </button>
-            
+                  className={`px-3 py-1.5 rounded text-[11px] font-bold uppercase transition-colors ${printMode === DocumentType.FINAL_SALE ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
+                  onClick={() => setPrintMode(DocumentType.FINAL_SALE)}
+                >Tax Invoice</button>
+                <button 
+                  className={`px-3 py-1.5 rounded text-[11px] font-bold uppercase transition-colors ${printMode === 'MEMO' ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
+                  onClick={() => setPrintMode('MEMO')}
+                >Delivery Memo</button>
+              </>
+            )}
             {transaction.document_type === DocumentType.QUOTE && (
               <button 
-                className="flex items-center gap-2 px-4 py-2 border border-outline-variant bg-white text-primary rounded font-label-md text-label-md transition-all hover:bg-surface-container justify-center"
-                onClick={handleConvertToInvoice}
-              >
-                <span className="material-symbols-outlined text-[18px]">receipt_long</span>
-                Convert to Invoice
-              </button>
-            )}
-            
-            {transaction.status !== 'VOIDED' && (
-              <button 
-                className="flex items-center gap-2 px-4 py-2 mt-2 bg-rose-50 text-rose-700 rounded font-label-md text-label-md transition-all hover:bg-rose-100 justify-center"
-                onClick={handleVoid}
-              >
-                <span className="material-symbols-outlined text-[18px]">block</span>
-                Void Transaction
-              </button>
+                className={`px-3 py-1.5 rounded text-[11px] font-bold uppercase transition-colors bg-primary text-white shadow-sm`}
+              >Quotation</button>
             )}
           </div>
+
+          <button 
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded font-bold text-[11px] uppercase transition-all active:opacity-80" 
+            onClick={() => window.print()}
+          >
+            <span className="material-symbols-outlined text-[16px]">print</span>
+            Print
+          </button>
+          
+          {transaction.document_type === DocumentType.QUOTE && (
+            <button 
+              className="flex items-center gap-1.5 px-4 py-2 bg-white border border-outline-variant text-primary rounded font-bold text-[11px] uppercase transition-all hover:bg-surface-container"
+              onClick={handleConvertToInvoice}
+            >
+              <span className="material-symbols-outlined text-[16px]">receipt_long</span>
+              Convert
+            </button>
+          )}
+          
+          {transaction.status !== 'VOIDED' && (
+            <button 
+              className="flex items-center gap-1.5 px-4 py-2 bg-rose-50 border border-rose-200 text-rose-700 rounded font-bold text-[11px] uppercase transition-all hover:bg-rose-100"
+              onClick={handleVoid}
+            >
+              <span className="material-symbols-outlined text-[16px]">block</span>
+              Void
+            </button>
+          )}
         </div>
       </div>
 
-      {/* A4 Canvas */}
-      <div id="print-invoice" className="bg-white w-full max-w-[850px] min-h-[1100px] text-black shadow-xl border border-outline-variant p-6 sm:p-8 md:p-10 flex flex-col relative print:shadow-none print:border-none print:m-0 print:p-0 print:w-full">
-        
-        {transaction.status === 'VOIDED' && (
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-error font-bold text-headline-lg border-8 border-error py-4 px-12 -rotate-45 opacity-30 z-0 pointer-events-none whitespace-nowrap">
-            VOIDED TRANSACTION
-          </div>
-        )}
+      {/* Scrollable Canvas Area */}
+      <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-start md:justify-center items-start print:p-0">
+        <div id="print-invoice" className="bg-white shrink-0 w-[800px] min-h-[1100px] text-black shadow-xl border border-outline-variant p-6 sm:p-8 md:p-10 flex flex-col relative print:shadow-none print:border-none print:m-0 print:p-0 print:w-full">
+          
+          {transaction.status === 'VOIDED' && (
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-error font-bold text-headline-lg border-8 border-error py-4 px-12 -rotate-45 opacity-30 z-0 pointer-events-none whitespace-nowrap">
+              VOIDED TRANSACTION
+            </div>
+          )}
 
         {/* --- Header Section --- */}
         <div className="flex justify-between items-start border-b-2 border-black pb-2 mb-2 relative z-10">
@@ -394,6 +386,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };
