@@ -448,10 +448,29 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
             <span className="font-code text-body-md text-primary">₹{cartTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
           </div>
           {formatMode === FormatMode.FORMAL_TAXED && (
-            <div className="flex justify-between">
-              <span className="text-body-md text-secondary">Tax</span>
-              <span className="font-code text-body-md text-primary">₹{(cartTotalWithTax - cartTotal).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-            </div>
+            <>
+              {gstRegion === 'INTRA' ? (
+                <>
+                  <div className="flex justify-between">
+                    <span className="text-body-md text-secondary">CGST</span>
+                    <span className="font-code text-body-md text-secondary">₹{((cartTotalWithTax - cartTotal) / 2).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-body-md text-secondary">SGST</span>
+                    <span className="font-code text-body-md text-secondary">₹{((cartTotalWithTax - cartTotal) / 2).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex justify-between">
+                  <span className="text-body-md text-secondary">IGST</span>
+                  <span className="font-code text-body-md text-secondary">₹{(cartTotalWithTax - cartTotal).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span className="text-body-md text-secondary font-bold">Total Tax</span>
+                <span className="font-code text-body-md text-primary font-bold">₹{(cartTotalWithTax - cartTotal).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+              </div>
+            </>
           )}
           <div className="pt-2 border-t border-outline-variant flex justify-between">
             <span className="font-headline-md text-headline-md font-bold text-primary">Total</span>

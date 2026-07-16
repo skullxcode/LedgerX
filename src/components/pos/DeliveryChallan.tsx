@@ -259,6 +259,9 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
                   <td className="py-2 px-1 text-center border-r-2 border-black text-[13px]">{index + 1}</td>
                   <td className="py-2 px-2 border-r-2 border-black text-[14px] font-semibold">
                     {item.name} {item.is_custom ? '(Custom)' : ''}
+                    {!isUntaxed && item.gst_rate !== undefined && (
+                      <div className="text-[10px] text-gray-600 font-normal mt-0.5">GST: {item.gst_rate}%</div>
+                    )}
                   </td>
                   <td className="py-2 px-1 text-center border-r-2 border-black text-[13px]">{item.hsn_code || ''}</td>
                   <td className="py-2 px-1 text-center border-r-2 border-black text-[13px] font-bold">{item.qty}</td>
