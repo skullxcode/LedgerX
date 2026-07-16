@@ -168,6 +168,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
                     onDragStart={handleDragStart}
                     onDragEnd={() => setDraggingJobId(null)}
                     onComplete={() => handleCompleteAndBill(job)}
+                    onStatusChange={(status) => handleStatusChange(job.job_id, status)}
                     storeId={profile?.store_id}
                     onRefresh={fetchJobs}
                     isHighlighted={initialJobId === job.job_id}
@@ -281,11 +282,12 @@ const JobCardItem: React.FC<{
   onDragStart: (e: React.DragEvent, id: string) => void;
   onDragEnd: () => void;
   onComplete: () => void;
+  onStatusChange: (status: JobCardStatus) => void;
   storeId?: string;
   onRefresh: () => void;
   isHighlighted?: boolean;
   onHighlightClear?: () => void;
-}> = ({ job, isDragging, onDragStart, onDragEnd, onComplete, storeId, onRefresh, isHighlighted, onHighlightClear }) => {
+}> = ({ job, isDragging, onDragStart, onDragEnd, onComplete, onStatusChange, storeId, onRefresh, isHighlighted, onHighlightClear }) => {
   const [partSearch, setPartSearch] = useState('');
   const [searchResults, setSearchResults] = useState<InventoryItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
@@ -394,8 +396,30 @@ const JobCardItem: React.FC<{
         </div>
       </div>
 
+      <div className="flex justify-between mt-3 pt-3 border-t border-outline-variant/50">
+        {job.status === JobCardStatus.IN_PROGRESS || job.status === JobCardStatus.READY ? (
+          <button 
+            className="text-[10px] uppercase font-bold text-secondary flex items-center gap-1 hover:text-primary transition-colors"
+            onClick={() => onStatusChange(job.status === JobCardStatus.READY ? JobCardStatus.IN_PROGRESS : JobCardStatus.RECEIVED)}
+          >
+            <span className="material-symbols-outlined text-[14px]">arrow_back</span>
+            Prev
+          </button>
+        ) : <div />}
+        
+        {job.status === JobCardStatus.RECEIVED || job.status === JobCardStatus.IN_PROGRESS ? (
+          <button 
+            className="text-[10px] uppercase font-bold text-secondary flex items-center gap-1 hover:text-primary transition-colors"
+            onClick={() => onStatusChange(job.status === JobCardStatus.RECEIVED ? JobCardStatus.IN_PROGRESS : JobCardStatus.READY)}
+          >
+            Next
+            <span className="material-symbols-outlined text-[14px]">arrow_forward</span>
+          </button>
+        ) : <div />}
+      </div>
+
       {job.status === JobCardStatus.READY && (
-        <div className="mt-4 pt-3 border-t border-outline-variant">
+        <div className="mt-3">
           <button 
             className="w-full py-2 bg-primary text-on-primary rounded text-label-md font-bold hover:opacity-90 transition-all"
             onClick={onComplete}
