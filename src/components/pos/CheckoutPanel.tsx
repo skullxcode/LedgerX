@@ -33,6 +33,7 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
   const [isProcessing, setIsProcessing] = useState(false);
   const [customerSuggestions, setCustomerSuggestions] = useState<Customer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [gstRegion, setGstRegion] = useState<'INTRA' | 'INTER'>('INTRA');
 
   // Search customers as they type
   useEffect(() => {
@@ -118,6 +119,35 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
         buyers_order_no: buyersOrderNo,
         buyers_order_date: buyersOrderDate ? new Date(buyersOrderDate) : undefined,
       };
+
+      if (formatMode === FormatMode.FORMAL_TAXED) {
+        const totalTax = cartTotalWithTax - cartTotal;
+        const maxRate = cart.reduce((max, item) => Math.max(max, item.gst_rate || 0), 0);
+        
+        if (gstRegion === 'INTRA') {
+          (transactionData as any).gst_breakdown = {
+            tax_slab: maxRate,
+            cgst_rate: maxRate / 2,
+            cgst: totalTax / 2,
+            sgst_rate: maxRate / 2,
+            sgst: totalTax / 2,
+            igst_rate: 0,
+            igst: 0,
+            total_tax: totalTax
+          };
+        } else {
+          (transactionData as any).gst_breakdown = {
+            tax_slab: maxRate,
+            cgst_rate: 0,
+            cgst: 0,
+            sgst_rate: 0,
+            sgst: 0,
+            igst_rate: maxRate,
+            igst: totalTax,
+            total_tax: totalTax
+          };
+        }
+      }
 
       const finalTxId = await finalizeTransaction(
         profile.store_id, 
@@ -358,6 +388,22 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
             </select>
           </div>
         </div>
+        
+        {formatMode === FormatMode.FORMAL_TAXED && (
+          <div className="mb-4">
+            <label className="block font-label-md text-label-md text-secondary mb-1.5 uppercase tracking-wider">GST Region</label>
+            <div className="flex h-9 bg-surface-container border border-outline-variant rounded p-1">
+              <button 
+                onClick={() => setGstRegion('INTRA')}
+                className={`flex-1 rounded font-bold uppercase tracking-tight transition-all text-[10px] ${gstRegion === 'INTRA' ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
+              >Intra-State (CGST+SGST)</button>
+              <button 
+                onClick={() => setGstRegion('INTER')}
+                className={`flex-1 rounded font-bold uppercase tracking-tight transition-all text-[10px] ${gstRegion === 'INTER' ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
+              >Inter-State (IGST)</button>
+            </div>
+          </div>
+        )}
         
         {documentType === DocumentType.FINAL_SALE && (
           <div className="mb-4">
