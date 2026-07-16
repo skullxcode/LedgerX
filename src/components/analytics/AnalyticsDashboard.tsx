@@ -1,0 +1,464 @@
+import React, { useState, useEffect } from 'react';
+import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
+import { app, type Transaction, type Customer, type InventoryItem, type JobCard } from '@/lib/firebase';
+import { useAuth } from '../../context/AuthContext';
+
+class DashboardErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
+  constructor(props: {children: React.ReactNode}) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, error };
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-10 text-error">
+          <h2 className="text-xl font-bold mb-4">Dashboard Crashed</h2>
+          <pre className="bg-error-container p-4 rounded whitespace-pre-wrap">{this.state.error?.message}</pre>
+          <pre className="mt-4 text-xs">{this.state.error?.stack}</pre>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export const AnalyticsDashboard: React.FC<{ onNavigate?: (tab: string, id?: string) => void }> = ({ onNavigate }) => {
+  return (
+    <DashboardErrorBoundary>
+      <AnalyticsDashboardInner onNavigate={onNavigate} />
+    </DashboardErrorBoundary>
+  );
+};
+
+const AnalyticsDashboardInner: React.FC<{ onNavigate?: (tab: string, id?: string) => void }> = ({ onNavigate }) => {
+  const { profile } = useAuth();
+  const [monthlyRevenue, setMonthlyRevenue] = useState(0);
+  const [lastMonthRevenue, setLastMonthRevenue] = useState(0);
+  const [totalUdhaar, setTotalUdhaar] = useState(0);
+  const [totalInventoryValue, setTotalInventoryValue] = useState(0);
+  const [recentTxs, setRecentTxs] = useState<Transaction[]>([]);
+  const [pendingCustomers, setPendingCustomers] = useState<Customer[]>([]);
+  const [activeJobCards, setActiveJobCards] = useState<JobCard[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dateFilter, setDateFilter] = useState<'MONTH' | 'LAST_7'>('MONTH');
+  const [chartData, setChartData] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      if (!profile?.store_id) return;
+      setLoading(true);
+      try {
+        const db = getFirestore(app);
+        
+        // Fetch all transactions to calculate revenue
+        const txQ = query(collection(db, 'Transactions'), where('store_id', '==', profile.store_id));
+        const txSnap = await getDocs(txQ);
+        let mRev = 0;
+        let lmRev = 0;
+        
+        const now = new Date();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0); // Last day of last month
+
+        const txs: Transaction[] = [];
+
+        txSnap.docs.forEach(doc => {
+          const tx = doc.data() as Transaction;
+          if (tx.status === 'VOIDED' || tx.document_type !== 'FINAL_SALE') return;
+
+          txs.push(tx);
+
+          const txDate = new Date(tx.timestamp?.seconds ? tx.timestamp.seconds * 1000 : tx.timestamp);
+          
+          if (txDate >= startOfMonth) {
+            mRev += tx.total_amount;
+          } else if (txDate >= startOfLastMonth && txDate <= endOfLastMonth) {
+            lmRev += tx.total_amount;
+          }
+        });
+
+        // Sort for recent transactions
+        txs.sort((a, b) => b.timestamp.seconds - a.timestamp.seconds);
+        setRecentTxs(txs); // Store all valid txs for export
+
+        setMonthlyRevenue(mRev);
+        setLastMonthRevenue(lmRev);
+
+        // Prepare chart data
+        const cData: Array<{dateObj: Date, name: string, revenue: number, previousRevenue: number}> = [];
+        for (let i = 29; i >= 0; i--) {
+          const d = new Date();
+          d.setDate(d.getDate() - i);
+          d.setHours(0,0,0,0);
+          cData.push({
+            dateObj: d,
+            name: d.toLocaleDateString('en-US', { weekday: 'short' }),
+            revenue: 0,
+            previousRevenue: 0
+          });
+        }
+        
+        txs.forEach(tx => {
+           const txDate = new Date(tx.timestamp?.seconds ? tx.timestamp.seconds * 1000 : tx.timestamp);
+           const dayDiff = Math.floor((now.getTime() - txDate.getTime()) / (1000 * 3600 * 24));
+           if (dayDiff >= 0 && dayDiff < 30) {
+             cData[29 - dayDiff].revenue += tx.total_amount;
+           }
+        });
+        setChartData(cData);
+
+        // Fetch Total Udhaar
+        const custQ = query(collection(db, 'Customers'), where('store_id', '==', profile.store_id));
+        const custSnap = await getDocs(custQ);
+        let udhaar = 0;
+        const pendingCusts: Customer[] = [];
+        custSnap.docs.forEach(doc => {
+          const cust = doc.data() as Customer;
+          udhaar += (cust.udhaar_balance || 0);
+          if (cust.udhaar_balance && cust.udhaar_balance > 0) {
+            pendingCusts.push(cust);
+          }
+        });
+        setTotalUdhaar(udhaar);
+        pendingCusts.sort((a, b) => (b.udhaar_balance || 0) - (a.udhaar_balance || 0));
+        setPendingCustomers(pendingCusts.slice(0, 5));
+
+        // Fetch Total Inventory Value
+        const invQ = query(collection(db, 'Inventory'), where('store_id', '==', profile.store_id));
+        const invSnap = await getDocs(invQ);
+        let invVal = 0;
+        invSnap.docs.forEach(doc => {
+          const prod = doc.data() as InventoryItem;
+          invVal += (prod.purchase_price * (prod.current_stock || 0));
+        });
+        setTotalInventoryValue(invVal);
+
+        // Fetch Active Job Cards
+        const jobsQ = query(collection(db, 'JobCards'), where('store_id', '==', profile.store_id));
+        const jobsSnap = await getDocs(jobsQ);
+        const activeJobs: JobCard[] = [];
+        jobsSnap.docs.forEach(doc => {
+          const job = doc.data() as JobCard;
+          if (job.status !== 'READY') {
+            activeJobs.push(job);
+          }
+        });
+        activeJobs.sort((a, b) => (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0));
+        setActiveJobCards(activeJobs.slice(0, 5));
+
+      } catch (e) {
+        console.error("Failed to fetch analytics", e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchMetrics();
+  }, [profile?.store_id]);
+
+  if (loading) {
+    return <div className="flex h-full items-center justify-center">Loading dashboard...</div>;
+  }
+
+  // Calculate percentage change for Revenue
+  const revDiff = monthlyRevenue - lastMonthRevenue;
+  const revPercentChange = lastMonthRevenue > 0 ? (revDiff / lastMonthRevenue) * 100 : 0;
+  const revIsPositive = revPercentChange >= 0;
+
+  const handleExportCSV = () => {
+    if (recentTxs.length === 0) {
+      alert("No data to export");
+      return;
+    }
+    const headers = "Date,Reference,Customer,Amount\n";
+    const rows = recentTxs.map(tx => {
+      const date = new Date(tx.timestamp?.seconds ? tx.timestamp.seconds * 1000 : tx.timestamp).toLocaleDateString();
+      return `${date},${tx.custom_doc_no || tx.transaction_id},${tx.customer_id},${tx.total_amount}`;
+    }).join("\n");
+    const blob = new Blob([headers + rows], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `LedgerX_Report_${new Date().toLocaleDateString()}.csv`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+  
+  const displayChartData = dateFilter === 'LAST_7' ? chartData.slice(-7) : chartData;
+
+  return (
+    <div className="max-w-container-max mx-auto h-[calc(100dvh-4rem)] overflow-y-auto pr-2 pb-10">
+      {/* Welcome Header */}
+      <div className="flex justify-between items-end mb-8 mt-2">
+        <div>
+          <h2 className="font-headline-lg text-headline-lg text-primary">Analytics Overview</h2>
+          <p className="text-secondary font-body-md mt-1">Real-time performance metrics for your enterprise operations.</p>
+        </div>
+        <div className="flex gap-3">
+          <button 
+            onClick={() => setDateFilter(dateFilter === 'LAST_7' ? 'MONTH' : 'LAST_7')}
+            className={`px-4 py-2 border rounded flex items-center gap-2 transition-colors ${dateFilter === 'LAST_7' ? 'bg-surface-container-high border-outline text-primary' : 'border-outline-variant bg-white text-secondary hover:bg-surface-container'}`}
+          >
+            <span className="material-symbols-outlined text-[18px]">calendar_today</span>
+            {dateFilter === 'LAST_7' ? 'Showing Last 7 Days' : 'Last 7 Days'}
+          </button>
+          <button 
+            onClick={handleExportCSV}
+            className="px-4 py-2 bg-primary text-white font-label-md rounded flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all"
+          >
+            <span className="material-symbols-outlined text-[18px]">download</span>
+            Export Report
+          </button>
+        </div>
+      </div>
+
+      {/* Bento Grid Metrics */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-gutter">
+        {/* Total Revenue Card */}
+        <div className="col-span-12 md:col-span-4 bg-white border border-outline-variant p-6 rounded-lg flex flex-col justify-between">
+          <div className="flex justify-between items-start">
+            <div className="w-10 h-10 bg-surface-container-low flex items-center justify-center rounded">
+              <span className="material-symbols-outlined text-primary text-[20px]" data-weight="fill">point_of_sale</span>
+            </div>
+            {lastMonthRevenue > 0 && (
+              <span className={`${revIsPositive ? 'text-emerald-600' : 'text-error'} font-label-md flex items-center gap-1`}>
+                <span className="material-symbols-outlined text-[14px]">
+                  {revIsPositive ? 'trending_up' : 'trending_down'}
+                </span>
+                {revIsPositive ? '+' : ''}{revPercentChange.toFixed(1)}%
+              </span>
+            )}
+          </div>
+          <div className="mt-6">
+            <p className="text-secondary font-label-md uppercase tracking-wider mb-1">Total Revenue</p>
+            <h3 className="font-headline-lg text-headline-lg text-primary">₹{monthlyRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
+          </div>
+          <div className="mt-4 pt-4 border-t border-outline-variant/30">
+            <p className="text-[11px] text-on-primary-container">vs. ₹{lastMonthRevenue.toLocaleString()} last month</p>
+          </div>
+        </div>
+
+        {/* Total Pending Credit (Udhaar) */}
+        <div className="col-span-12 md:col-span-4 bg-white border border-outline-variant p-6 rounded-lg flex flex-col justify-between">
+          <div className="flex justify-between items-start">
+            <div className="w-10 h-10 bg-error-container flex items-center justify-center rounded">
+              <span className="material-symbols-outlined text-error text-[20px]" data-weight="fill">assignment_late</span>
+            </div>
+          </div>
+          <div className="mt-6">
+            <p className="text-secondary font-label-md uppercase tracking-wider mb-1">Total Pending Credit (Udhaar)</p>
+            <h3 className="font-headline-lg text-headline-lg text-primary">₹{totalUdhaar.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
+          </div>
+          <div className="mt-4 pt-4 border-t border-outline-variant/30">
+            <p className="text-[11px] text-on-primary-container">Total unpaid balances across all clients</p>
+          </div>
+        </div>
+
+        {/* Total Inventory Value */}
+        <div className="col-span-12 md:col-span-4 bg-white border border-outline-variant p-6 rounded-lg flex flex-col justify-between">
+          <div className="flex justify-between items-start">
+            <div className="w-10 h-10 bg-secondary-container flex items-center justify-center rounded">
+              <span className="material-symbols-outlined text-on-secondary-container text-[20px]" data-weight="fill">inventory_2</span>
+            </div>
+            <span className="text-primary font-label-md flex items-center gap-1">
+              <span className="material-symbols-outlined text-[14px]">sync</span>
+              Stable
+            </span>
+          </div>
+          <div className="mt-6">
+            <p className="text-secondary font-label-md uppercase tracking-wider mb-1">Total Inventory Value</p>
+            <h3 className="font-headline-lg text-headline-lg text-primary">₹{totalInventoryValue.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
+          </div>
+          <div className="mt-4 pt-4 border-t border-outline-variant/30">
+            <p className="text-[11px] text-on-primary-container">Total stock value currently held</p>
+          </div>
+        </div>
+
+        {/* Custom SVG Line Chart */}
+        <div className="col-span-12 lg:col-span-8 bg-white border border-outline-variant p-6 rounded-lg">
+          <div className="flex justify-between items-center mb-8">
+            <div>
+              <h4 className="font-headline-md text-headline-md text-primary">Revenue Trends</h4>
+              <p className="text-secondary text-body-md">Daily gross revenue comparison</p>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-primary"></span>
+                <span className="text-label-md text-secondary">Current Period</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="h-64 relative overflow-hidden bg-surface-container-lowest border border-outline-variant/20 rounded">
+            <svg className="w-full h-full" viewBox="0 0 1000 200" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#0f172a" stopOpacity={0.2} />
+                  <stop offset="95%" stopColor="#0f172a" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              
+              {/* Grid Lines */}
+              {[0, 1, 2, 3].map(i => (
+                <line key={i} x1="0" y1={50 * i} x2="1000" y2={50 * i} stroke="#e2e8f0" strokeDasharray="4 4" />
+              ))}
+
+              {(() => {
+                const maxRev = Math.max(...displayChartData.map(d => d.revenue), 100);
+                const points = displayChartData.map((d, i) => {
+                  const x = (i / (displayChartData.length - 1)) * 1000;
+                  const y = 180 - (d.revenue / maxRev) * 160;
+                  return `${x},${y}`;
+                });
+                const pathData = `M 0,200 L 0,${180 - (displayChartData[0]?.revenue / maxRev) * 160 || 180} L ${points.join(' L ')} L 1000,200 Z`;
+                const lineData = `M ${points.join(' L ')}`;
+
+                return (
+                  <>
+                    <path d={pathData} fill="url(#colorRevenue)" />
+                    <path d={lineData} fill="none" stroke="#0f172a" strokeWidth="3" />
+                  </>
+                );
+              })()}
+            </svg>
+            
+            {/* Custom Tooltip Overlay Simulation (Labels) */}
+            <div className="absolute bottom-0 w-full flex justify-between px-2 pb-2 opacity-50">
+              {displayChartData.map((d, i) => {
+                if (displayChartData.length > 10 && i % Math.floor(displayChartData.length / 5) !== 0 && i !== displayChartData.length - 1) return null;
+                return <span key={i} className="text-[10px] text-secondary">{d.name}</span>;
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Activity Table (Asymmetric Span) */}
+        <div className="col-span-12 lg:col-span-4 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-outline-variant">
+            <h4 className="font-headline-md text-headline-md text-primary">Recent Transactions</h4>
+            <p className="text-secondary text-body-md">Latest 5 ledger entries</p>
+          </div>
+          <div className="flex-1 overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-white">
+                <tr>
+                  <th className="text-left px-6 py-3 font-label-md text-secondary uppercase text-[10px] border-b border-outline-variant">Reference</th>
+                  <th className="text-right px-6 py-3 font-label-md text-secondary uppercase text-[10px] border-b border-outline-variant">Amount</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-outline-variant/30">
+                {recentTxs.slice(0, 5).map(tx => (
+                  <tr key={tx.transaction_id} className="hover:bg-surface-container-low transition-colors group">
+                    <td className="px-6 py-4">
+                      <p className="font-label-md text-primary font-bold">#{tx.custom_doc_no || tx.transaction_id.substring(0,8)}</p>
+                      <p className="text-[11px] text-secondary mt-1">{tx.customer_id || 'Walk-in'}</p>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <p className="font-label-md text-primary">₹{tx.total_amount.toLocaleString(undefined, {minimumFractionDigits:2})}</p>
+                    </td>
+                  </tr>
+                ))}
+                {recentTxs.length === 0 && (
+                  <tr>
+                    <td colSpan={2} className="px-6 py-8 text-center text-secondary text-sm">
+                      No transactions found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          <div 
+            className="p-4 text-center font-label-md text-primary border-t border-outline-variant hover:bg-surface-container transition-colors uppercase tracking-widest text-[10px] cursor-pointer"
+            onClick={() => onNavigate?.('TRANSACTIONS')}
+          >
+            View All Transactions
+          </div>
+        </div>
+
+        {/* Pending Customers & Active Services Row */}
+        <div className="col-span-12 lg:col-span-6 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-outline-variant">
+            <h4 className="font-headline-md text-headline-md text-primary">Pending Payments</h4>
+            <p className="text-secondary text-body-md">Customers with outstanding Udhaar</p>
+          </div>
+          <div className="flex-1 overflow-x-auto p-4 flex flex-col gap-3">
+            {pendingCustomers.length === 0 ? (
+              <div className="text-center py-4 text-secondary text-sm">No pending payments.</div>
+            ) : pendingCustomers.map(c => (
+              <div 
+                key={c.customer_id} 
+                className="flex justify-between items-center border border-outline-variant p-3 rounded bg-surface-container-lowest cursor-pointer hover:border-primary transition-colors"
+                onClick={() => onNavigate?.('CRM', c.customer_id)}
+              >
+                <div>
+                  <div className="font-bold text-primary text-body-md">{c.name}</div>
+                  <div className="text-[11px] text-secondary">{c.phone}</div>
+                </div>
+                <div className="font-headline-md text-error font-bold">
+                  ₹{c.udhaar_balance?.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="col-span-12 lg:col-span-6 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-outline-variant">
+            <h4 className="font-headline-md text-headline-md text-primary">Active Repairs</h4>
+            <p className="text-secondary text-body-md">Latest ongoing repair jobs</p>
+          </div>
+          <div className="flex-1 overflow-x-auto p-4 flex flex-col gap-3">
+            {activeJobCards.length === 0 ? (
+              <div className="text-center py-4 text-secondary text-sm">No active repairs.</div>
+            ) : activeJobCards.map(j => (
+              <div 
+                key={j.job_id} 
+                className="flex justify-between items-start border border-outline-variant p-3 rounded bg-surface-container-lowest cursor-pointer hover:border-primary transition-colors"
+                onClick={() => onNavigate?.('REPAIRS', j.job_id)}
+              >
+                <div>
+                  <div className="font-bold text-primary text-body-md">{j.device}</div>
+                  <div className="text-[11px] text-secondary">{j.customer_name} ({j.customer_phone})</div>
+                </div>
+                <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 uppercase tracking-tight">
+                  {j.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Operational Status (Contextual Card) */}
+        <div className="col-span-12 bg-white border border-outline-variant p-6 rounded-lg flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <span className="relative flex h-3 w-3">
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              </span>
+              <p className="text-body-md font-bold text-primary">System Operational</p>
+            </div>
+            <div className="h-4 w-[1px] bg-outline-variant"></div>
+            <p className="text-secondary text-body-md">Last sync: Just now</p>
+          </div>
+          <div className="flex gap-8">
+            <div className="flex flex-col">
+              <span className="text-[10px] text-secondary uppercase font-label-md">Active Store</span>
+              <span className="text-body-md font-bold text-primary">LedgerX</span>
+            </div>
+            <div className="flex flex-col">
+              <span className="text-[10px] text-secondary uppercase font-label-md">Pending UDHAAR</span>
+              <span className="text-body-md font-bold text-primary">
+                ₹{totalUdhaar.toLocaleString(undefined, {minimumFractionDigits: 2})}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

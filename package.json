@@ -1,25 +1,32 @@
 {
-  "name": "ledgerx-monorepo",
+  "name": "ledgerx",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "dev:web": "npm -w apps/web run dev",
-    "dev": "npm -w apps/web run dev",
-    "build": "npm -w apps/web run build",
-    "build:web": "npm -w apps/web run build",
-    "lint": "npm -w packages/firebase-shared run lint",
-    "lint:fix": "npm -w packages/firebase-shared run lint:fix",
-    "format": "npm -w packages/firebase-shared run format",
-    "type-check": "npm -w packages/firebase-shared run type-check",
-    "install-all": "npm install && npm install -w apps/web",
-    "test": "npm run test:firebase-shared",
-    "test:firebase-shared": "npm -w packages/firebase-shared test --passWithNoTests"
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "oxlint",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "firebase": "^10.0.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
   },
   "devDependencies": {
-    "dotenv": "^17.4.2"
+    "@tailwindcss/vite": "^4.3.2",
+    "@types/node": "^24.13.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "autoprefixer": "^10.5.3",
+    "oxlint": "^1.71.0",
+    "postcss": "^8.5.19",
+    "tailwindcss": "^4.3.2",
+    "typescript": "~6.0.2",
+    "vite": "^8.1.1"
   },
   "allowScripts": {
     "fsevents@2.3.3": true,
