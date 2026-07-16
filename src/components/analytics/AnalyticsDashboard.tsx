@@ -193,12 +193,12 @@ const AnalyticsDashboardInner: React.FC<{ onNavigate?: (tab: string, id?: string
   return (
     <div className="max-w-container-max mx-auto h-[calc(100dvh-4rem)] overflow-y-auto pr-2 pb-10">
       {/* Welcome Header */}
-      <div className="flex justify-between items-end mb-8 mt-2">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-8 mt-2">
         <div>
           <h2 className="font-headline-lg text-headline-lg text-primary">Analytics Overview</h2>
           <p className="text-secondary font-body-md mt-1">Real-time performance metrics for your enterprise operations.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button 
             onClick={() => setDateFilter(dateFilter === 'LAST_7' ? 'MONTH' : 'LAST_7')}
             className={`px-4 py-2 border rounded flex items-center gap-2 transition-colors ${dateFilter === 'LAST_7' ? 'bg-surface-container-high border-outline text-primary' : 'border-outline-variant bg-white text-secondary hover:bg-surface-container'}`}
