@@ -1,25 +1,41 @@
 import admin from 'firebase-admin';
 import { Resend } from 'resend';
 
-if (!admin.apps.length) {
-  try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
-  } catch (error) {
-    console.error('Failed to initialize Firebase Admin:', error.message);
-  }
-}
+let db;
+let resend;
 
-const db = admin.firestore();
-const resend = new Resend(process.env.RESEND_API_KEY);
+const initFirebase = () => {
+  if (!admin.apps.length) {
+    try {
+      let rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+      // Strip surrounding quotes if user accidentally pasted them
+      if (rawKey.startsWith("'") && rawKey.endsWith("'")) {
+        rawKey = rawKey.slice(1, -1);
+      }
+      const serviceAccount = JSON.parse(rawKey);
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+      });
+    } catch (error) {
+      console.error('Failed to initialize Firebase Admin:', error.message);
+      throw new Error('Firebase Admin initialization failed. Check FIREBASE_SERVICE_ACCOUNT_KEY environment variable.');
+    }
+  }
+  if (!db) db = admin.firestore();
+  if (!resend) resend = new Resend(process.env.RESEND_API_KEY);
+};
 
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
 export default async function handler(req, res) {
+  try {
+    initFirebase();
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

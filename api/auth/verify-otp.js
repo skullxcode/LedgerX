@@ -1,19 +1,33 @@
 import admin from 'firebase-admin';
 
-if (!admin.apps.length) {
-  try {
-    const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-    admin.initializeApp({
-      credential: admin.credential.cert(serviceAccount)
-    });
-  } catch (error) {
-    console.error('Failed to initialize Firebase Admin:', error.message);
-  }
-}
+let db;
 
-const db = admin.firestore();
+const initFirebase = () => {
+  if (!admin.apps.length) {
+    try {
+      let rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
+      if (rawKey && rawKey.startsWith("'") && rawKey.endsWith("'")) {
+        rawKey = rawKey.slice(1, -1);
+      }
+      const serviceAccount = JSON.parse(rawKey);
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount)
+      });
+    } catch (error) {
+      console.error('Failed to initialize Firebase Admin:', error.message);
+      throw new Error('Firebase Admin initialization failed. Check FIREBASE_SERVICE_ACCOUNT_KEY environment variable.');
+    }
+  }
+  if (!db) db = admin.firestore();
+};
 
 export default async function handler(req, res) {
+  try {
+    initFirebase();
+  } catch (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
