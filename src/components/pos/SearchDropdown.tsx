@@ -3,6 +3,7 @@ import { type InventoryItem, searchInventory, addInventoryItem, ItemType } from 
 import { useAuth } from '../../context/AuthContext';
 import { usePOS } from '../../context/POSContext';
 import toast from 'react-hot-toast';
+import { InventoryForm } from '../inventory/InventoryForm';
 
 export const SearchDropdown: React.FC = () => {
   const { profile } = useAuth();
@@ -12,12 +13,6 @@ export const SearchDropdown: React.FC = () => {
   
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [showCustomProduct, setShowCustomProduct] = useState(false);
-
-  // Quick Add State
-  const [qaName, setQaName] = useState('');
-  const [qaCategory, setQaCategory] = useState('');
-  const [qaPrice, setQaPrice] = useState('');
-  const [qaGst, setQaGst] = useState('18');
 
   // Custom Product State
   const [cpName, setCpName] = useState('');
@@ -55,42 +50,18 @@ export const SearchDropdown: React.FC = () => {
     });
   };
 
-  const handleQuickAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!profile?.store_id) return;
-    try {
-      const price = parseFloat(qaPrice);
-      const gst = parseFloat(qaGst);
-      if (isNaN(price) || isNaN(gst)) throw new Error("Invalid number formats");
-
-      const itemId = await addInventoryItem(profile.store_id, {
-        name: qaName,
-        category: qaCategory || 'Uncategorized',
-        selling_price: price,
-        purchase_price: price,
-        current_stock: 1,
-        gst_rate: gst,
-        item_type: ItemType.PRODUCT,
-        is_active: true
-      });
-
-      addToCart({
-        item_id: itemId,
-        name: qaName,
-        qty: 1,
-        price,
-        gst_rate: gst,
-        is_custom: false,
-        max_stock: 1,
-        category: qaCategory || 'Uncategorized'
-      });
-      
-      toast.success("Product added to inventory & cart");
-      setShowQuickAdd(false);
-      setQaName(''); setQaCategory(''); setQaPrice(''); setQaGst('18');
-    } catch (error: any) {
-      toast.error(error.message || "Failed to add product");
-    }
+  const handleQuickAddSuccess = (itemId: string, data: any) => {
+    addToCart({
+      item_id: itemId,
+      name: data.name,
+      qty: 1,
+      price: data.selling_price,
+      gst_rate: data.gst_rate,
+      is_custom: false,
+      max_stock: data.current_stock,
+      category: data.category || 'Uncategorized'
+    });
+    setShowQuickAdd(false);
   };
 
   const handleCustomProduct = (e: React.FormEvent) => {
@@ -214,41 +185,11 @@ export const SearchDropdown: React.FC = () => {
 
       {/* Quick Add Modal */}
       {showQuickAdd && (
-        <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-          <form onSubmit={handleQuickAdd} className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
-            <h3 className="text-xl font-bold text-primary mb-4">Quick Add Product</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-secondary mb-1">Product Name *</label>
-                <input required type="text" value={qaName} onChange={e => setQaName(e.target.value)} className="w-full border rounded p-2 outline-none focus:border-primary" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-secondary mb-1">Category</label>
-                <input type="text" value={qaCategory} onChange={e => setQaCategory(e.target.value)} className="w-full border rounded p-2 outline-none focus:border-primary" />
-              </div>
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <label className="block text-xs font-bold text-secondary mb-1">Selling Price *</label>
-                  <input required type="number" step="0.01" min="0" value={qaPrice} onChange={e => setQaPrice(e.target.value)} className="w-full border rounded p-2 outline-none focus:border-primary" />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-xs font-bold text-secondary mb-1">GST Rate (%) *</label>
-                  <select required value={qaGst} onChange={e => setQaGst(e.target.value)} className="w-full border rounded p-2 outline-none focus:border-primary bg-white">
-                    <option value="0">0%</option>
-                    <option value="5">5%</option>
-                    <option value="12">12%</option>
-                    <option value="18">18%</option>
-                    <option value="28">28%</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 mt-6">
-              <button type="button" onClick={() => setShowQuickAdd(false)} className="px-4 py-2 border rounded text-secondary hover:bg-gray-50">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90">Add & Add to Cart</button>
-            </div>
-          </form>
-        </div>
+        <InventoryForm 
+          onClose={() => setShowQuickAdd(false)} 
+          onSuccess={handleQuickAddSuccess}
+          categories={categories.filter(c => c !== 'All')}
+        />
       )}
 
       {/* Custom Product Modal */}

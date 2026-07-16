@@ -8,6 +8,7 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 interface InventoryFormProps {
   initialData?: InventoryItem;
   onClose: () => void;
+  onSuccess?: (itemId: string, data: any) => void;
   categories?: string[];
 }
 
@@ -28,7 +29,7 @@ const DEFAULT_FORM_DATA = {
 
 const DRAFT_KEY = 'ledgerx_inventory_draft';
 
-export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClose, categories = [] }) => {
+export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClose, onSuccess, categories = [] }) => {
   const { profile } = useAuth();
   
   const [formData, setFormData] = useState(() => {
@@ -149,9 +150,14 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClo
         toast.success("Item updated successfully");
         onClose();
       } else {
-        await addInventoryItem(profile.store_id, data);
+        const itemId = await addInventoryItem(profile.store_id, data);
         toast.success("Item added successfully");
         localStorage.removeItem(DRAFT_KEY);
+        
+        if (onSuccess) {
+          onSuccess(itemId, data);
+        }
+
         if (addAnother) {
           setFormData(DEFAULT_FORM_DATA);
         } else {
