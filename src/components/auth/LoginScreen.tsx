@@ -15,6 +15,15 @@ export const LoginScreen: React.FC = () => {
   const [globalError, setGlobalError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
+  const [timeLeft, setTimeLeft] = React.useState(60);
+
+  React.useEffect(() => {
+    let timer: any;
+    if ((mode === 'otp_sent' || mode === 'otp_sent_signup') && timeLeft > 0) {
+      timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+    }
+    return () => clearInterval(timer);
+  }, [mode, timeLeft]);
 
   // ── Handlers ────────────────────────────────────────────────────────────────
   const handleGoogleSignIn = async () => {
@@ -39,6 +48,7 @@ export const LoginScreen: React.FC = () => {
         if (!businessName) throw new Error("Business Name is required");
         window.localStorage.setItem('signup_businessName', businessName.trim());
         window.localStorage.setItem('signup_password', password);
+        setTimeLeft(60);
         await sendEmailOTP(email);
         setMode('otp_sent_signup');
       } else {
@@ -62,6 +72,7 @@ export const LoginScreen: React.FC = () => {
         window.localStorage.setItem('otp_businessName', businessName.trim());
       }
       
+      setTimeLeft(60);
       await sendEmailOTP(email);
       setMode('otp_sent');
     } catch (err: any) {
@@ -128,6 +139,20 @@ export const LoginScreen: React.FC = () => {
     }
   };
 
+  const handleResendOTP = async () => {
+    setGlobalError('');
+    setLoading(true);
+    try {
+      await sendEmailOTP(email);
+      setTimeLeft(60);
+      setSuccessMsg('A new verification code has been sent!');
+    } catch (err: any) {
+      setGlobalError(err.message || 'Failed to resend OTP.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // ── Forgot Password Screen ──────────────────────────────────────────────────
   if (mode === 'forgot_password') {
     return (
@@ -181,6 +206,7 @@ export const LoginScreen: React.FC = () => {
             We've sent a 6-digit verification code to <span className="font-bold text-on-surface">{email}</span>.
           </p>
           
+          {successMsg && <div className="mb-4 p-3 bg-green-100 text-green-800 text-sm rounded-lg text-left">{successMsg}</div>}
           {globalError && <div className="mb-4 p-3 bg-error-container text-on-error-container text-sm rounded-lg text-left">{globalError}</div>}
           
           <form onSubmit={handleOTPComplete} className="space-y-6 mb-6">
@@ -198,6 +224,14 @@ export const LoginScreen: React.FC = () => {
               className="w-full bg-primary text-on-primary py-3 rounded-lg font-bold disabled:opacity-50 transition-opacity shadow-sm"
             >
               {loading ? 'Verifying...' : 'Verify & Sign In'}
+            </button>
+            <button
+              type="button"
+              onClick={handleResendOTP}
+              disabled={timeLeft > 0 || loading}
+              className="w-full mt-4 text-primary text-sm font-medium hover:underline disabled:opacity-50 disabled:no-underline"
+            >
+              {timeLeft > 0 ? `Resend Code in ${timeLeft}s` : 'Resend Code'}
             </button>
           </form>
 
