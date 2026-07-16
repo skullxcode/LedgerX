@@ -186,7 +186,7 @@ export const checkIsSignInWithEmailLink = (link: string): boolean => {
 };
 
 export const sendEmailOTP = async (email: string): Promise<void> => {
-  const res = await fetch('http://localhost:4000/api/auth/send-otp', {
+  const res = await fetch('/api/auth/send-otp', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email })
@@ -202,7 +202,7 @@ export const verifyEmailOTP = async (
   ownerName?: string,
   phone?: string
 ): Promise<{ isNewUser: boolean; profile: UserProfile }> => {
-  const res = await fetch('http://localhost:4000/api/auth/verify-otp', {
+  const res = await fetch('/api/auth/verify-otp', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, code })
