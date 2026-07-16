@@ -222,7 +222,7 @@ function MainApp() {
                 <div className="hidden md:block h-8 w-[1px] bg-outline-variant"></div>
                 <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setActiveTab('SETTINGS')}>
                   <div className="text-right hidden sm:block">
-                    <p className="font-label-md text-primary font-bold group-hover:text-secondary transition-colors">{(profile as any)?.owner_name || (profile as any)?.name || 'Admin'}</p>
+                    <p className="font-label-md text-primary font-bold group-hover:text-secondary transition-colors truncate max-w-[120px] md:max-w-[200px]">{(profile as any)?.owner_name || (profile as any)?.name || 'Admin'}</p>
                     <p className="font-label-md text-[10px] text-secondary uppercase">Administrator</p>
                   </div>
                   <div className="w-8 h-8 md:w-10 md:h-10 shrink-0 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center overflow-hidden">

@@ -97,7 +97,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
   };
 
   return (
-    <div className="fixed inset-0 bg-surface-container-low/80 backdrop-blur-sm z-50 overflow-y-auto flex justify-center items-start py-12 px-margin-mobile md:px-0 print:static print:bg-white print:p-0 print:block">
+    <div className="fixed inset-0 bg-surface-container-low/80 backdrop-blur-sm z-50 overflow-y-auto overflow-x-auto flex justify-center items-start py-12 px-margin-mobile md:px-0 print:static print:bg-white print:p-0 print:block">
       
       {/* Controls Container (Hidden on Print) */}
       <div className="absolute top-4 right-4 flex flex-col gap-2 z-10 print:hidden">

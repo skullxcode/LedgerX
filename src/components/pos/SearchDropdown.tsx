@@ -48,6 +48,23 @@ export const SearchDropdown: React.FC = () => {
 
   return (
     <section className="flex-1 overflow-y-auto p-gutter scrollbar-hide">
+      {/* Mobile-Visible Action Buttons */}
+      <div className="flex gap-3 mb-6 flex-wrap">
+        <button 
+          className="flex-1 min-w-[140px] px-4 py-3 bg-surface-container-high border border-outline-variant text-primary font-label-md rounded flex items-center justify-center gap-2 hover:bg-surface-container transition-colors"
+          onClick={() => alert("Quick Add Product functionality pending")}
+        >
+          <span className="material-symbols-outlined text-[18px]">add_box</span>
+          Quick Add Product
+        </button>
+        <button 
+          className="flex-1 min-w-[140px] px-4 py-3 bg-surface-container-high border border-outline-variant text-primary font-label-md rounded flex items-center justify-center gap-2 hover:bg-surface-container transition-colors"
+          onClick={() => alert("Custom Product functionality pending")}
+        >
+          <span className="material-symbols-outlined text-[18px]">post_add</span>
+          Custom Product
+        </button>
+      </div>
       {/* Categories Bar */}
       <div className="flex gap-3 mb-8 overflow-x-auto pb-2 scrollbar-hide">
         {categories.map(cat => (
@@ -97,13 +114,7 @@ export const SearchDropdown: React.FC = () => {
         )}
       </div>
 
-      {/* Quick Add FAB */}
-      <div className="fixed bottom-8 right-[444px] z-50">
-        <button className="w-14 h-14 bg-primary text-on-primary rounded-full flex items-center justify-center hover:scale-105 transition-transform active:scale-95 group border border-primary-fixed-dim/20">
-          <span className="material-symbols-outlined" data-icon="barcode_scanner">barcode_scanner</span>
-          <span className="absolute right-full mr-4 bg-primary text-white text-[10px] font-bold px-3 py-1.5 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">SCAN ITEM</span>
-        </button>
-      </div>
+
     </section>
   );
 };
