@@ -122,12 +122,12 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
   return (
     <div className="flex flex-col h-[calc(100dvh-4rem)] max-w-container-max mx-auto p-4 md:p-margin-desktop overflow-hidden">
       {/* Board Toolbar */}
-      <section className="flex justify-between items-end mb-8 shrink-0">
+      <section className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-8 shrink-0">
         <div>
           <h2 className="font-headline-lg text-headline-lg text-primary">Service Board</h2>
           <p className="text-secondary font-body-md mt-1">Manage active repairs and client assets in real-time.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button
             className="flex items-center gap-2 px-4 py-2 border border-outline-variant bg-white text-secondary hover:bg-surface-container transition-colors rounded font-label-md"
             onClick={() => setIsAddingInventory(true)}
