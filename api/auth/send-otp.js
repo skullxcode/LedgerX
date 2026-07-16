@@ -1,27 +1,28 @@
-import admin from 'firebase-admin';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
 import { Resend } from 'resend';
 
 let db;
 let resend;
 
 const initFirebase = () => {
-  if (!admin.apps.length) {
+  if (!getApps().length) {
     try {
       let rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
       // Strip surrounding quotes if user accidentally pasted them
-      if (rawKey.startsWith("'") && rawKey.endsWith("'")) {
+      if (rawKey && rawKey.startsWith("'") && rawKey.endsWith("'")) {
         rawKey = rawKey.slice(1, -1);
       }
       const serviceAccount = JSON.parse(rawKey);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
+      initializeApp({
+        credential: cert(serviceAccount)
       });
     } catch (error) {
       console.error('Failed to initialize Firebase Admin:', error.message);
       throw new Error('Firebase Admin initialization failed. Check FIREBASE_SERVICE_ACCOUNT_KEY environment variable.');
     }
   }
-  if (!db) db = admin.firestore();
+  if (!db) db = getFirestore();
   if (!resend) resend = new Resend(process.env.RESEND_API_KEY);
 };
 
@@ -49,7 +50,7 @@ export default async function handler(req, res) {
 
     await db.collection('OTP_Codes').doc(email.toLowerCase()).set({
       code,
-      expiresAt: admin.firestore.Timestamp.fromDate(expiresAt),
+      expiresAt: Timestamp.fromDate(expiresAt),
       attempts: 0
     });
 

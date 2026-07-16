@@ -1,24 +1,26 @@
-import admin from 'firebase-admin';
+import { initializeApp, getApps, cert } from 'firebase-admin/app';
+import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 
 let db;
 
 const initFirebase = () => {
-  if (!admin.apps.length) {
+  if (!getApps().length) {
     try {
       let rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
       if (rawKey && rawKey.startsWith("'") && rawKey.endsWith("'")) {
         rawKey = rawKey.slice(1, -1);
       }
       const serviceAccount = JSON.parse(rawKey);
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount)
+      initializeApp({
+        credential: cert(serviceAccount)
       });
     } catch (error) {
       console.error('Failed to initialize Firebase Admin:', error.message);
       throw new Error('Firebase Admin initialization failed. Check FIREBASE_SERVICE_ACCOUNT_KEY environment variable.');
     }
   }
-  if (!db) db = admin.firestore();
+  if (!db) db = getFirestore();
 };
 
 export default async function handler(req, res) {
@@ -54,7 +56,7 @@ export default async function handler(req, res) {
     }
 
     if (data.code !== code) {
-      await docRef.update({ attempts: admin.firestore.FieldValue.increment(1) });
+      await docRef.update({ attempts: FieldValue.increment(1) });
       return res.status(400).json({ error: 'Invalid OTP code' });
     }
 
@@ -62,16 +64,16 @@ export default async function handler(req, res) {
 
     let userRecord;
     try {
-      userRecord = await admin.auth().getUserByEmail(email);
+      userRecord = await getAuth().getUserByEmail(email);
     } catch (error) {
       if (error.code === 'auth/user-not-found') {
-        userRecord = await admin.auth().createUser({ email });
+        userRecord = await getAuth().createUser({ email });
       } else {
         throw error;
       }
     }
 
-    const customToken = await admin.auth().createCustomToken(userRecord.uid);
+    const customToken = await getAuth().createCustomToken(userRecord.uid);
     res.json({ success: true, token: customToken });
 
   } catch (error) {
