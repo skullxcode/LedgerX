@@ -1,9 +1,9 @@
 import { initializeApp, getApps, cert } from 'firebase-admin/app';
 import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
 let db;
-let resend;
+let transporter;
 
 const initFirebase = () => {
   if (!getApps().length) {
@@ -23,7 +23,15 @@ const initFirebase = () => {
     }
   }
   if (!db) db = getFirestore();
-  if (!resend) resend = new Resend(process.env.RESEND_API_KEY);
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_EMAIL,
+        pass: process.env.GMAIL_APP_PASSWORD
+      }
+    });
+  }
 };
 
 const generateOTP = () => {
@@ -54,8 +62,8 @@ export default async function handler(req, res) {
       attempts: 0
     });
 
-    await resend.emails.send({
-      from: 'LedgerX Auth <onboarding@resend.dev>',
+    await transporter.sendMail({
+      from: `"LedgerX Auth" <${process.env.GMAIL_EMAIL}>`,
       to: email,
       subject: 'Your LedgerX Login Code',
       html: `
