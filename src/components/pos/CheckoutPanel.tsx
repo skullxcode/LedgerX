@@ -207,8 +207,11 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
 
   return (
     <section className="w-full bg-white border-l border-outline-variant flex flex-col shadow-[-4px_0_20px_rgba(15,23,42,0.04)] h-full">
-      {/* Cart Header */}
-      <div className="p-6 border-b border-outline-variant">
+      {/* Scrollable Main Area */}
+      <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col">
+        
+        {/* Cart Header */}
+        <div className="p-6 border-b border-outline-variant shrink-0">
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-headline-md text-headline-md font-bold text-primary">Current Cart</h2>
           <span className="px-2 py-1 bg-surface-container-high rounded text-[10px] font-bold text-primary">{cart.length} ITEMS</span>
@@ -320,11 +323,10 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
             </div>
           </details>
         </div>
-      </div>
 
-      {/* Cart Items */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-hide">
-        {cart.length === 0 ? (
+        {/* Cart Items */}
+        <div className="p-6 space-y-6 shrink-0 min-h-[250px]">
+          {cart.length === 0 ? (
           <div className="text-center text-secondary py-10 font-label-md">Cart is empty. Click items to add.</div>
         ) : (
           cart.map(item => (
@@ -359,12 +361,11 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
             </div>
           ))
         )}
-      </div>
+        </div>
 
-      {/* Checkout Footer */}
-      <div className="p-6 bg-surface-container-low border-t border-outline-variant">
         {/* Document Settings */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+        <div className="p-6 bg-surface-container-low border-t border-outline-variant mt-auto shrink-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div>
             <label className="block font-label-md text-label-md text-secondary mb-1.5 uppercase tracking-wider">Doc Type</label>
             <select 
@@ -439,8 +440,13 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
               className="w-full bg-white border border-outline-variant rounded py-1.5 px-3 text-label-md outline-none text-secondary"
             />
           </div>
+          </div>
         </div>
+      </div>
+    </div>
 
+    {/* Fixed Totals & CTA Footer */}
+    <div className="p-6 bg-surface-container-low border-t border-outline-variant shrink-0">
         {/* Totals */}
         <div className="space-y-2 mb-6">
           <div className="flex justify-between">
