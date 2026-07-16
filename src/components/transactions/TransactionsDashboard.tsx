@@ -73,17 +73,17 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
   };
 
   return (
-    <div className="max-w-container-max mx-auto p-4 md:p-margin-desktop h-[calc(100dvh-4rem)] flex flex-col overflow-hidden">
+    <div className="max-w-container-max mx-auto p-4 md:p-margin-desktop min-h-[calc(100dvh-4rem)] flex flex-col overflow-y-auto overflow-x-hidden">
       
       {/* Statement of Account for Printing */}
       <StatementOfAccount transactions={transactions} dateRange={getDateRangeString()} />
       {/* Header & Stats Bento */}
-      <div className="flex justify-between items-end mb-8 shrink-0">
+      <div className="flex flex-col md:flex-row md:justify-between md:items-end gap-4 mb-8 shrink-0">
         <div>
           <h1 className="font-headline-lg text-headline-lg text-primary mb-1">Transactions Ledger</h1>
           <p className="text-body-md text-secondary">Comprehensive history of all enterprise document movements.</p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button 
             className="bg-surface-container-lowest border border-outline-variant px-4 py-2 flex items-center gap-2 font-label-md hover:bg-surface-container transition-colors rounded"
             onClick={() => window.print()}
@@ -180,7 +180,7 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
       </div>
 
       {/* Data Table Container */}
-      <div className="flex-1 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col shadow-sm min-h-0">
+      <div className="flex-1 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col shadow-sm min-h-[400px]">
         <div className="flex-1 overflow-auto bg-surface-container-lowest">
           {isLoading ? (
             <div className="flex items-center justify-center h-full text-secondary font-body-md">Loading transactions...</div>
