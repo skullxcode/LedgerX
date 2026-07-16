@@ -182,3 +182,56 @@ export const deductInventoryStock = async (
     throw e;
   }
 };
+
+export const bulkAddInventoryItems = async (
+  storeId: string,
+  items: Omit<InventoryItem, "item_id" | "store_id" | "search_terms" | "created_at" | "updated_at" | "is_deleted" | "version">[]
+): Promise<number> => {
+  if (!items.length) return 0;
+  
+  const batches = [];
+  let currentBatch = writeBatch(db);
+  let operationCount = 0;
+  
+  for (const item of items) {
+    // Firestore batch limit is 500
+    if (operationCount === 499) {
+      batches.push(currentBatch.commit());
+      currentBatch = writeBatch(db);
+      operationCount = 0;
+    }
+    
+    let customId = "";
+    if (item.category) {
+      const safeCat = item.category.replace(/[^a-zA-Z0-9]/g, '').toUpperCase().substring(0, 4);
+      customId = `${safeCat}_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    } else {
+      customId = `ITM_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
+    }
+    
+    const docRef = doc(db, "Inventory", customId);
+    const now = Timestamp.now();
+    
+    const itemWithSearchTerms: InventoryItem = {
+      ...item,
+      item_id: customId,
+      store_id: storeId,
+      search_terms: generateSearchTerms("", "", [item.name]),
+      is_active: true,
+      created_at: now,
+      updated_at: now,
+      is_deleted: false,
+      version: 1,
+    };
+    
+    currentBatch.set(docRef, itemWithSearchTerms);
+    operationCount++;
+  }
+  
+  if (operationCount > 0) {
+    batches.push(currentBatch.commit());
+  }
+  
+  await Promise.all(batches);
+  return items.length;
+};

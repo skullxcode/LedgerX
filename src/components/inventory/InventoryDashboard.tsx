@@ -4,11 +4,13 @@ import { getFirestore, collection, getDocs, query, where } from 'firebase/firest
 import { useAuth } from '../../context/AuthContext';
 import { InventoryList } from './InventoryList';
 import { InventoryForm } from './InventoryForm';
+import { BulkImportModal } from './BulkImportModal';
 
 export const InventoryDashboard: React.FC = () => {
   const { profile } = useAuth();
   const [items, setItems] = useState<InventoryItem[]>([]);
   const [isAdding, setIsAdding] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
   const [turnoverRate, setTurnoverRate] = useState(0);
 
   useEffect(() => {
@@ -107,6 +109,13 @@ export const InventoryDashboard: React.FC = () => {
             />
           </div>
           <button 
+            onClick={() => setIsImporting(true)}
+            className="px-4 py-2 border border-outline-variant bg-white text-secondary font-label-md rounded flex items-center gap-2 hover:bg-surface-container transition-colors"
+          >
+            <span className="material-symbols-outlined text-[18px]">upload</span>
+            Import CSV
+          </button>
+          <button 
             onClick={handleExportCSV}
             className="px-4 py-2 border border-outline-variant bg-white text-secondary font-label-md rounded flex items-center gap-2 hover:bg-surface-container transition-colors"
           >
@@ -204,6 +213,9 @@ export const InventoryDashboard: React.FC = () => {
 
       {isAdding && (
         <InventoryForm onClose={() => setIsAdding(false)} categories={Array.from(new Set(items.map(item => item.category).filter(Boolean))) as string[]} />
+      )}
+      {isImporting && (
+        <BulkImportModal onClose={() => setIsImporting(false)} />
       )}
     </div>
   );

@@ -3,6 +3,8 @@ import type { FirebaseApp } from "firebase/app";
 import { getFirestore, Firestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import type { Auth } from "firebase/auth";
+import { getStorage, FirebaseStorage } from "firebase/storage";
+
 // Use environment variables for Firebase config
 const firebaseConfig = {
   apiKey: process.env.VITE_FIREBASE_API_KEY || process.env.FIREBASE_API_KEY,
@@ -36,14 +38,16 @@ if (typeof window !== 'undefined') {
 let app: FirebaseApp;
 let db: Firestore;
 let auth: Auth;
+let storage: FirebaseStorage;
 
 try {
   app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   db = getFirestore(app);
   auth = getAuth(app);
+  storage = getStorage(app);
 } catch (error) {
   console.error('Failed to initialize Firebase:', error);
   throw error;
 }
 
-export { app, db, auth };
+export { app, db, auth, storage };
