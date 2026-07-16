@@ -31,7 +31,7 @@ service cloud.firestore {
     match /{collectionName}/{docId} {
       
       // Standard collections (Accessible to all employees of the store)
-      allow read: if isAuthenticated() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters') && resource.data.store_id == getStoreId();
+      allow read: if isAuthenticated() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters') && (resource == null || resource.data.store_id == getStoreId());
       allow create: if isAuthenticated() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters') && request.resource.data.store_id == getStoreId();
       allow update: if isAuthenticated() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters') && resource.data.store_id == getStoreId() && request.resource.data.store_id == getStoreId();
 
@@ -39,7 +39,7 @@ service cloud.firestore {
       allow delete: if isTenantAdmin() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters') && resource.data.store_id == getStoreId();
 
       // Admin-only collections
-      allow read: if isTenantAdmin() && (collectionName == 'Settings' || collectionName == 'VoidLogs') && resource.data.store_id == getStoreId();
+      allow read: if isTenantAdmin() && (collectionName == 'Settings' || collectionName == 'VoidLogs') && (resource == null || resource.data.store_id == getStoreId());
       allow create: if isTenantAdmin() && (collectionName == 'Settings' || collectionName == 'VoidLogs') && request.resource.data.store_id == getStoreId();
       allow update: if isTenantAdmin() && (collectionName == 'Settings' || collectionName == 'VoidLogs') && resource.data.store_id == getStoreId() && request.resource.data.store_id == getStoreId();
       allow delete: if isTenantAdmin() && (collectionName == 'Settings' || collectionName == 'VoidLogs') && resource.data.store_id == getStoreId();
