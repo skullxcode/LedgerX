@@ -40,19 +40,20 @@ const generateOTP = () => {
 
 export default async function handler(req, res) {
   try {
-    initFirebase();
-  } catch (error) {
-    return res.status(500).json({ error: error.message });
-  }
+    try {
+      initFirebase();
+    } catch (error) {
+      return res.status(500).json({ error: error.message });
+    }
 
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
 
-  const { email } = req.body;
-  if (!email) return res.status(400).json({ error: 'Email is required' });
+    const body = req.body || {};
+    const { email } = body;
+    if (!email) return res.status(400).json({ error: 'Email is required' });
 
-  try {
     const code = generateOTP();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
@@ -80,7 +81,7 @@ export default async function handler(req, res) {
 
     res.json({ success: true, message: 'OTP sent successfully' });
   } catch (error) {
-    console.error('Error sending OTP:', error);
-    res.status(500).json({ error: 'Failed to send OTP' });
+    console.error('Unhandled Server Error in send-otp:', error);
+    res.status(500).json({ error: error.message || 'Internal Server Error' });
   }
 }
