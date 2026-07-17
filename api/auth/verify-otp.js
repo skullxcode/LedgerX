@@ -1,10 +1,9 @@
-import { initializeApp, getApps, cert } from 'firebase-admin/app';
-import { getFirestore, Timestamp, FieldValue } from 'firebase-admin/firestore';
-import { getAuth } from 'firebase-admin/auth';
-
 let db;
 
-const initFirebase = () => {
+const initFirebase = async () => {
+  const { initializeApp, getApps, cert } = await import('firebase-admin/app');
+  const { getFirestore } = await import('firebase-admin/firestore');
+  
   if (!getApps().length) {
     try {
       let rawKey = process.env.FIREBASE_SERVICE_ACCOUNT_KEY;
@@ -21,15 +20,12 @@ const initFirebase = () => {
     }
   }
   if (!db) db = getFirestore();
+  return db;
 };
 
 export default async function handler(req, res) {
   try {
-    try {
-      initFirebase();
-    } catch (error) {
-      return res.status(500).json({ error: error.message });
-    }
+    const dbInstance = await initFirebase();
 
     if (req.method !== 'POST') {
       return res.status(405).json({ error: 'Method not allowed' });
@@ -39,7 +35,7 @@ export default async function handler(req, res) {
     const { email, code } = body;
     if (!email || !code) return res.status(400).json({ error: 'Email and code are required' });
 
-    const docRef = db.collection('OTP_Codes').doc(email.toLowerCase());
+    const docRef = dbInstance.collection('OTP_Codes').doc(email.toLowerCase());
     const doc = await docRef.get();
 
     if (!doc.exists) {
@@ -56,6 +52,8 @@ export default async function handler(req, res) {
       return res.status(400).json({ error: 'Too many failed attempts. Request a new code.' });
     }
 
+    const { FieldValue } = await import('firebase-admin/firestore');
+
     if (data.code !== code) {
       await docRef.update({ attempts: FieldValue.increment(1) });
       return res.status(400).json({ error: 'Invalid OTP code' });
@@ -63,6 +61,7 @@ export default async function handler(req, res) {
 
     await docRef.delete();
 
+    const { getAuth } = await import('firebase-admin/auth');
     let userRecord;
     try {
       userRecord = await getAuth().getUserByEmail(email);
