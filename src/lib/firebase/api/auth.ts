@@ -236,31 +236,5 @@ export const verifyEmailOTP = async (
   const userRef = doc(db, "Users", user.uid);
   const userSnap = await getDoc(userRef);
 
-  if (userSnap.exists()) {
-    return { isNewUser: false, profile: userSnap.data() as UserProfile };
-  }
-
-  // New user — create profile
-  const newStoreId = "STORE_" + Date.now();
-  const newUserProfile: UserProfile = {
-    uid: user.uid,
-    store_id: newStoreId,
-    role: 'ADMIN',
-    phone: phone || '',
-    name: ownerName || '',
-    is_active: true,
-    created_at: Timestamp.now()
-  };
-
-  await setDoc(userRef, newUserProfile);
-  await setDoc(doc(db, "Settings", newStoreId), {
-    business_id: newStoreId,
-    store_id: newStoreId,
-    business_name: businessName || '',
-    owner_name: ownerName || '',
-    phone: phone || '',
-    address: '', gstin: '', upi_id: '', bank_account: '', bank_ifsc: ''
-  });
-
-  return { isNewUser: true, profile: newUserProfile };
+  return { isNewUser: data.isNewUser, profile: userSnap.exists() ? userSnap.data() as UserProfile : null };
 };

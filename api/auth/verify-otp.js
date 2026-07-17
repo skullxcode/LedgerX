@@ -63,18 +63,48 @@ export default async function handler(req, res) {
 
     const { getAuth } = await import('firebase-admin/auth');
     let userRecord;
+    let isNewUser = false;
     try {
       userRecord = await getAuth().getUserByEmail(email);
     } catch (error) {
       if (error.code === 'auth/user-not-found') {
         userRecord = await getAuth().createUser({ email });
+        isNewUser = true;
       } else {
         throw error;
       }
     }
 
+    if (isNewUser) {
+      const newStoreId = "STORE_" + Date.now();
+      const batch = dbInstance.batch();
+      
+      const userRef = dbInstance.collection('Users').doc(userRecord.uid);
+      batch.set(userRef, {
+        uid: userRecord.uid,
+        store_id: newStoreId,
+        role: 'ADMIN',
+        phone: '',
+        name: body.businessName || '',
+        is_active: true,
+        created_at: new Date()
+      });
+
+      const settingsRef = dbInstance.collection('Settings').doc(newStoreId);
+      batch.set(settingsRef, {
+        business_id: newStoreId,
+        store_id: newStoreId,
+        business_name: body.businessName || email.split('@')[0],
+        owner_name: body.businessName || '',
+        phone: '',
+        address: '', gstin: '', upi_id: '', bank_account: '', bank_ifsc: ''
+      });
+
+      await batch.commit();
+    }
+
     const customToken = await getAuth().createCustomToken(userRecord.uid);
-    res.json({ success: true, token: customToken });
+    res.json({ success: true, token: customToken, isNewUser });
 
   } catch (error) {
     console.error('Unhandled Server Error in verify-otp:', error);

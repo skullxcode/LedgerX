@@ -7,11 +7,11 @@ service cloud.firestore {
     // Note: Firebase evaluates rules against the QUERY, not per-document.
     // Thus, this get() is only executed once per query (e.g., searchTransactions), avoiding N+1 read bloat.
     function getStoreId() {
-      return get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.store_id;
+      return getAfter(/databases/$(database)/documents/Users/$(request.auth.uid)).data.store_id;
     }
 
     function getRole() {
-      return get(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role;
+      return getAfter(/databases/$(database)/documents/Users/$(request.auth.uid)).data.role;
     }
 
     function isAuthenticated() {
