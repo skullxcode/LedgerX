@@ -207,7 +207,15 @@ export const verifyEmailOTP = async (
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, code })
   });
-  const data = await res.json();
+  
+  const rawText = await res.text();
+  let data;
+  try {
+    data = JSON.parse(rawText);
+  } catch (err) {
+    throw new Error(`Server returned non-JSON response: ${rawText.substring(0, 200)}...`);
+  }
+  
   if (!res.ok) throw new Error(data.error || 'Failed to verify OTP');
 
   const { signInWithCustomToken } = await import('firebase/auth');
