@@ -46,7 +46,11 @@ export const LoginScreen: React.FC = () => {
     try {
       if (mode === 'signup') {
         if (!businessName) throw new Error("Business Name is required");
-        await signUpWithEmail(email, password, businessName.trim());
+        window.localStorage.setItem('signup_businessName', businessName.trim());
+        window.localStorage.setItem('signup_password', password);
+        setTimeLeft(60);
+        await sendEmailOTP(email);
+        setMode('otp_sent_signup');
       } else {
         await signInWithEmail(email, password);
       }
