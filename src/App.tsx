@@ -55,16 +55,19 @@ function MainApp() {
               const { db } = await import('@/lib/firebase');
               const { doc, setDoc } = await import('firebase/firestore');
               
+              const { writeBatch } = await import('firebase/firestore');
+              const batch = writeBatch(db);
+              
               const newStoreId = "STORE_" + Date.now();
               
-              await setDoc(doc(db, "Users", user.uid), {
+              batch.set(doc(db, "Users", user.uid), {
                 uid: user.uid,
                 store_id: newStoreId,
                 role: 'ADMIN',
                 phone: user.phoneNumber || ''
               });
               
-              await setDoc(doc(db, "Settings", newStoreId), {
+              batch.set(doc(db, "Settings", newStoreId), {
                 business_id: newStoreId,
                 store_id: newStoreId,
                 business_name: businessName,
@@ -72,6 +75,8 @@ function MainApp() {
                 phone: user.phoneNumber || '',
                 address: '', gstin: '', upi_id: '', bank_account: '', bank_ifsc: ''
               });
+
+              await batch.commit();
               
               window.location.reload();
             } catch (err: any) {

@@ -46,13 +46,16 @@ export const signUpWithEmail = async (
     created_at: Timestamp.now()
   };
   
+  const { writeBatch } = await import('firebase/firestore');
+  const batch = writeBatch(db);
+  
   // Create user profile FIRST
   const userRef = doc(db, "Users", user.uid);
-  await setDoc(userRef, newUserProfile);
+  batch.set(userRef, newUserProfile);
   
   // Create initial business profile SECOND
   const settingsRef = doc(db, "Settings", newStoreId);
-  await setDoc(settingsRef, {
+  batch.set(settingsRef, {
     business_id: newStoreId,
     store_id: newStoreId,
     business_name: businessName,
@@ -64,6 +67,8 @@ export const signUpWithEmail = async (
     bank_account: '',
     bank_ifsc: ''
   });
+
+  await batch.commit();
 
   return newUserProfile;
 };
@@ -125,8 +130,10 @@ export const completeSignInWithLink = async (
     created_at: Timestamp.now()
   };
 
-  await setDoc(userRef, newUserProfile);
-  await setDoc(doc(db, "Settings", newStoreId), {
+  const { writeBatch } = await import('firebase/firestore');
+  const batch = writeBatch(db);
+  batch.set(userRef, newUserProfile);
+  batch.set(doc(db, "Settings", newStoreId), {
     business_id: newStoreId,
     store_id: newStoreId,
     business_name: businessName || '',
@@ -134,6 +141,8 @@ export const completeSignInWithLink = async (
     phone: phone || '',
     address: '', gstin: '', upi_id: '', bank_account: '', bank_ifsc: ''
   });
+
+  await batch.commit();
 
   return { isNewUser: true, profile: newUserProfile };
 };
@@ -163,8 +172,9 @@ export const signInWithGoogle = async (): Promise<{ isNewUser: boolean; profile:
     created_at: Timestamp.now()
   };
 
-  await setDoc(userRef, newUserProfile);
-  await setDoc(doc(db, "Settings", newStoreId), {
+  const batch = writeBatch(db);
+  batch.set(userRef, newUserProfile);
+  batch.set(doc(db, "Settings", newStoreId), {
     business_id: newStoreId,
     store_id: newStoreId,
     business_name: user.displayName || 'My Business',
@@ -172,6 +182,7 @@ export const signInWithGoogle = async (): Promise<{ isNewUser: boolean; profile:
     phone: user.phoneNumber || '',
     address: '', gstin: '', upi_id: '', bank_account: '', bank_ifsc: ''
   });
+  await batch.commit();
 
   return { isNewUser: true, profile: newUserProfile };
 };
