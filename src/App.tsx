@@ -68,31 +68,23 @@ function MainApp() {
             if (!businessName) return;
             
             try {
-              const { db } = await import('@/lib/firebase');
-              const { doc, setDoc } = await import('firebase/firestore');
+              const idToken = await user.getIdToken();
               
-              const { writeBatch } = await import('firebase/firestore');
-              const batch = writeBatch(db);
-              
-              const newStoreId = "STORE_" + Date.now();
-              
-              batch.set(doc(db, "Users", user.uid), {
-                uid: user.uid,
-                store_id: newStoreId,
-                role: 'ADMIN',
-                phone: user.phoneNumber || ''
+              const res = await fetch('/api/auth/create-profile', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  idToken,
+                  businessName,
+                  phone: user.phoneNumber || '',
+                  ownerName: user.displayName || ''
+                })
               });
               
-              batch.set(doc(db, "Settings", newStoreId), {
-                business_id: newStoreId,
-                store_id: newStoreId,
-                business_name: businessName,
-                owner_name: user.displayName || '',
-                phone: user.phoneNumber || '',
-                address: '', gstin: '', upi_id: '', bank_account: '', bank_ifsc: ''
-              });
-
-              await batch.commit();
+              if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.error || 'Failed to create profile');
+              }
               
               window.location.reload();
             } catch (err: any) {
