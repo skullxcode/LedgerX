@@ -209,26 +209,30 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
 
           {/* Right Side: Invoice & Order Info */}
           <div className="w-1/2 flex flex-col">
-            <div className="flex border-b-2 border-black h-1/2">
-              <div className="w-1/2 border-r-2 border-black p-2 flex flex-col justify-center">
-                <span className="text-[11px]">Invoice No.</span>
-                <span className="font-bold text-[14px]">{transaction.custom_doc_no || transaction.transaction_id.substring(0, 8)}</span>
-              </div>
-              <div className="w-1/2 p-2 flex flex-col justify-center">
+            <div className={`flex ${isUntaxed ? 'h-full' : 'border-b-2 border-black h-1/2'}`}>
+              {!isUntaxed && (
+                <div className="w-1/2 border-r-2 border-black p-2 flex flex-col justify-center">
+                  <span className="text-[11px]">Invoice No.</span>
+                  <span className="font-bold text-[14px]">{transaction.custom_doc_no || transaction.transaction_id.substring(0, 8)}</span>
+                </div>
+              )}
+              <div className={`${isUntaxed ? 'w-full' : 'w-1/2'} p-2 flex flex-col justify-center`}>
                 <span className="text-[11px]">Dated</span>
                 <span className="font-bold text-[14px]">{docDate.toLocaleDateString('en-GB')}</span>
               </div>
             </div>
-            <div className="flex h-1/2">
-              <div className="w-1/2 border-r-2 border-black p-2 flex flex-col justify-center">
-                <span className="text-[11px]">Buyer's Order No.</span>
-                <span className="font-bold text-[14px]">{transaction.buyers_order_no || '-'}</span>
+            {!isUntaxed && (
+              <div className="flex h-1/2">
+                <div className="w-1/2 border-r-2 border-black p-2 flex flex-col justify-center">
+                  <span className="text-[11px]">Buyer's Order No.</span>
+                  <span className="font-bold text-[14px]">{transaction.buyers_order_no || '-'}</span>
+                </div>
+                <div className="w-1/2 p-2 flex flex-col justify-center">
+                  <span className="text-[11px]">Dated</span>
+                  <span className="font-bold text-[14px]">{buyersOrderDate ? buyersOrderDate.toLocaleDateString('en-GB') : '-'}</span>
+                </div>
               </div>
-              <div className="w-1/2 p-2 flex flex-col justify-center">
-                <span className="text-[11px]">Dated</span>
-                <span className="font-bold text-[14px]">{buyersOrderDate ? buyersOrderDate.toLocaleDateString('en-GB') : '-'}</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
@@ -239,7 +243,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
               <tr className="border-b-2 border-black text-[12px]">
                 <th className="font-bold py-1 px-1 text-center w-10 border-r-2 border-black">No.</th>
                 <th className="font-bold py-1 px-2 text-left border-r-2 border-black">Description of Goods</th>
-                <th className="font-bold py-1 px-1 text-center w-20 border-r-2 border-black">HSN</th>
+                {!isUntaxed && <th className="font-bold py-1 px-1 text-center w-20 border-r-2 border-black">HSN</th>}
                 <th className="font-bold py-1 px-1 text-center w-16 border-r-2 border-black">Quantity</th>
                 {showFinancials && <th className="font-bold py-1 px-1 text-right w-24 border-r-2 border-black">Rate</th>}
                 {showFinancials && <th className="font-bold py-1 px-2 text-right w-28">Amount</th>}
@@ -255,7 +259,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
                       <div className="text-[10px] text-gray-600 font-normal mt-0.5">GST: {item.gst_rate}%</div>
                     )}
                   </td>
-                  <td className="py-2 px-1 text-center border-r-2 border-black text-[13px]">{item.hsn_code || ''}</td>
+                  {!isUntaxed && <td className="py-2 px-1 text-center border-r-2 border-black text-[13px]">{item.hsn_code || ''}</td>}
                   <td className="py-2 px-1 text-center border-r-2 border-black text-[13px] font-bold">{item.qty}</td>
                   {showFinancials && <td className="py-2 px-1 text-right border-r-2 border-black text-[13px]">
                     {item.price.toFixed(2)}
@@ -269,7 +273,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
               <tr className="flex-grow">
                 <td className="border-r-2 border-black"></td>
                 <td className="border-r-2 border-black"></td>
-                <td className="border-r-2 border-black"></td>
+                {!isUntaxed && <td className="border-r-2 border-black"></td>}
                 <td className="border-r-2 border-black"></td>
                 {showFinancials && <td className="border-r-2 border-black"></td>}
                 {showFinancials && <td></td>}
@@ -317,7 +321,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
                   </>
                 ) : null}
                 <tr>
-                  <td colSpan={4} className="border-r-2 border-black"></td>
+                  <td colSpan={isUntaxed ? 3 : 4} className="border-r-2 border-black"></td>
                   <td className="py-2 px-1 text-right border-r-2 border-black font-extrabold">G. Total</td>
                   <td className="py-2 px-2 text-right font-extrabold text-[15px]">{rawTotal.toFixed(2)}</td>
                 </tr>
@@ -331,7 +335,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
           <>
             <div className="border-x-2 border-b-2 border-black flex">
               <div className="w-2/3 p-1 font-bold text-[13px] border-r-2 border-black">
-                Total Amount with {isUntaxed ? 'Tax' : 'GST'} (Rounded Off)
+                {isUntaxed ? 'Total Amount (Rounded Off)' : 'Total Amount with GST (Rounded Off)'}
               </div>
               <div className="w-1/3 p-1 font-extrabold text-[15px] text-right px-2">
                 ₹ {grandTotal.toFixed(2)}
@@ -345,46 +349,48 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
         )}
 
         {/* --- Footer Terms & Signature --- */}
-        <div className="border-x-2 border-b-2 border-black flex min-h-[140px] relative z-10">
-          {/* Left Side: Declaration & Terms */}
-          <div className="w-[55%] border-r-2 border-black p-2 flex flex-col justify-between">
-            <div>
-              <span className="font-bold text-[12px] block mb-1">
-                {printMode === DocumentType.QUOTE ? 'Terms & Conditions' : 'Declaration'}
-              </span>
-              <p className="text-[10px] whitespace-pre-wrap leading-tight">
-                {printMode === DocumentType.QUOTE 
-                  ? (profile?.quotation_terms || '1. Quotation is valid for 30 days.\n2. Taxes inclusive.')
-                  : (profile?.invoice_terms || '1. Goods once sold will not be taken back.\n2. Subject to local jurisdiction.')}
-              </p>
+        {!isUntaxed && (
+          <div className="border-x-2 border-b-2 border-black flex min-h-[140px] relative z-10">
+            {/* Left Side: Declaration & Terms */}
+            <div className="w-[55%] border-r-2 border-black p-2 flex flex-col justify-between">
+              <div>
+                <span className="font-bold text-[12px] block mb-1">
+                  {printMode === DocumentType.QUOTE ? 'Terms & Conditions' : 'Declaration'}
+                </span>
+                <p className="text-[10px] whitespace-pre-wrap leading-tight">
+                  {printMode === DocumentType.QUOTE 
+                    ? (profile?.quotation_terms || '1. Quotation is valid for 30 days.\n2. Taxes inclusive.')
+                    : (profile?.invoice_terms || '1. Goods once sold will not be taken back.\n2. Subject to local jurisdiction.')}
+                </p>
+              </div>
             </div>
-          </div>
 
-          {/* Right Side: Bank & Signature */}
-          <div className="w-[45%] flex flex-col">
-            <div className="p-2 border-b-2 border-black flex-grow">
-              <span className="font-bold text-[11px] block mb-1">Company's bank Detail</span>
-              <div className="flex text-[11px]">
-                <span className="w-24">Bank Name</span>
-                <span>: {profile?.bank_name || 'N/A'}</span>
+            {/* Right Side: Bank & Signature */}
+            <div className="w-[45%] flex flex-col">
+              <div className="p-2 border-b-2 border-black flex-grow">
+                <span className="font-bold text-[11px] block mb-1">Company's bank Detail</span>
+                <div className="flex text-[11px]">
+                  <span className="w-24">Bank Name</span>
+                  <span>: {profile?.bank_name || 'N/A'}</span>
+                </div>
+                <div className="flex text-[11px]">
+                  <span className="w-24">A/c No.</span>
+                  <span>: {profile?.bank_account || 'N/A'}</span>
+                </div>
+                <div className="flex text-[11px]">
+                  <span className="w-24">Branch & IFS Code</span>
+                  <span>: {profile?.bank_ifsc || 'N/A'}</span>
+                </div>
               </div>
-              <div className="flex text-[11px]">
-                <span className="w-24">A/c No.</span>
-                <span>: {profile?.bank_account || 'N/A'}</span>
+              <div className="p-2 h-24 flex flex-col justify-between items-end">
+                <span className="font-bold text-[12px]">For : {profile?.signature_name || profile?.business_name || 'Business Name'}</span>
+                <span className="text-[11px] font-bold mt-12 text-right block w-full border-t border-black pt-1">
+                  Authorised Signatory
+                </span>
               </div>
-              <div className="flex text-[11px]">
-                <span className="w-24">Branch & IFS Code</span>
-                <span>: {profile?.bank_ifsc || 'N/A'}</span>
-              </div>
-            </div>
-            <div className="p-2 h-24 flex flex-col justify-between items-end">
-              <span className="font-bold text-[12px]">For : {profile?.signature_name || profile?.business_name || 'Business Name'}</span>
-              <span className="text-[11px] font-bold mt-12 text-right block w-full border-t border-black pt-1">
-                Authorised Signatory
-              </span>
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
     </div>
