@@ -215,7 +215,11 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
               {!isUntaxed && (
                 <div className="w-1/2 border-r-2 border-black p-2 flex flex-col justify-center">
                   <span className="text-[11px]">{printMode === 'MEMO' ? 'Delivery Memo No.' : 'Invoice No.'}</span>
-                  <span className="font-bold text-[14px]">{transaction.custom_doc_no || transaction.transaction_id.substring(0, 8)}</span>
+                  <span className="font-bold text-[14px]">
+                    {printMode === 'MEMO' && transaction.custom_doc_no 
+                      ? transaction.custom_doc_no.replace(/^INV/, 'DM') 
+                      : (transaction.custom_doc_no || transaction.transaction_id.substring(0, 8))}
+                  </span>
                 </div>
               )}
               <div className={`${isUntaxed ? 'w-full' : 'w-1/2'} p-2 flex flex-col justify-center`}>
