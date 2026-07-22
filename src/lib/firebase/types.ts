@@ -92,6 +92,7 @@ export interface Customer extends AuditBase {
   phone: string;
   address?: string;
   gstin?: string;
+  email?: string;
   udhaar_balance: number; // Credit balance
   total_credit_limit?: number; // Max credit allowed
   search_terms: string[];
@@ -132,6 +133,7 @@ export interface Transaction extends AuditBase {
   customer_phone?: string;
   customer_address?: string;
   customer_gstin?: string;
+  customer_email?: string;
   buyers_order_no?: string;
   buyers_order_date?: Timestamp | any;
   document_type: DocumentType;

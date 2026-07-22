@@ -17,6 +17,7 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
   const [editAddress, setEditAddress] = useState('');
+  const [editEmail, setEditEmail] = useState('');
   const [editGstin, setEditGstin] = useState('');
   const [isRecordingPayment, setIsRecordingPayment] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
@@ -76,6 +77,7 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
                 setEditPhone(customer.phone);
                 setEditAddress(customer.address || '');
                 setEditGstin(customer.gstin || '');
+                setEditEmail(customer.email || '');
                 setIsEditing(true);
               }}
             >
@@ -221,6 +223,10 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
                 <input className="w-full border border-outline-variant rounded p-2 outline-none focus:border-primary" value={editAddress} onChange={e => setEditAddress(e.target.value)} />
               </div>
               <div>
+                <label className="block text-label-md text-secondary mb-1">Email</label>
+                <input type="email" className="w-full border border-outline-variant rounded p-2 outline-none focus:border-primary" value={editEmail} onChange={e => setEditEmail(e.target.value)} />
+              </div>
+              <div>
                 <label className="block text-label-md text-secondary mb-1">GSTIN</label>
                 <input className="w-full border border-outline-variant rounded p-2 outline-none focus:border-primary uppercase" value={editGstin} onChange={e => setEditGstin(e.target.value)} />
               </div>
@@ -235,7 +241,8 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
                       name: editName,
                       phone: editPhone,
                       address: editAddress,
-                      gstin: editGstin
+                      gstin: editGstin,
+                      email: editEmail
                     });
                     window.location.reload();
                   }

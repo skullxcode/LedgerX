@@ -26,6 +26,7 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
   const [customerGstin, setCustomerGstin] = useState('');
+  const [customerEmail, setCustomerEmail] = useState('');
   const [documentNo, setDocumentNo] = useState('');
   const [documentDate, setDocumentDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [buyersOrderNo, setBuyersOrderNo] = useState('');
@@ -93,7 +94,7 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
       
       if (!custId) {
         custId = await getLatestDocumentNo(profile.store_id, 'CUST-');
-        await createCustomer(profile.store_id, custId, customerName, customerPhone, customerAddress, customerGstin);
+        await createCustomer(profile.store_id, custId, customerName, customerPhone, customerAddress, customerGstin, customerEmail);
       }
 
       const txId = `TXN_${Date.now()}`;
@@ -110,6 +111,7 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
       const transactionData = {
         transaction_id: txId,
         customer_id: custId || 'WALK_IN',
+        customer_email: customer?.email || customerEmail || undefined,
         document_type: documentType,
         format_mode: formatMode,
         payment_status: paymentStatus,
@@ -225,12 +227,14 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
                <div>
                  <p className="font-bold text-body-md text-primary">{customer.name}</p>
                  <p className="text-[11px] text-secondary">{customer.phone}</p>
+                 {customer.email && <p className="text-[11px] text-secondary">{customer.email}</p>}
                </div>
                <button 
                  onClick={() => {
                    setCustomer(null);
                    setCustomerName('');
                    setCustomerPhone('');
+                   setCustomerEmail('');
                  }} 
                  className="text-error hover:bg-error-container p-1 rounded transition-colors"
                >
@@ -261,10 +265,19 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
                 <input 
                   type="text"
                   placeholder="Address (Optional)"
-                  className="flex-1 bg-white border border-outline-variant rounded p-2 text-[11px] outline-none focus:border-primary transition-colors"
+                  className="flex-1 bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors"
                   value={customerAddress}
                   onChange={(e) => setCustomerAddress(e.target.value)}
                 />
+                <input 
+                  type="email"
+                  placeholder="Email (Optional)"
+                  className="w-[45%] bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors"
+                  value={customerEmail}
+                  onChange={(e) => setCustomerEmail(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2">
                 <input 
                   type="text"
                   placeholder="GSTIN (Optional)"

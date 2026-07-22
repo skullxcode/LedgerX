@@ -23,6 +23,7 @@ export const createCustomer = async (
   phone: string,
   address?: string,
   gstin?: string,
+  email?: string,
   createdBy?: string
 ): Promise<void> => {
   try {
@@ -46,6 +47,7 @@ export const createCustomer = async (
       search_terms: generateSearchTerms(name, phone),
       ...(address ? { address: validateString(address, "address", { required: false, maxLength: 500 }) } : {}),
       ...(gstin ? { gstin: validateString(gstin, "gstin", { required: false, maxLength: 15 }) } : {}),
+      ...(email ? { email: validateString(email, "email", { required: false, maxLength: 100 }) } : {}),
       ...(createdBy ? { created_by: createdBy } : {}),
     };
 
