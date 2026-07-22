@@ -202,7 +202,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
         <div className="border-2 border-black flex flex-row relative z-10">
           {/* Left Side: Buyer Info */}
           <div className="w-1/2 border-r-2 border-black p-2 flex flex-col">
-            <span className="font-bold text-[12px] mb-1">Buyer</span>
+            <span className="font-bold text-[12px] mb-1">{printMode === DocumentType.QUOTE ? 'Quotation For' : 'Buyer'}</span>
             <div className="font-bold text-[14px] uppercase">{transaction.customer_name || 'Walk-in Customer'}</div>
             {transaction.customer_address && <div className="text-[13px]">{transaction.customer_address}</div>}
             {transaction.customer_phone && <div className="text-[12px] mt-1">Phone: {transaction.customer_phone}</div>}
@@ -211,10 +211,10 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
 
           {/* Right Side: Invoice & Order Info */}
           <div className="w-1/2 flex flex-col">
-            <div className={`flex ${isUntaxed || printMode === 'MEMO' ? 'h-full' : 'border-b-2 border-black h-1/2'}`}>
+            <div className={`flex ${isUntaxed || printMode === 'MEMO' || printMode === DocumentType.QUOTE ? 'h-full' : 'border-b-2 border-black h-1/2'}`}>
               {!isUntaxed && (
                 <div className="w-1/2 border-r-2 border-black p-2 flex flex-col justify-center">
-                  <span className="text-[11px]">{printMode === 'MEMO' ? 'Delivery Memo No.' : 'Invoice No.'}</span>
+                  <span className="text-[11px]">{printMode === 'MEMO' ? 'Delivery Memo No.' : printMode === DocumentType.QUOTE ? 'Quotation No.' : 'Invoice No.'}</span>
                   <span className="font-bold text-[14px]">
                     {printMode === 'MEMO' && transaction.custom_doc_no 
                       ? transaction.custom_doc_no.replace(/^INV/, 'DM') 
@@ -227,7 +227,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
                 <span className="font-bold text-[14px]">{docDate.toLocaleDateString('en-GB')}</span>
               </div>
             </div>
-            {!isUntaxed && printMode !== 'MEMO' && (
+            {!isUntaxed && printMode !== 'MEMO' && printMode !== DocumentType.QUOTE && (
               <div className="flex h-1/2">
                 <div className="w-1/2 border-r-2 border-black p-2 flex flex-col justify-center">
                   <span className="text-[11px]">Buyer's Order No.</span>
@@ -373,7 +373,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
 
             {/* Right Side: Bank & Signature */}
             <div className="w-[45%] flex flex-col">
-              {printMode !== 'MEMO' && (
+              {printMode !== 'MEMO' && printMode !== DocumentType.QUOTE && (
                 <div className="p-2 border-b-2 border-black flex-grow">
                   <span className="font-bold text-[11px] block mb-1">Company's bank Detail</span>
                   <div className="flex text-[11px]">
@@ -390,7 +390,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
                   </div>
                 </div>
               )}
-              <div className={`p-2 h-24 flex flex-col justify-between items-end ${printMode === 'MEMO' ? 'flex-grow' : ''}`}>
+              <div className={`p-2 h-24 flex flex-col justify-between items-end ${printMode === 'MEMO' || printMode === DocumentType.QUOTE ? 'flex-grow' : ''}`}>
                 <span className="font-bold text-[12px]">For : {profile?.signature_name || profile?.business_name || 'Business Name'}</span>
                 <span className="text-[11px] font-bold mt-12 text-right block w-full border-t border-black pt-1">
                   Authorised Signatory
