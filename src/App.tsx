@@ -1,4 +1,4 @@
-import { useState, Suspense, lazy } from "react";
+import { useState, useEffect, Suspense, lazy } from "react";
 import { POSProvider } from './context/POSContext';
 import { BusinessProvider, useBusiness } from './context/BusinessContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -30,7 +30,14 @@ const HeaderProfileName = ({ defaultName }: { defaultName: string }) => {
 };
 
 function MainApp() {
-  const [activeTab, setActiveTab] = useState<TabType>('ANALYTICS');
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    return (localStorage.getItem('ledgerx_active_tab') as TabType) || 'ANALYTICS';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('ledgerx_active_tab', activeTab);
+  }, [activeTab]);
+
   const [challanTxId, setChallanTxId] = useState<string | null>(null);
   const [deepLinkCustomerId, setDeepLinkCustomerId] = useState<string | null>(null);
   const [deepLinkJobId, setDeepLinkJobId] = useState<string | null>(null);
