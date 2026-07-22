@@ -204,6 +204,7 @@ export const LoginScreen: React.FC = () => {
           <h2 className="text-2xl font-bold text-primary mb-2">Check your email</h2>
           <p className="text-on-surface-variant text-sm mb-6">
             We've sent a 6-digit verification code to <span className="font-bold text-on-surface">{email}</span>.
+            <br/><span className="text-[12px] italic mt-2 block text-secondary">Please check spam emails for OTP as it might be delivered there.</span>
           </p>
           
           {successMsg && <div className="mb-4 p-3 bg-green-100 text-green-800 text-sm rounded-lg text-left">{successMsg}</div>}
