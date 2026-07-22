@@ -228,7 +228,7 @@ export const SettingsDashboard: React.FC = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="block font-label-md text-label-md text-on-surface">Bank IFSC Code</label>
+                <label className="block font-label-md text-label-md text-on-surface">Branch & IFS Code</label>
                 <input 
                   className="w-full border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-body-md p-3 transition-colors" 
                   type="text" 
