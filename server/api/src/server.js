@@ -70,7 +70,7 @@ app.post('/api/auth/send-otp', async (req, res) => {
 });
 
 app.post('/api/auth/verify-otp', async (req, res) => {
-  const { email, code } = req.body;
+  const { email, code, businessName } = req.body;
   if (!email || !code) return res.status(400).json({ error: 'Email and code are required' });
 
   try {
@@ -104,18 +104,48 @@ app.post('/api/auth/verify-otp', async (req, res) => {
 
     // Generate Firebase Custom Token
     let userRecord;
+    let isNewUser = false;
     try {
       userRecord = await admin.auth().getUserByEmail(email);
     } catch (error) {
       if (error.code === 'auth/user-not-found') {
         userRecord = await admin.auth().createUser({ email });
+        isNewUser = true;
       } else {
         throw error;
       }
     }
 
+    if (isNewUser) {
+      const newStoreId = "STORE_" + Date.now();
+      const batch = db.batch();
+      
+      const userRef = db.collection('Users').doc(userRecord.uid);
+      batch.set(userRef, {
+        uid: userRecord.uid,
+        store_id: newStoreId,
+        role: 'ADMIN',
+        phone: '',
+        name: businessName || '',
+        is_active: true,
+        created_at: new Date()
+      });
+
+      const settingsRef = db.collection('Settings').doc(newStoreId);
+      batch.set(settingsRef, {
+        business_id: newStoreId,
+        store_id: newStoreId,
+        business_name: businessName || email.split('@')[0],
+        owner_name: businessName || '',
+        phone: '',
+        address: '', gstin: '', upi_id: '', bank_account: '', bank_ifsc: ''
+      });
+
+      await batch.commit();
+    }
+
     const customToken = await admin.auth().createCustomToken(userRecord.uid);
-    res.json({ success: true, token: customToken });
+    res.json({ success: true, token: customToken, isNewUser });
 
   } catch (error) {
     console.error('Error verifying OTP:', error);
