@@ -4,10 +4,11 @@ import { useAuth } from '../../context/AuthContext';
 
 interface CustomerListProps {
   onSelect: (customer: Customer) => void;
+  onAddNew?: () => void;
   selectedId?: string;
 }
 
-export const CustomerList: React.FC<CustomerListProps> = ({ onSelect, selectedId }) => {
+export const CustomerList: React.FC<CustomerListProps> = ({ onSelect, onAddNew, selectedId }) => {
   const { profile } = useAuth();
   const [query, setQuery] = useState('');
   const [customers, setCustomers] = useState<Customer[]>([]);
@@ -33,7 +34,18 @@ export const CustomerList: React.FC<CustomerListProps> = ({ onSelect, selectedId
   return (
     <div className="flex flex-col h-full bg-white rounded-lg border border-outline-variant shadow-sm overflow-hidden">
       <div className="p-4 border-b border-outline-variant bg-surface-container-lowest shrink-0">
-        <h2 className="font-headline-md text-headline-md text-primary mb-3">Directory</h2>
+        <div className="flex justify-between items-center mb-3">
+          <h2 className="font-headline-md text-headline-md text-primary">Directory</h2>
+          {onAddNew && (
+            <button 
+              onClick={onAddNew}
+              className="w-8 h-8 flex items-center justify-center bg-primary text-on-primary rounded-full hover:bg-primary/90 transition-colors shadow-sm"
+              title="Add New Customer"
+            >
+              <span className="material-symbols-outlined text-[18px]">add</span>
+            </button>
+          )}
+        </div>
         <div className="relative mb-2">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
           <input 

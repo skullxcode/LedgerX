@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { CustomerList } from './CustomerList';
 import { CustomerProfile } from './CustomerProfile';
-import { type Customer, getCustomer } from '@/lib/firebase';
+import { type Customer, getCustomer, createCustomer, getLatestDocumentNo } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 
 interface CRMDashboardProps {
@@ -10,8 +10,15 @@ interface CRMDashboardProps {
 }
 
 export const CRMDashboard: React.FC<CRMDashboardProps> = ({ onViewTransaction, initialCustomerId }) => {
-  const { profile } = useAuth();
+  const { profile, user } = useAuth();
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [showAddCustomer, setShowAddCustomer] = useState(false);
+  const [addName, setAddName] = useState('');
+  const [addPhone, setAddPhone] = useState('');
+  const [addEmail, setAddEmail] = useState('');
+  const [addAddress, setAddAddress] = useState('');
+  const [addGstin, setAddGstin] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -29,6 +36,7 @@ export const CRMDashboard: React.FC<CRMDashboardProps> = ({ onViewTransaction, i
         <CustomerList 
           onSelect={setSelectedCustomer} 
           selectedId={selectedCustomer?.customer_id} 
+          onAddNew={() => setShowAddCustomer(true)}
         />
       </div>
       <div className={`flex-1 flex-col h-full overflow-hidden bg-white rounded-lg border border-outline-variant shadow-sm min-w-0 ${selectedCustomer ? 'flex' : 'hidden md:flex'}`}>
@@ -47,6 +55,80 @@ export const CRMDashboard: React.FC<CRMDashboardProps> = ({ onViewTransaction, i
           </div>
         )}
       </div>
+
+      {showAddCustomer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary/20 backdrop-blur-sm p-4">
+          <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl border border-outline-variant">
+            <h3 className="font-headline-md text-headline-md text-primary mb-4">Add New Customer</h3>
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              if (!profile?.store_id) return;
+              setIsSubmitting(true);
+              try {
+                const custId = await getLatestDocumentNo(profile.store_id, 'CUST-');
+                await createCustomer(
+                  profile.store_id, 
+                  custId, 
+                  addName, 
+                  addPhone, 
+                  addAddress, 
+                  addGstin, 
+                  addEmail, 
+                  user?.email || 'System'
+                );
+                
+                // Refresh list or close and select
+                setShowAddCustomer(false);
+                setAddName('');
+                setAddPhone('');
+                setAddEmail('');
+                setAddAddress('');
+                setAddGstin('');
+                
+                const newCust = await getCustomer(profile.store_id, custId);
+                if (newCust) setSelectedCustomer(newCust);
+              } catch (err: any) {
+                alert("Failed to create customer: " + err.message);
+              } finally {
+                setIsSubmitting(false);
+              }
+            }}>
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="block text-label-md text-secondary mb-1">Name *</label>
+                  <input required className="w-full border border-outline-variant rounded p-2 outline-none focus:border-primary" value={addName} onChange={e => setAddName(e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-label-md text-secondary mb-1">Phone *</label>
+                  <input required className="w-full border border-outline-variant rounded p-2 outline-none focus:border-primary" value={addPhone} onChange={e => setAddPhone(e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-label-md text-secondary mb-1">Email</label>
+                  <input type="email" className="w-full border border-outline-variant rounded p-2 outline-none focus:border-primary" value={addEmail} onChange={e => setAddEmail(e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-label-md text-secondary mb-1">Address</label>
+                  <input className="w-full border border-outline-variant rounded p-2 outline-none focus:border-primary" value={addAddress} onChange={e => setAddAddress(e.target.value)} />
+                </div>
+                <div>
+                  <label className="block text-label-md text-secondary mb-1">GSTIN</label>
+                  <input className="w-full border border-outline-variant rounded p-2 outline-none focus:border-primary uppercase" value={addGstin} onChange={e => setAddGstin(e.target.value)} />
+                </div>
+              </div>
+              <div className="flex justify-end gap-3">
+                <button type="button" className="px-4 py-2 border border-outline-variant rounded text-secondary hover:bg-surface-container" onClick={() => setShowAddCustomer(false)}>Cancel</button>
+                <button 
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-primary text-white rounded hover:opacity-90 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Saving...' : 'Add Customer'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
