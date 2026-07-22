@@ -1,6 +1,6 @@
 import { useState, Suspense, lazy } from "react";
 import { POSProvider } from './context/POSContext';
-import { BusinessProvider } from './context/BusinessContext';
+import { BusinessProvider, useBusiness } from './context/BusinessContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { Toaster } from 'react-hot-toast';
@@ -19,6 +19,15 @@ const AnalyticsDashboard = lazy(() => import('./components/analytics/AnalyticsDa
 import './index.css';
 
 type TabType = 'ANALYTICS' | 'POS' | 'INVENTORY' | 'REPAIRS' | 'TRANSACTIONS' | 'CRM' | 'SETTINGS';
+
+const HeaderProfileName = ({ defaultName }: { defaultName: string }) => {
+  const { profile: businessProfile } = useBusiness();
+  return (
+    <p className="font-label-md text-primary font-bold group-hover:text-secondary transition-colors truncate max-w-[120px] md:max-w-[200px]">
+      {businessProfile?.owner_name || businessProfile?.business_name || defaultName}
+    </p>
+  );
+};
 
 function MainApp() {
   const [activeTab, setActiveTab] = useState<TabType>('ANALYTICS');
@@ -227,7 +236,7 @@ function MainApp() {
                 <div className="hidden md:block h-8 w-[1px] bg-outline-variant"></div>
                 <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setActiveTab('SETTINGS')}>
                   <div className="text-right hidden sm:block">
-                    <p className="font-label-md text-primary font-bold group-hover:text-secondary transition-colors truncate max-w-[120px] md:max-w-[200px]">{(profile as any)?.owner_name || (profile as any)?.name || 'Admin'}</p>
+                    <HeaderProfileName defaultName={(profile as any)?.name || 'Admin'} />
                     <p className="font-label-md text-[10px] text-secondary uppercase">Administrator</p>
                   </div>
                   <div className="w-8 h-8 md:w-10 md:h-10 shrink-0 rounded-full bg-surface-container border border-outline-variant flex items-center justify-center overflow-hidden">
