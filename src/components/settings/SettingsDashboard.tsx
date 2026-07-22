@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
-import { updateBusinessProfile, wipeStoreData, signOut, type BusinessProfile } from '@/lib/firebase';
+import { updateBusinessProfile, wipeStoreData, signOut, auth, type BusinessProfile } from '@/lib/firebase';
+import { sendPasswordResetEmail } from 'firebase/auth';
 import { useBusiness } from '../../context/BusinessContext';
 import { useAuth } from '../../context/AuthContext';
 
 export const SettingsDashboard: React.FC = () => {
-  const { profile: authProfile } = useAuth();
+  const { user, profile: authProfile } = useAuth();
   const { profile, refreshProfile } = useBusiness();
   const [formData, setFormData] = useState<Partial<BusinessProfile>>({});
   const [isSaving, setIsSaving] = useState(false);
@@ -73,6 +74,20 @@ export const SettingsDashboard: React.FC = () => {
     }
   };
 
+  const handlePasswordReset = async () => {
+    if (!user?.email) {
+      alert("No email address found for your account.");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, user.email);
+      alert(`Password reset link sent to ${user.email}`);
+    } catch (e: any) {
+      console.error(e);
+      alert(`Failed to send password reset email: ${e.message}`);
+    }
+  };
+
   return (
     <div className="max-w-container-max mx-auto p-4 md:p-margin-desktop w-full h-[calc(100dvh-4rem)] overflow-y-auto">
       <div className="mb-8">
@@ -81,6 +96,34 @@ export const SettingsDashboard: React.FC = () => {
       </div>
 
       <div className="space-y-6">
+        {/* Section: Account & Security */}
+        <section className="bg-surface-container-lowest border border-outline-variant p-8 flex flex-col md:flex-row gap-6 rounded-lg shadow-sm">
+          <div className="md:w-1/3">
+            <h3 className="font-headline-md text-headline-md text-primary mb-2">Account & Security</h3>
+            <p className="font-body-md text-body-md text-secondary">Manage your login credentials and account security.</p>
+          </div>
+          <div className="md:w-2/3 space-y-6">
+            <div className="space-y-2">
+              <label className="block font-label-md text-label-md text-on-surface">Registered Email</label>
+              <input 
+                className="w-full border border-outline-variant rounded bg-surface-container-low text-secondary font-body-md text-body-md p-3 cursor-not-allowed" 
+                type="text" 
+                value={user?.email || 'No email attached'} 
+                disabled 
+              />
+              <p className="text-[11px] text-secondary">This is the email address used to sign in to LedgerX.</p>
+            </div>
+            <div>
+              <button 
+                onClick={handlePasswordReset}
+                className="px-4 py-2 bg-surface-container border border-outline-variant rounded font-label-md text-label-md text-primary hover:bg-surface-container-high transition-colors"
+              >
+                Send Password Reset Email
+              </button>
+            </div>
+          </div>
+        </section>
+
         {/* Section: Business Profile */}
         <section className="bg-surface-container-lowest border border-outline-variant p-8 flex flex-col md:flex-row gap-6 rounded-lg shadow-sm">
           <div className="md:w-1/3">
