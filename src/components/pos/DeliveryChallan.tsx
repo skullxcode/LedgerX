@@ -172,25 +172,27 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
         {/* --- Header Section --- */}
         <div className="flex justify-between items-start border-b-2 border-black pb-2 mb-2 relative z-10">
           <div className="text-[12px] font-bold">
-            {profile?.gstin && `GSTIN/UIN No.: ${profile.gstin}`}
+            {!isUntaxed && profile?.gstin && `GSTIN/UIN No.: ${profile.gstin}`}
           </div>
           <div className="text-[12px] italic uppercase text-right absolute right-0 top-0">
             {printMode === DocumentType.FINAL_SALE && !isUntaxed && "(ORIGINAL FOR RECIPIENT)"}
           </div>
         </div>
         
-        <div className="text-center mb-2 relative z-10">
-          <h1 className="text-4xl font-bold font-serif uppercase tracking-wider text-black">{profile?.business_name || 'Business Name'}</h1>
-          <p className="text-[11px] mt-1">
-            {profile?.address || ''} 
-            Mobile : {profile?.phone || 'N/A'}{profile?.alt_phone ? `, ${profile.alt_phone}` : ''}
-          </p>
-          {(profile?.email || profile?.website) && (
-            <p className="text-[11px]">
-              {profile?.email && `e-mail : ${profile.email}`} {profile?.website && `| web : ${profile.website}`}
+        {!isUntaxed && (
+          <div className="text-center mb-2 relative z-10">
+            <h1 className="text-4xl font-bold font-serif uppercase tracking-wider text-black">{profile?.business_name || 'Business Name'}</h1>
+            <p className="text-[11px] mt-1">
+              {profile?.address || ''} 
+              Mobile : {profile?.phone || 'N/A'}{profile?.alt_phone ? `, ${profile.alt_phone}` : ''}
             </p>
-          )}
-        </div>
+            {(profile?.email || profile?.website) && (
+              <p className="text-[11px]">
+                {profile?.email && `e-mail : ${profile.email}`} {profile?.website && `| web : ${profile.website}`}
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="text-center mb-2 border-y-2 border-black py-1 font-bold uppercase text-lg relative z-10">
           {getDocTitle()}
