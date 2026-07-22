@@ -486,9 +486,7 @@ export const CheckoutPanel: React.FC<{ onShowChallan: (txId: string) => void }> 
 
         {/* CTA Actions */}
         <div className="flex gap-3">
-          <button className="px-6 py-4 border border-outline-variant bg-white text-primary font-bold text-label-md rounded hover:bg-surface-container transition-colors active:scale-[0.98]">
-            PRINT
-          </button>
+
           <button 
             disabled={cart.length === 0 || isProcessing}
             onClick={handleFinalize}
