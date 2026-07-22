@@ -216,7 +216,7 @@ export const verifyEmailOTP = async (
   const res = await fetch('/api/auth/verify-otp', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, code })
+    body: JSON.stringify({ email, code, businessName, ownerName, phone })
   });
   
   const rawText = await res.text();
