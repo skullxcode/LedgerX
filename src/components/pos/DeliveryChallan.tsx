@@ -211,10 +211,10 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
 
           {/* Right Side: Invoice & Order Info */}
           <div className="w-1/2 flex flex-col">
-            <div className={`flex ${isUntaxed ? 'h-full' : 'border-b-2 border-black h-1/2'}`}>
+            <div className={`flex ${isUntaxed || printMode === 'MEMO' ? 'h-full' : 'border-b-2 border-black h-1/2'}`}>
               {!isUntaxed && (
                 <div className="w-1/2 border-r-2 border-black p-2 flex flex-col justify-center">
-                  <span className="text-[11px]">Invoice No.</span>
+                  <span className="text-[11px]">{printMode === 'MEMO' ? 'Delivery Memo No.' : 'Invoice No.'}</span>
                   <span className="font-bold text-[14px]">{transaction.custom_doc_no || transaction.transaction_id.substring(0, 8)}</span>
                 </div>
               )}
@@ -223,7 +223,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
                 <span className="font-bold text-[14px]">{docDate.toLocaleDateString('en-GB')}</span>
               </div>
             </div>
-            {!isUntaxed && (
+            {!isUntaxed && printMode !== 'MEMO' && (
               <div className="flex h-1/2">
                 <div className="w-1/2 border-r-2 border-black p-2 flex flex-col justify-center">
                   <span className="text-[11px]">Buyer's Order No.</span>
@@ -369,22 +369,24 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
 
             {/* Right Side: Bank & Signature */}
             <div className="w-[45%] flex flex-col">
-              <div className="p-2 border-b-2 border-black flex-grow">
-                <span className="font-bold text-[11px] block mb-1">Company's bank Detail</span>
-                <div className="flex text-[11px]">
-                  <span className="w-24">Bank Name</span>
-                  <span>: {profile?.bank_name || 'N/A'}</span>
+              {printMode !== 'MEMO' && (
+                <div className="p-2 border-b-2 border-black flex-grow">
+                  <span className="font-bold text-[11px] block mb-1">Company's bank Detail</span>
+                  <div className="flex text-[11px]">
+                    <span className="w-24">Bank Name</span>
+                    <span>: {profile?.bank_name || 'N/A'}</span>
+                  </div>
+                  <div className="flex text-[11px]">
+                    <span className="w-24">A/c No.</span>
+                    <span>: {profile?.bank_account || 'N/A'}</span>
+                  </div>
+                  <div className="flex text-[11px]">
+                    <span className="w-24">Branch & IFS Code</span>
+                    <span>: {profile?.bank_ifsc || 'N/A'}</span>
+                  </div>
                 </div>
-                <div className="flex text-[11px]">
-                  <span className="w-24">A/c No.</span>
-                  <span>: {profile?.bank_account || 'N/A'}</span>
-                </div>
-                <div className="flex text-[11px]">
-                  <span className="w-24">Branch & IFS Code</span>
-                  <span>: {profile?.bank_ifsc || 'N/A'}</span>
-                </div>
-              </div>
-              <div className="p-2 h-24 flex flex-col justify-between items-end">
+              )}
+              <div className={`p-2 h-24 flex flex-col justify-between items-end ${printMode === 'MEMO' ? 'flex-grow' : ''}`}>
                 <span className="font-bold text-[12px]">For : {profile?.signature_name || profile?.business_name || 'Business Name'}</span>
                 <span className="text-[11px] font-bold mt-12 text-right block w-full border-t border-black pt-1">
                   Authorised Signatory
