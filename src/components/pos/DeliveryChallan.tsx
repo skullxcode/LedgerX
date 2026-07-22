@@ -349,7 +349,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
             </div>
             <div className="border-x-2 border-b-2 border-black p-1 flex">
               <span className="font-bold text-[12px] mr-2">Total Amount (in words) :</span>
-              <span className="text-[13px] font-bold italic">{numberToWords(grandTotal)}</span>
+              <span className="text-[13px] font-bold italic">{numberToWords(grandTotal)} Rupees Only</span>
             </div>
           </>
         )}
