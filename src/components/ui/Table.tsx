@@ -1,75 +1,62 @@
 import React from 'react';
 
-export const Table: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => {
+/**
+ * A responsive wrapper for data tables.
+ */
+export const Table: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => {
   return (
-    <div 
-      className={className}
-      style={{
-        width: '100%',
-        overflowX: 'auto',
-        backgroundColor: 'var(--bg-surface)',
-        borderRadius: 'var(--radius-xl)',
-        border: '1px solid var(--border-light)',
-        boxShadow: 'var(--shadow-sm)'
-      }}
-    >
-      <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+    <div className={`w-full overflow-x-auto bg-surface rounded-xl border border-outline-variant shadow-sm ${className}`}>
+      <table className="w-full border-collapse text-left">
         {children}
       </table>
     </div>
   );
 };
 
+/**
+ * Table Header container.
+ */
 export const Thead: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-  <thead style={{ backgroundColor: 'var(--bg-surface-hover)', borderBottom: '1px solid var(--border-light)' }}>
+  <thead className="bg-surface-hover border-b border-outline-variant">
     {children}
   </thead>
 );
 
-export const Th: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }> = ({ children, style }) => (
-  <th style={{ 
-    padding: 'var(--space-3) var(--space-4)', 
-    fontSize: '12px', 
-    fontWeight: 600, 
-    color: 'var(--text-secondary)',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    ...style 
-  }}>
+/**
+ * Table Header Cell component.
+ */
+export const Th: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+  <th className={`px-4 py-3 text-xs font-semibold text-text-secondary uppercase tracking-wider ${className}`}>
     {children}
   </th>
 );
 
+/**
+ * Table Body container.
+ */
 export const Tbody: React.FC<{ children: React.ReactNode }> = ({ children }) => (
   <tbody className="table-body">
     {children}
   </tbody>
 );
 
-export const Tr: React.FC<{ children: React.ReactNode; onClick?: () => void; style?: React.CSSProperties }> = ({ children, onClick, style }) => (
+/**
+ * Table Row component. Supports optional click handlers.
+ */
+export const Tr: React.FC<{ children: React.ReactNode; onClick?: () => void; className?: string }> = ({ children, onClick, className = '' }) => (
   <tr 
     onClick={onClick}
-    style={{ 
-      borderBottom: '1px solid var(--border-light)',
-      cursor: onClick ? 'pointer' : 'default',
-      transition: 'background-color 0.15s ease',
-      ...style
-    }}
-    onMouseEnter={(e) => onClick && (e.currentTarget.style.backgroundColor = 'var(--bg-surface-hover)')}
-    onMouseLeave={(e) => onClick && (e.currentTarget.style.backgroundColor = 'transparent')}
+    className={`border-b border-outline-variant transition-colors duration-150 ${onClick ? 'cursor-pointer hover:bg-surface-hover' : ''} ${className}`}
   >
     {children}
   </tr>
 );
 
-export const Td: React.FC<{ children: React.ReactNode; style?: React.CSSProperties }> = ({ children, style }) => (
-  <td style={{ 
-    padding: 'var(--space-4)', 
-    fontSize: '14px',
-    color: 'var(--text-primary)',
-    verticalAlign: 'middle',
-    ...style 
-  }}>
+/**
+ * Table Data Cell component.
+ */
+export const Td: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
+  <td className={`p-4 text-sm text-text-primary align-middle ${className}`}>
     {children}
   </td>
 );

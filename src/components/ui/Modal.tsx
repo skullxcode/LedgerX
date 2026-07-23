@@ -1,72 +1,54 @@
 import React from 'react';
 
 export interface ModalProps {
+  /** Determines if the modal is currently visible */
   isOpen: boolean;
+  /** Callback fired when the modal requests to be closed */
   onClose: () => void;
+  /** Optional title displayed in the modal header */
   title?: string;
+  /** The content of the modal */
   children: React.ReactNode;
+  /** Custom max-width for the modal */
   width?: string;
 }
 
+/**
+ * A standardized modal dialog component.
+ * Uses a fixed overlay to block interactions with the background.
+ */
 export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, width = '500px' }) => {
   if (!isOpen) return null;
 
   return (
     <>
+      {/* Backdrop */}
       <div 
-        style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.5)',
-          zIndex: 50,
-          backdropFilter: 'blur(2px)' // Minimal blur, lightweight
-        }}
+        className="fixed inset-0 bg-black/50 z-50 backdrop-blur-[2px]"
         onClick={onClose}
+        aria-hidden="true"
       />
+      
+      {/* Dialog Window */}
       <div 
-        style={{
-          position: 'fixed',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          backgroundColor: 'var(--bg-surface)',
-          borderRadius: 'var(--radius-xl)',
-          boxShadow: 'var(--shadow-md)',
-          zIndex: 51,
-          width: '90%',
-          maxWidth: width,
-          maxHeight: '90vh',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}
+        className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-surface rounded-xl shadow-md z-[51] w-[90%] max-h-[90vh] flex flex-col overflow-hidden"
+        style={{ maxWidth: width }}
+        role="dialog"
+        aria-modal="true"
       >
         {title && (
-          <div style={{
-            padding: 'var(--space-4) var(--space-5)',
-            borderBottom: '1px solid var(--border-light)',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            backgroundColor: 'var(--bg-surface)'
-          }}>
-            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>{title}</h3>
+          <div className="px-5 py-4 border-b border-outline-variant flex justify-between items-center bg-surface">
+            <h3 className="m-0 text-lg font-semibold">{title}</h3>
             <button 
               onClick={onClose}
               aria-label="Close modal"
-              style={{
-                background: 'transparent',
-                border: 'none',
-                fontSize: '20px',
-                cursor: 'pointer',
-                color: 'var(--text-secondary)'
-              }}
+              className="bg-transparent border-none text-xl cursor-pointer text-text-secondary hover:text-text-primary transition-colors"
             >
               ✕
             </button>
           </div>
         )}
-        <div style={{ padding: 'var(--space-5)', overflowY: 'auto' }}>
+        <div className="p-5 overflow-y-auto">
           {children}
         </div>
       </div>

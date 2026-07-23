@@ -1,9 +1,14 @@
 import React from 'react';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
+  /** The visual style variant of the badge */
   variant?: 'default' | 'success' | 'warning' | 'danger' | 'info';
 }
 
+/**
+ * A small status indicator component.
+ * Used to display statuses, counts, or small tags.
+ */
 export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
   ({ className = '', variant = 'default', children, style, ...props }, ref) => {
     const baseClasses = 'inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-tight';

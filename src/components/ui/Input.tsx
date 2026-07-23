@@ -1,11 +1,17 @@
 import React from 'react';
 
 export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  /** Optional label to display above the input */
   label?: string;
+  /** Optional error message to display below the input */
   error?: string;
+  /** If true, the input spans the full width of its container */
   fullWidth?: boolean;
 }
 
+/**
+ * Standardized text input component with built-in label and error handling.
+ */
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className = '', label, error, fullWidth, style, ...props }, ref) => {
     const containerClasses = `flex flex-col gap-1 mb-3 ${fullWidth ? 'w-full' : 'w-auto'}`;

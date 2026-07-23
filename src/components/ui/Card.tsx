@@ -1,10 +1,15 @@
 import React from 'react';
 
 export interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  /** Padding scale for the card content */
   padding?: 'none' | 'sm' | 'md' | 'lg';
+  /** If true, removes the default border */
   noBorder?: boolean;
 }
 
+/**
+ * A basic container component for grouping related content.
+ */
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className = '', padding = 'md', noBorder = false, children, style, ...props }, ref) => {
     const paddingClasses = {
