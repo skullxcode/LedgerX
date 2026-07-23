@@ -86,8 +86,8 @@ function MainApp() {
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
+  const { user, profile, loading } = useAuth();
   const { data: notifications = [] } = useNotifications(profile?.store_id);
-
   // Global key listener for '?'
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -108,7 +108,7 @@ function MainApp() {
   const [deepLinkJobId, setDeepLinkJobId] = useState<string | null>(null);
 
   // --- Authentication State ---
-  const { user, profile, loading } = useAuth();
+  // (Moved to top of component)
 
   // --- Theme State ---
   const { theme, setTheme, isDark } = useTheme();
