@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
-import { app, type Transaction, type Customer, type InventoryItem, type JobCard } from '@/lib/firebase';
+import { app, type Transaction, type Customer, type InventoryItem, type JobCard, type Expense } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
-import { ResponsiveContainer, AreaChart, Area, XAxis, Tooltip, CartesianGrid } from 'recharts';
+import { ResponsiveContainer, AreaChart, Area, XAxis, Tooltip, CartesianGrid, BarChart, Bar, Legend } from 'recharts';
 
 class DashboardErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
   constructor(props: {children: React.ReactNode}) {
@@ -55,6 +55,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
   const [loading, setLoading] = useState(true);
   const [dateFilter, setDateFilter] = useState<'MONTH' | 'LAST_7'>('MONTH');
   const [chartData, setChartData] = useState<any[]>([]);
+  const [plChartData, setPlChartData] = useState<any[]>([]);
 
   useEffect(() => {
     const fetchMetrics = async () => {
@@ -159,6 +160,41 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
         });
         activeJobs.sort((a, b) => (b.created_at?.seconds || 0) - (a.created_at?.seconds || 0));
         setActiveJobCards(activeJobs.slice(0, 5));
+
+        // Fetch Expenses for P&L chart (last 6 months)
+        const expQ = query(collection(db, 'Expenses'), where('store_id', '==', profile.store_id), where('status', '==', 'PAID'));
+        const expSnap = await getDocs(expQ);
+        const expByMonth: Record<string, number> = {};
+        expSnap.docs.forEach(doc => {
+          const exp = doc.data() as Expense;
+          const expDate = exp.date?.toDate ? exp.date.toDate() : new Date(exp.date);
+          const key = expDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+          expByMonth[key] = (expByMonth[key] || 0) + exp.amount;
+        });
+
+        const revByMonth: Record<string, number> = {};
+        txs.forEach(tx => {
+          const txDate = new Date(tx.timestamp?.seconds ? tx.timestamp.seconds * 1000 : tx.timestamp);
+          const key = txDate.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+          revByMonth[key] = (revByMonth[key] || 0) + tx.total_amount;
+        });
+
+        // Build last 6 months
+        const plData: any[] = [];
+        for (let i = 5; i >= 0; i--) {
+          const d = new Date();
+          d.setMonth(d.getMonth() - i);
+          const key = d.toLocaleDateString('en-US', { month: 'short', year: '2-digit' });
+          const revenue = revByMonth[key] || 0;
+          const expenses = expByMonth[key] || 0;
+          plData.push({
+            name: d.toLocaleDateString('en-US', { month: 'short' }),
+            revenue,
+            expenses,
+            profit: revenue - expenses,
+          });
+        }
+        setPlChartData(plData);
 
       } catch (e) {
         console.error("Failed to fetch analytics", e);
@@ -336,6 +372,52 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
                 />
               </AreaChart>
             </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* P&L Chart - Revenue vs Expenses */}
+        <div className="col-span-12 bg-surface-container-lowest border border-outline-variant p-6 rounded-lg hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
+          <div className="flex justify-between items-start mb-6">
+            <div>
+              <h4 className="font-headline-md text-headline-md text-primary">Profit & Loss Overview</h4>
+              <p className="text-secondary text-body-md">Revenue vs. Expenses (last 6 months)</p>
+            </div>
+            <div className="flex items-center gap-4 text-xs">
+              <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-primary"></span><span className="text-secondary">Revenue</span></div>
+              <div className="flex items-center gap-1.5"><span className="w-3 h-3 rounded-sm bg-error"></span><span className="text-secondary">Expenses</span></div>
+            </div>
+          </div>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={plChartData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }} barCategoryGap="30%">
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-outline-variant)" opacity={0.5} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: 'var(--color-secondary)', fontSize: 11 }} />
+                <Tooltip
+                  contentStyle={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-outline-variant)', borderRadius: '8px' }}
+                  labelStyle={{ color: 'var(--color-secondary)', marginBottom: '4px' }}
+                  formatter={(value: number, name: string) => [
+                    `₹${value.toLocaleString('en-IN', { minimumFractionDigits: 0 })}`,
+                    name === 'revenue' ? 'Revenue' : 'Expenses'
+                  ]}
+                />
+                <Bar dataKey="revenue" fill="var(--color-primary)" radius={[4, 4, 0, 0]} opacity={0.85} />
+                <Bar dataKey="expenses" fill="var(--color-error)" radius={[4, 4, 0, 0]} opacity={0.75} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+          {/* Profit Summary Row */}
+          <div className="flex flex-wrap gap-4 mt-5 pt-4 border-t border-outline-variant/30">
+            {plChartData.map(d => {
+              const isProfit = d.profit >= 0;
+              return (
+                <div key={d.name} className="flex flex-col items-center gap-0.5">
+                  <span className="text-[10px] text-secondary uppercase tracking-wider">{d.name}</span>
+                  <span className={`text-xs font-bold ${isProfit ? 'text-emerald-600' : 'text-error'}`}>
+                    {isProfit ? '+' : ''}₹{Math.abs(d.profit).toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                  </span>
+                </div>
+              );
+            })}
           </div>
         </div>
 
