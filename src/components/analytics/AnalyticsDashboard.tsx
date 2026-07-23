@@ -3,6 +3,7 @@ import { getFirestore, collection, getDocs, query, where } from 'firebase/firest
 import { app, type Transaction, type Customer, type InventoryItem, type JobCard, type Expense } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 import { ResponsiveContainer, AreaChart, Area, XAxis, Tooltip, CartesianGrid, BarChart, Bar, Legend } from 'recharts';
+import { formatCurrency } from '../../lib/utils/formatters';
 import toast from 'react-hot-toast';
 
 class DashboardErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
@@ -282,10 +283,10 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
           </div>
           <div className="mt-6">
             <p className="text-secondary font-label-md uppercase tracking-wider mb-1">Total Revenue</p>
-            <h3 className="font-headline-lg text-headline-lg text-primary">₹{monthlyRevenue.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
+            <h3 className="font-headline-lg text-headline-lg text-primary">{formatCurrency(monthlyRevenue)}</h3>
           </div>
           <div className="mt-4 pt-4 border-t border-outline-variant/30">
-            <p className="text-[11px] text-on-primary-container">vs. ₹{lastMonthRevenue.toLocaleString()} last month</p>
+            <p className="text-[11px] text-on-primary-container">vs. {formatCurrency(lastMonthRevenue)} last month</p>
           </div>
         </div>
 
@@ -298,7 +299,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
           </div>
           <div className="mt-6">
             <p className="text-secondary font-label-md uppercase tracking-wider mb-1">Total Pending Credit (Udhaar)</p>
-            <h3 className="font-headline-lg text-headline-lg text-primary">₹{totalUdhaar.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
+            <h3 className="font-headline-lg text-headline-lg text-primary">{formatCurrency(totalUdhaar)}</h3>
           </div>
           <div className="mt-4 pt-4 border-t border-outline-variant/30">
             <p className="text-[11px] text-on-primary-container">Total unpaid balances across all clients</p>
@@ -318,7 +319,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
           </div>
           <div className="mt-6">
             <p className="text-secondary font-label-md uppercase tracking-wider mb-1">Total Inventory Value</p>
-            <h3 className="font-headline-lg text-headline-lg text-primary">₹{totalInventoryValue.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
+            <h3 className="font-headline-lg text-headline-lg text-primary">{formatCurrency(totalInventoryValue)}</h3>
           </div>
           <div className="mt-4 pt-4 border-t border-outline-variant/30">
             <p className="text-[11px] text-on-primary-container">Total stock value currently held</p>
@@ -444,7 +445,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
                       <p className="text-[11px] text-secondary mt-1">{tx.customer_id || 'Walk-in'}</p>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <p className="font-label-md text-primary">₹{tx.total_amount.toLocaleString(undefined, {minimumFractionDigits:2})}</p>
+                      <p className="font-label-md text-primary">{formatCurrency(tx.total_amount)}</p>
                     </td>
                   </tr>
                 ))}
@@ -486,7 +487,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
                   <div className="text-[11px] text-secondary">{c.phone}</div>
                 </div>
                 <div className="font-headline-md text-error font-bold">
-                  ₹{c.udhaar_balance?.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                  {formatCurrency(c.udhaar_balance || 0)}
                 </div>
               </div>
             ))}
@@ -539,7 +540,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
             <div className="flex flex-col">
               <span className="text-[10px] text-secondary uppercase font-label-md">Pending UDHAAR</span>
               <span className="text-body-md font-bold text-primary">
-                ₹{totalUdhaar.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                {formatCurrency(totalUdhaar)}
               </span>
             </div>
           </div>

@@ -3,6 +3,7 @@ import { type InventoryItem, app, type Transaction } from '@/lib/firebase';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
 import { useInventory } from '../../hooks/queries/useInventory';
+import { formatCurrency } from '../../lib/utils/formatters';
 import { InventoryList } from './InventoryList';
 import { InventoryForm } from './InventoryForm';
 import { BulkImportModal } from './BulkImportModal';
@@ -157,7 +158,7 @@ export const InventoryDashboard: React.FC = () => {
         <div className="bg-surface-container-lowest border border-outline-variant p-5 rounded-lg flex flex-col justify-between">
           <div>
             <p className="text-[10px] font-label-md text-secondary uppercase tracking-widest mb-3">Total Value</p>
-            <h3 className="text-headline-md font-headline-md font-bold text-primary">₹{totalValue.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
+            <h3 className="text-headline-md font-headline-md font-bold text-primary">{formatCurrency(totalValue)}</h3>
           </div>
           <div className="mt-4 flex items-center gap-2 text-[11px] text-secondary">
             <span className="material-symbols-outlined text-[14px] text-on-tertiary-container">inventory_2</span>

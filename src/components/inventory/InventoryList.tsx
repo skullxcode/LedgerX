@@ -3,6 +3,7 @@ import { type InventoryItem, ItemType, softDeleteInventoryItem } from '@/lib/fir
 import { InventoryForm } from './InventoryForm';
 import { StockAdjustmentForm } from './StockAdjustmentForm';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
+import { formatCurrency } from '../../lib/utils/formatters';
 
 export interface InventoryListProps {
   /** The list of inventory items to display */
@@ -97,25 +98,31 @@ export const InventoryList: React.FC<InventoryListProps> = ({ items }) => {
               </div>
               <div>
                 <p className="text-[10px] text-secondary uppercase tracking-wider mb-1">Price</p>
-                <p className="font-body-md font-bold text-primary">₹{item.selling_price.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                <p className="font-body-md font-bold text-primary">{formatCurrency(item.selling_price)}</p>
               </div>
               <div className="col-span-2">
                 <p className="text-[10px] text-secondary uppercase tracking-wider mb-1">Stock Level</p>
                 {item.item_type === ItemType.PRODUCT ? (
-                  <div className="flex items-center gap-3 w-full">
-                    <div className="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden">
-                       <div 
-                         className={`h-full rounded-full ${item.current_stock < 5 ? 'bg-error' : (item.current_stock < 20 ? 'bg-amber-400' : 'bg-primary')}`} 
-                         style={{ width: `${Math.min(100, Math.max(0, (item.current_stock / 500) * 100))}%` }}
-                       ></div>
-                    </div>
-                    <span className="text-[10px] font-label-md font-bold text-primary w-24 text-right">
-                      <span className={item.current_stock < 5 ? 'text-error' : ''}>{item.current_stock}</span> / 500
-                    </span>
-                    <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight ${item.current_stock < 5 ? 'bg-error-container text-error' : 'bg-emerald-50 text-emerald-700'}`}>
-                       {item.current_stock < 5 ? 'CRITICAL' : 'OPTIMAL'}
-                    </span>
-                  </div>
+                  (() => {
+                    const threshold = item.min_stock ?? 5;
+                    const isLow = item.current_stock <= threshold;
+                    return (
+                      <div className="flex items-center gap-3 w-full">
+                        <div className="flex-1 h-1.5 bg-surface-container rounded-full overflow-hidden">
+                           <div 
+                             className={`h-full rounded-full ${isLow ? 'bg-error' : (item.current_stock < threshold + 15 ? 'bg-amber-400' : 'bg-primary')}`} 
+                             style={{ width: `${Math.min(100, Math.max(0, (item.current_stock / 500) * 100))}%` }}
+                           ></div>
+                        </div>
+                        <span className="text-[10px] font-label-md font-bold text-primary w-24 text-right">
+                          <span className={isLow ? 'text-error' : ''}>{item.current_stock}</span> / 500
+                        </span>
+                        <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight ${isLow ? 'bg-error-container text-error' : 'bg-emerald-50 text-emerald-700'}`}>
+                           {isLow ? 'LOW STOCK' : 'OPTIMAL'}
+                        </span>
+                      </div>
+                    );
+                  })()
                 ) : (
                   <div className="text-secondary text-label-md">-</div>
                 )}
@@ -175,29 +182,39 @@ export const InventoryList: React.FC<InventoryListProps> = ({ items }) => {
                   </span>
                 </td>
                 <td className="px-6 py-4 text-right font-body-md text-body-md text-primary">
-                  ₹{item.selling_price.toLocaleString(undefined, {minimumFractionDigits: 2})}
+                  {formatCurrency(item.selling_price)}
                 </td>
                 <td className="px-6 py-4">
                   {item.item_type === ItemType.PRODUCT ? (
-                    <div className="flex flex-col gap-1 w-32 mx-auto">
-                      <div className="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
-                         <div 
-                           className={`h-full rounded-full ${item.current_stock < 5 ? 'bg-error' : (item.current_stock < 20 ? 'bg-amber-400' : 'bg-primary')}`} 
-                           style={{ width: `${Math.min(100, Math.max(0, (item.current_stock / 500) * 100))}%` }}
-                         ></div>
-                      </div>
-                      <span className="text-[10px] font-label-md font-bold text-primary text-center">
-                        <span className={item.current_stock < 5 ? 'text-error' : ''}>{item.current_stock}</span> of 500 units
-                      </span>
-                    </div>
+                    (() => {
+                      const threshold = item.min_stock ?? 5;
+                      const isLow = item.current_stock <= threshold;
+                      return (
+                        <div className="flex flex-col gap-1 w-32 mx-auto">
+                          <div className="w-full h-1.5 bg-surface-container rounded-full overflow-hidden">
+                             <div 
+                               className={`h-full rounded-full ${isLow ? 'bg-error' : (item.current_stock < threshold + 15 ? 'bg-amber-400' : 'bg-primary')}`} 
+                               style={{ width: `${Math.min(100, Math.max(0, (item.current_stock / 500) * 100))}%` }}
+                             ></div>
+                          </div>
+                          <span className="text-[10px] font-label-md font-bold text-primary text-center">
+                            <span className={isLow ? 'text-error' : ''}>{item.current_stock}</span> of 500 units
+                          </span>
+                        </div>
+                      );
+                    })()
                   ) : (
                     <div className="text-center text-secondary text-label-md">-</div>
                   )}
                 </td>
                 <td className="px-6 py-4 text-center">
-                  <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight ${item.current_stock < 5 ? 'bg-error-container text-error' : 'bg-emerald-50 text-emerald-700'}`}>
-                     {item.current_stock < 5 ? 'CRITICAL' : 'OPTIMAL'}
-                  </span>
+                  {item.item_type === ItemType.PRODUCT ? (
+                    <span className={`px-2 py-0.5 rounded text-[9px] font-bold uppercase tracking-tight ${item.current_stock <= (item.min_stock ?? 5) ? 'bg-error-container text-error' : 'bg-emerald-50 text-emerald-700'}`}>
+                       {item.current_stock <= (item.min_stock ?? 5) ? 'LOW STOCK' : 'OPTIMAL'}
+                    </span>
+                  ) : (
+                    <span className="text-secondary text-label-md">-</span>
+                  )}
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex items-center justify-end gap-1">

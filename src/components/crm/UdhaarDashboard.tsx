@@ -8,10 +8,8 @@ import { updateCustomer } from '@/lib/firebase/api/customers';
 import { addTransaction } from '@/lib/firebase/api/transactions';
 import { useQueryClient } from '@tanstack/react-query';
 import { CUSTOMERS_QUERY_KEY } from '../../hooks/queries/useCustomers';
+import { formatCurrency } from '../../lib/utils/formatters';
 import toast from 'react-hot-toast';
-
-const formatCurrency = (amount: number) =>
-  `₹${amount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 /**
  * Udhaar Collection Dashboard.
