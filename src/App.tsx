@@ -6,6 +6,7 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { NotificationDropdown } from './components/layout/NotificationDropdown';
 import { HelpModal } from './components/layout/HelpModal';
+import { ErrorBoundary } from './components/ui/ErrorBoundary';
 import { useNotifications } from './hooks/queries/useNotifications';
 import toast, { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -76,7 +77,7 @@ function MainApp() {
   // --- Navigation & Layout State ---
   const [activeTab, setActiveTab] = useState<TabType>(() => {
     const hash = window.location.hash.replace('#', '');
-    if (['ANALYTICS', 'POS', 'INVENTORY', 'REPAIRS', 'TRANSACTIONS', 'CRM', 'SETTINGS'].includes(hash)) {
+    if (['ANALYTICS', 'POS', 'INVENTORY', 'REPAIRS', 'TRANSACTIONS', 'CRM', 'EXPENSES', 'SETTINGS'].includes(hash)) {
       return hash as TabType;
     }
     return (localStorage.getItem('ledgerx_active_tab') as TabType) || 'ANALYTICS';
@@ -133,7 +134,7 @@ function MainApp() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '');
-      if (['ANALYTICS', 'POS', 'INVENTORY', 'REPAIRS', 'TRANSACTIONS', 'CRM', 'SETTINGS'].includes(hash)) {
+      if (['ANALYTICS', 'POS', 'INVENTORY', 'REPAIRS', 'TRANSACTIONS', 'CRM', 'EXPENSES', 'SETTINGS'].includes(hash)) {
         setActiveTab(hash as TabType);
       }
     };
@@ -478,15 +479,17 @@ const queryClient = new QueryClient({
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider>
-        <AuthProvider>
-          <Toaster position="top-right" />
-          <MainApp />
-        </AuthProvider>
-      </ThemeProvider>
-      <ReactQueryDevtools initialIsOpen={false} />
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider>
+          <AuthProvider>
+            <Toaster position="top-right" />
+            <MainApp />
+          </AuthProvider>
+        </ThemeProvider>
+        <ReactQueryDevtools initialIsOpen={false} />
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 
