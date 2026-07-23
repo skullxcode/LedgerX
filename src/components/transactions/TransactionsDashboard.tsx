@@ -9,6 +9,8 @@ import { StatementOfAccount } from './StatementOfAccount';
 import { TransactionFilterBar } from './TransactionFilterBar';
 import { DesktopTransactionTable } from './DesktopTransactionTable';
 import { MobileTransactionList } from './MobileTransactionList';
+import { VoidConfirmationModal } from './VoidConfirmationModal';
+import { exportToCSV } from '@/lib/utils/csv';
 
 export type DatePreset = 'ALL' | 'TODAY' | 'LAST_7' | 'THIS_MONTH' | 'CUSTOM';
 
@@ -115,6 +117,21 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
     return 'All Time';
   };
 
+  const handleExportCSV = () => {
+    const headers = ['Doc No', 'Customer Name', 'Customer Phone', 'Document Type', 'Format', 'Payment Status', 'Total Amount (₹)', 'Status'];
+    const rows = transactions.map(t => [
+      t.custom_doc_no || t.transaction_id,
+      t.customer_name || 'Walk-in Customer',
+      t.customer_phone || 'N/A',
+      t.document_type,
+      t.format_mode,
+      t.payment_status,
+      t.total_amount,
+      t.status
+    ]);
+    exportToCSV('Transactions_Ledger', headers, rows);
+  };
+
   return (
     <div className="max-w-container-max mx-auto p-4 md:p-margin-desktop min-h-[calc(100dvh-4rem)] flex flex-col overflow-y-auto overflow-x-hidden">
 
@@ -127,6 +144,13 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
           <p className="text-body-md text-secondary">Comprehensive history of all enterprise document movements.</p>
         </div>
         <div className="flex flex-wrap gap-3">
+          <button
+            className="bg-surface-container-lowest border border-outline-variant px-4 py-2 flex items-center gap-2 font-label-md hover:bg-surface-container transition-colors rounded"
+            onClick={handleExportCSV}
+          >
+            <span className="material-symbols-outlined text-[18px]">download</span>
+            Export CSV
+          </button>
           <button
             className="bg-surface-container-lowest border border-outline-variant px-4 py-2 flex items-center gap-2 font-label-md hover:bg-surface-container transition-colors rounded"
             onClick={() => window.print()}

@@ -5,6 +5,7 @@ import { ExpenseForm } from './ExpenseForm';
 import { VendorList } from './VendorList';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 import { type Expense } from '@/lib/firebase';
+import { exportToCSV } from '@/lib/utils/csv';
 
 const formatCurrency = (amount: number) => `₹${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
@@ -46,6 +47,20 @@ export const ExpensesDashboard: React.FC = () => {
     .filter(e => e.status === 'UNPAID')
     .reduce((sum, e) => sum + e.amount, 0);
 
+  const handleExportCSV = () => {
+    const headers = ['Expense ID', 'Category', 'Vendor Name', 'Amount (₹)', 'Payment Method', 'Status', 'Notes'];
+    const rows = expenses.map(e => [
+      e.expense_id,
+      e.category,
+      e.vendor_name || 'N/A',
+      e.amount,
+      e.payment_method || 'N/A',
+      e.status,
+      e.notes || ''
+    ]);
+    exportToCSV('Expenses_Report', headers, rows);
+  };
+
   return (
     <div className="flex flex-col h-full bg-background relative overflow-hidden">
       {/* Header section */}
@@ -56,13 +71,22 @@ export const ExpensesDashboard: React.FC = () => {
             <p className="text-on-surface-variant font-medium">Track your business outgoing cash flow and vendors.</p>
           </div>
           {activeTab === 'EXPENSES' && (
-            <button
-              onClick={handleAdd}
-              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-xl font-semibold shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all w-full md:w-auto"
-            >
-              <span className="material-symbols-outlined text-[20px]">add</span>
-              Add Expense
-            </button>
+            <div className="flex gap-3">
+              <button
+                onClick={handleExportCSV}
+                className="px-4 py-2 border border-outline-variant text-on-surface rounded-lg font-medium hover:bg-surface-variant transition-colors flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[18px]">download</span>
+                Export CSV
+              </button>
+              <button
+                onClick={handleAdd}
+                className="px-4 py-2 bg-primary text-on-primary rounded-lg font-medium hover:bg-primary/90 transition-colors flex items-center gap-2"
+              >
+                <span className="material-symbols-outlined text-[18px]">add</span>
+                Add Expense
+              </button>
+            </div>
           )}
         </div>
 

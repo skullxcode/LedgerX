@@ -297,9 +297,16 @@ const JobCardItem: React.FC<{
   isHighlighted?: boolean;
   onHighlightClear?: () => void;
 }> = ({ job, isDragging, onDragStart, onDragEnd, onComplete, onStatusChange, storeId, onRefresh, isHighlighted, onHighlightClear }) => {
+  const cardRef = useRef<HTMLDivElement>(null);
   const [partSearch, setPartSearch] = useState('');
   const [searchResults, setSearchResults] = useState<InventoryItem[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (isHighlighted && cardRef.current) {
+      cardRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [isHighlighted]);
 
   useEffect(() => {
     const search = async () => {
@@ -341,6 +348,7 @@ const JobCardItem: React.FC<{
 
   return (
     <div 
+      ref={cardRef}
       className={`bg-surface-container-lowest border p-4 rounded hover:border-primary transition-all cursor-grab active:cursor-grabbing group ${
         isDragging ? 'opacity-50 scale-95' : ''} ${
         isHighlighted ? 'border-primary ring-2 ring-primary ring-offset-1' : 'border-outline-variant'

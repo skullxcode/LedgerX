@@ -3,6 +3,8 @@ import { type Customer } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 import { useCustomers } from '../../hooks/queries/useCustomers';
 import { Skeleton } from '../ui/Skeleton';
+import { exportToCSV } from '@/lib/utils/csv';
+import { CustomerLedgerModal } from './CustomerLedgerModal';
 
 interface CustomerListProps {
   onSelect: (customer: Customer) => void;
@@ -15,6 +17,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({ onSelect, onAddNew, 
   const [query, setQuery] = useState('');
   const [pageSize, setPageSize] = useState(50);
   const [showPendingOnly, setShowPendingOnly] = useState(false);
+  const [ledgerCustomer, setLedgerCustomer] = useState<Customer | null>(null);
   const { data: searchResponse, isLoading } = useCustomers(profile?.store_id, query, pageSize);
   const allCustomers = searchResponse?.data || [];
   const hasMore = allCustomers.length >= pageSize;
@@ -23,20 +26,42 @@ export const CustomerList: React.FC<CustomerListProps> = ({ onSelect, onAddNew, 
     ? allCustomers.filter(c => c.udhaar_balance && c.udhaar_balance > 0)
     : allCustomers;
 
+  const handleExportCSV = () => {
+    const headers = ['Customer ID', 'Name', 'Phone', 'GSTIN', 'Address', 'Udhaar Balance (₹)'];
+    const rows = displayedCustomers.map(c => [
+      c.customer_id,
+      c.name,
+      c.phone || 'N/A',
+      c.gstin || 'N/A',
+      c.address || 'N/A',
+      c.udhaar_balance || 0
+    ]);
+    exportToCSV('Customer_Directory', headers, rows);
+  };
+
   return (
     <div className="flex flex-col h-full bg-surface-container-lowest rounded-lg border border-outline-variant shadow-sm overflow-hidden">
       <div className="p-4 border-b border-outline-variant bg-surface-container-lowest shrink-0">
         <div className="flex justify-between items-center mb-3">
           <h2 className="font-headline-md text-headline-md text-primary">Directory</h2>
-          {onAddNew && (
-            <button 
-              onClick={onAddNew}
-              className="w-8 h-8 flex items-center justify-center bg-primary text-on-primary rounded-full hover:bg-primary/90 transition-colors shadow-sm"
-              title="Add New Customer"
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleExportCSV}
+              className="w-8 h-8 flex items-center justify-center border border-outline-variant text-secondary rounded-full hover:bg-surface-container transition-colors"
+              title="Export CSV"
             >
-              <span className="material-symbols-outlined text-[18px]">add</span>
+              <span className="material-symbols-outlined text-[18px]">download</span>
             </button>
-          )}
+            {onAddNew && (
+              <button 
+                onClick={onAddNew}
+                className="w-8 h-8 flex items-center justify-center bg-primary text-on-primary rounded-full hover:bg-primary/90 transition-colors shadow-sm"
+                title="Add New Customer"
+              >
+                <span className="material-symbols-outlined text-[18px]">add</span>
+              </button>
+            )}
+          </div>
         </div>
         <div className="relative mb-2">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
@@ -87,8 +112,20 @@ export const CustomerList: React.FC<CustomerListProps> = ({ onSelect, onAddNew, 
             >
               <div className="flex justify-between items-start">
                 <div className="font-body-md font-bold">{c.name}</div>
-                <div className={`font-code text-[10px] font-bold tracking-tight ${selectedId === c.customer_id ? 'text-on-primary-fixed-variant opacity-80' : 'text-secondary opacity-60'}`}>
-                  {c.customer_id}
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setLedgerCustomer(c);
+                    }}
+                    className="p-1 hover:bg-surface-variant rounded text-secondary hover:text-primary transition-colors"
+                    title="View Ledger History"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">history</span>
+                  </button>
+                  <div className={`font-code text-[10px] font-bold tracking-tight ${selectedId === c.customer_id ? 'text-on-primary-fixed-variant opacity-80' : 'text-secondary opacity-60'}`}>
+                    {c.customer_id}
+                  </div>
                 </div>
               </div>
               <div className={`font-label-md text-label-md ${selectedId === c.customer_id ? 'text-on-primary-fixed-variant' : 'text-secondary'}`}>
@@ -115,6 +152,12 @@ export const CustomerList: React.FC<CustomerListProps> = ({ onSelect, onAddNew, 
           )}
         </div>
       </div>
+
+      <CustomerLedgerModal 
+        isOpen={!!ledgerCustomer}
+        onClose={() => setLedgerCustomer(null)}
+        customer={ledgerCustomer}
+      />
     </div>
   );
 };

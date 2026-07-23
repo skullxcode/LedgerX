@@ -17,6 +17,7 @@ export const VendorList: React.FC = () => {
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isInfoModalOpen, setIsInfoModalOpen] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
 
   const [vendorToDelete, setVendorToDelete] = useState<Vendor | null>(null);
@@ -78,7 +79,14 @@ export const VendorList: React.FC = () => {
           </div>
         ) : (
           vendors.map(vendor => (
-            <div key={vendor.vendor_id} className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col">
+            <div 
+              key={vendor.vendor_id} 
+              className="bg-surface-container-lowest border border-outline-variant rounded-2xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col cursor-pointer"
+              onClick={() => {
+                setSelectedVendor(vendor);
+                setIsInfoModalOpen(true);
+              }}
+            >
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <h3 className="font-bold text-lg text-on-surface">{vendor.name}</h3>
@@ -86,7 +94,8 @@ export const VendorList: React.FC = () => {
                 </div>
                 <div className="flex gap-1">
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelectedVendor(vendor);
                       setIsFormOpen(true);
                     }}
@@ -96,7 +105,10 @@ export const VendorList: React.FC = () => {
                     <span className="material-symbols-outlined text-[18px]">edit</span>
                   </button>
                   <button
-                    onClick={() => confirmDelete(vendor)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      confirmDelete(vendor);
+                    }}
                     className="p-1.5 text-on-surface-variant hover:text-error rounded-full hover:bg-error/10 transition-colors"
                     title="Delete vendor"
                   >
@@ -115,7 +127,8 @@ export const VendorList: React.FC = () => {
                 
                 {vendor.payable_balance > 0 && (
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelectedVendor(vendor);
                       setIsPaymentModalOpen(true);
                     }}
@@ -134,6 +147,12 @@ export const VendorList: React.FC = () => {
         isOpen={isFormOpen} 
         onClose={() => setIsFormOpen(false)} 
         initialData={selectedVendor} 
+      />
+
+      <VendorInfoModal
+        isOpen={isInfoModalOpen}
+        onClose={() => setIsInfoModalOpen(false)}
+        vendor={selectedVendor}
       />
 
       {selectedVendor && (
@@ -277,6 +296,45 @@ const RecordPaymentModal: React.FC<{ isOpen: boolean, onClose: () => void, vendo
           </button>
         </div>
       </form>
+    </Modal>
+  );
+};
+
+const VendorInfoModal: React.FC<{ isOpen: boolean, onClose: () => void, vendor: Vendor | null }> = ({ isOpen, onClose, vendor }) => {
+  if (!vendor) return null;
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title="Vendor Details">
+      <div className="space-y-4">
+        <div>
+          <label className="block text-xs uppercase font-bold text-on-surface-variant tracking-wider">Business Name</label>
+          <p className="font-body-md text-on-surface">{vendor.name}</p>
+        </div>
+        <div>
+          <label className="block text-xs uppercase font-bold text-on-surface-variant tracking-wider">Phone</label>
+          <p className="font-body-md text-on-surface">{vendor.phone || 'N/A'}</p>
+        </div>
+        {vendor.gstin && (
+          <div>
+            <label className="block text-xs uppercase font-bold text-on-surface-variant tracking-wider">GSTIN</label>
+            <p className="font-body-md text-on-surface">{vendor.gstin}</p>
+          </div>
+        )}
+        {vendor.address && (
+          <div>
+            <label className="block text-xs uppercase font-bold text-on-surface-variant tracking-wider">Address</label>
+            <p className="font-body-md text-on-surface">{vendor.address}</p>
+          </div>
+        )}
+        <div>
+          <label className="block text-xs uppercase font-bold text-on-surface-variant tracking-wider">Payable Balance</label>
+          <p className={`font-body-md font-bold ${vendor.payable_balance > 0 ? 'text-error' : 'text-primary'}`}>
+            {formatCurrency(vendor.payable_balance)}
+          </p>
+        </div>
+        <div className="flex justify-end pt-4 border-t border-outline-variant mt-6">
+          <button onClick={onClose} className="px-4 py-2 bg-surface-variant text-on-surface-variant hover:bg-surface-variant/80 rounded-lg transition-colors">Close</button>
+        </div>
+      </div>
     </Modal>
   );
 };

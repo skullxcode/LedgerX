@@ -4,6 +4,9 @@ import { BusinessProvider, useBusiness } from './context/BusinessContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { LoginScreen } from './components/auth/LoginScreen';
+import { NotificationDropdown } from './components/layout/NotificationDropdown';
+import { HelpModal } from './components/layout/HelpModal';
+import { useNotifications } from './hooks/queries/useNotifications';
 import toast, { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
@@ -79,6 +82,24 @@ function MainApp() {
     return (localStorage.getItem('ledgerx_active_tab') as TabType) || 'ANALYTICS';
   });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+
+  const { data: notifications = [] } = useNotifications(profile?.store_id);
+
+  // Global key listener for '?'
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
+      if (e.key === '?' || e.key === 'F1') {
+        e.preventDefault();
+        setIsHelpOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // --- Feature State (Deep Links & Modals) ---
   const [challanTxId, setChallanTxId] = useState<string | null>(null);
@@ -311,10 +332,31 @@ function MainApp() {
                       {isDark ? 'light_mode' : 'dark_mode'}
                     </span>
                   </button>
-                  <button className="hidden md:block text-secondary hover:bg-surface-container p-2 rounded-full active:scale-95 transition-transform relative">
-                    <span className="material-symbols-outlined" data-icon="notifications">notifications</span>
-                  </button>
-                  <button className="hidden md:block text-secondary hover:bg-surface-container p-2 rounded-full active:scale-95 transition-transform">
+                  <div className="relative">
+                    <button 
+                      onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
+                      className="hidden md:block text-secondary hover:bg-surface-container p-2 rounded-full active:scale-95 transition-transform relative"
+                    >
+                      <span className="material-symbols-outlined" data-icon="notifications">notifications</span>
+                      {notifications.length > 0 && (
+                        <span className="absolute top-1 right-2 w-2 h-2 bg-error rounded-full ring-2 ring-surface"></span>
+                      )}
+                    </button>
+                    <NotificationDropdown 
+                      isOpen={isNotificationsOpen} 
+                      onClose={() => setIsNotificationsOpen(false)}
+                      onNavigate={(tab, id) => {
+                        setActiveTab(tab as TabType);
+                        if (tab === 'CRM' && id) setDeepLinkCustomerId(id);
+                        else if (tab === 'REPAIRS' && id) setDeepLinkJobId(id);
+                      }}
+                    />
+                  </div>
+                  <button 
+                    onClick={() => setIsHelpOpen(true)}
+                    className="hidden md:block text-secondary hover:bg-surface-container p-2 rounded-full active:scale-95 transition-transform"
+                    title="Keyboard Shortcuts & Help (?)"
+                  >
                     <span className="material-symbols-outlined" data-icon="help_outline">help_outline</span>
                   </button>
                 </div>
@@ -414,6 +456,7 @@ function MainApp() {
               }}
             />
           )}
+          <HelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />
         </div>
       </POSProvider>
     </BusinessProvider>
