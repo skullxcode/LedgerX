@@ -72,7 +72,7 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (existingItem && !item.is_custom) {
         const newQty = existingItem.qty + item.qty;
         if (item.max_stock !== undefined && newQty > item.max_stock) {
-          alert(`Cannot add more than available stock (${item.max_stock})`);
+          toast.error(`Cannot add more than available stock (${item.max_stock})`);
           return prevCart;
         }
         return prevCart.map(i => 
@@ -82,7 +82,7 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       
       // Handle new item
       if (item.max_stock !== undefined && item.qty > item.max_stock) {
-        alert(`Cannot add more than available stock (${item.max_stock})`);
+        toast.error(`Cannot add more than available stock (${item.max_stock})`);
         return prevCart;
       }
       
@@ -98,7 +98,7 @@ export const POSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setCart((prevCart) => prevCart.map(i => {
       if (i.item_id === itemId) {
         if (i.max_stock !== undefined && qty > i.max_stock) {
-          alert(`Cannot increase quantity beyond available stock (${i.max_stock})`);
+          toast.error(`Cannot increase quantity beyond available stock (${i.max_stock})`);
           return { ...i, qty: i.max_stock };
         }
         return { ...i, qty };
