@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
-import { type Customer, type Transaction, type JobCard, getTransactionsByCustomer, getJobCardsByCustomer, updateCustomer, deleteCustomer, updateCustomerUdhaarBalance } from '@/lib/firebase';
+import { type Customer, type Transaction, type JobCard } from '@/lib/firebase/types';
+import { getTransactionsByCustomer } from '@/lib/firebase/api/transactions';
+import { getJobCardsByCustomer } from '@/lib/firebase/api/jobCards';
+import { updateCustomer, deleteCustomer, updateCustomerUdhaarBalance } from '@/lib/firebase/api/customers';
 import { useAuth } from '../../context/AuthContext';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 import toast from 'react-hot-toast';

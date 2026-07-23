@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
-import { type Transaction, voidTransaction, DocumentType, numberToWords } from '@/lib/firebase';
-import { app } from '@/lib/firebase';
+import { type Transaction, DocumentType } from '@/lib/firebase/types';
+import { voidTransaction } from '@/lib/firebase/api/transactions';
+import { numberToWords } from '@/lib/firebase/utils/numberToWords';
+import { app } from '@/lib/firebase/config';
 import { useAuth } from '../../context/AuthContext';
 import { useBusiness } from '../../context/BusinessContext';
 import { usePOS } from '../../context/POSContext';

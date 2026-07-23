@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { type InventoryItem, ItemType, softDeleteInventoryItem } from '@/lib/firebase';
+import { type InventoryItem, ItemType } from '@/lib/firebase/types';
+import { softDeleteInventoryItem } from '@/lib/firebase/api/inventory';
 import { InventoryForm } from './InventoryForm';
 import { StockAdjustmentForm } from './StockAdjustmentForm';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';

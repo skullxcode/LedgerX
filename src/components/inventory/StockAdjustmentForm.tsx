@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { adjustStock, type InventoryItem, type AdjustmentReason } from '@/lib/firebase';
+import { adjustStock } from '@/lib/firebase/api/inventory';
+import { type InventoryItem, type AdjustmentReason } from '@/lib/firebase/types';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 

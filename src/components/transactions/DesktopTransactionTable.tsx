@@ -1,5 +1,5 @@
 import React from 'react';
-import { Transaction, DocumentType, PaymentStatus, FormatMode } from '@/lib/firebase';
+import { Transaction, DocumentType, PaymentStatus, FormatMode } from '@/lib/firebase/types';
 
 export interface DesktopTransactionTableProps {
   transactions: Transaction[];

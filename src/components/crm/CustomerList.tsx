@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { type Customer } from '@/lib/firebase';
+import { type Customer } from '@/lib/firebase/types';
 import { useAuth } from '../../context/AuthContext';
 import { useCustomers } from '../../hooks/queries/useCustomers';
 import { Skeleton } from '../ui/Skeleton';

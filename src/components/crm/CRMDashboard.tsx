@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { CustomerList } from './CustomerList';
 import { CustomerProfile } from './CustomerProfile';
 import { UdhaarDashboard } from './UdhaarDashboard';
-import { type Customer, getCustomer, createCustomer, getLatestDocumentNo } from '@/lib/firebase';
+import { type Customer } from '@/lib/firebase/types';
+import { getCustomer, createCustomer } from '@/lib/firebase/api/customers';
+import { getLatestDocumentNo } from '@/lib/firebase/api/transactions';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 

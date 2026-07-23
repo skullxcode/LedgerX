@@ -4,7 +4,7 @@ import { useExpenses, useExpenseMutations } from '../../hooks/queries/useExpense
 import { ExpenseForm } from './ExpenseForm';
 import { VendorList } from './VendorList';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
-import { type Expense } from '@/lib/firebase';
+import { type Expense } from '@/lib/firebase/types';
 import { exportToCSV } from '@/lib/utils/csv';
 
 const formatCurrency = (amount: number) => `₹${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}`;

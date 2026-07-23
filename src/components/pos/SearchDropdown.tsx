@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { type InventoryItem, searchInventory, addInventoryItem, ItemType } from '@/lib/firebase';
+import { type InventoryItem, ItemType } from '@/lib/firebase/types';
+import { searchInventory, addInventoryItem } from '@/lib/firebase/api/inventory';
 import { useAuth } from '../../context/AuthContext';
 import { usePOS } from '../../context/POSContext';
 import toast from 'react-hot-toast';

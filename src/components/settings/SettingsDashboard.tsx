@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react';
-import { updateBusinessProfile, wipeStoreData, signOut, auth, type BusinessProfile } from '@/lib/firebase';
+import { updateBusinessProfile, wipeStoreData } from '@/lib/firebase/api/settings';
+import { signOut } from '@/lib/firebase/api/auth';
+import { auth } from '@/lib/firebase/config';
+import { type BusinessProfile } from '@/lib/firebase/types';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { useBusiness } from '../../context/BusinessContext';
 import { useAuth } from '../../context/AuthContext';

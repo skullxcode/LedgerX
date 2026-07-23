@@ -1,5 +1,8 @@
 import { useState } from "react";
-import { JobCardStatus, createJobCard, createCustomer, searchCustomers, getLatestDocumentNo, type Customer } from '@/lib/firebase';
+import { JobCardStatus, type Customer } from '@/lib/firebase/types';
+import { createJobCard } from '@/lib/firebase/api/jobCards';
+import { createCustomer, searchCustomers } from '@/lib/firebase/api/customers';
+import { getLatestDocumentNo } from '@/lib/firebase/api/transactions';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 

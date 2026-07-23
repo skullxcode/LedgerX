@@ -4,7 +4,7 @@ import { Input } from '../ui/Input';
 import { useAuth } from '../../context/AuthContext';
 import { useExpenseMutations } from '../../hooks/queries/useExpenses';
 import { useVendors, useVendorMutations } from '../../hooks/queries/useVendors';
-import { ExpenseCategory, type Expense } from '@/lib/firebase';
+import { ExpenseCategory, type Expense } from '@/lib/firebase/types';
 import { Timestamp } from 'firebase/firestore';
 import toast from 'react-hot-toast';
 

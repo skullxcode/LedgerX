@@ -2,7 +2,8 @@ import { useState } from "react";
 import Papa from "papaparse";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
-import { ItemType, bulkAddInventoryItems } from "@/lib/firebase";
+import { ItemType } from '@/lib/firebase/types';
+import { bulkAddInventoryItems } from '@/lib/firebase/index';
 
 interface BulkImportModalProps {
   onClose: () => void;

@@ -1,12 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useMemo } from "react";
-import { 
-  DocumentType, 
-  FormatMode, 
-  PaymentStatus, 
-  type TransactionItem, 
-  type Customer 
-} from '@/lib/firebase';
+import { DocumentType, FormatMode, PaymentStatus, type Customer } from '@/lib/firebase/types';
+import { type TransactionItem } from '@/lib/firebase/index';
 import toast from 'react-hot-toast';
 
 // ============================================================================

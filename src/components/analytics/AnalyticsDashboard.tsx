@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
-import { app, type Transaction, type Customer, type InventoryItem, type JobCard, type Expense } from '@/lib/firebase';
+import { app } from '@/lib/firebase/config';
+import { type Transaction, type Customer, type InventoryItem, type JobCard, type Expense } from '@/lib/firebase/types';
 import { useAuth } from '../../context/AuthContext';
 import { ResponsiveContainer, AreaChart, Area, XAxis, Tooltip, CartesianGrid, BarChart, Bar, Legend } from 'recharts';
 import { formatCurrency } from '../../lib/utils/formatters';

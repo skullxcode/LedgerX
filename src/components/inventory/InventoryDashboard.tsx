@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { type InventoryItem, app, type Transaction } from '@/lib/firebase';
+import { type InventoryItem, type Transaction } from '@/lib/firebase/types';
+import { app } from '@/lib/firebase/config';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
 import { useInventory } from '../../hooks/queries/useInventory';

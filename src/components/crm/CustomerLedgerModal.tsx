@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Modal } from '../ui/Modal';
-import { type Customer, type Transaction } from '@/lib/firebase';
+import { type Customer, type Transaction } from '@/lib/firebase/types';
 import { getTransactionsByCustomer } from '@/lib/firebase/api/transactions';
 import { useAuth } from '../../context/AuthContext';
 

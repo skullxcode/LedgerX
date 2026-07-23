@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { type Transaction, DocumentType, PaymentStatus, FormatMode } from '@/lib/firebase';
+import { type Transaction, DocumentType, PaymentStatus, FormatMode } from '@/lib/firebase/types';
 import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
 import { useTransactions } from '../../hooks/queries/useTransactions';

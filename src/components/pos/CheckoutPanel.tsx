@@ -4,15 +4,9 @@ import { useAuth } from '../../context/AuthContext';
 import { useCustomers } from '@/hooks/queries/useCustomers';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 import { formatCurrency } from '../../lib/utils/formatters';
-import { 
-  DocumentType, 
-  FormatMode, 
-  PaymentStatus, 
-  finalizeTransaction, 
-  createCustomer, 
-  getLatestDocumentNo, 
-  type Customer
-} from '@/lib/firebase';
+import { DocumentType, FormatMode, PaymentStatus, type Customer } from '@/lib/firebase/types';
+import { finalizeTransaction, getLatestDocumentNo } from '@/lib/firebase/api/transactions';
+import { createCustomer } from '@/lib/firebase/api/customers';
 import toast from 'react-hot-toast';
 
 export interface CheckoutPanelProps {

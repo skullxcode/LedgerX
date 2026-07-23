@@ -1,5 +1,5 @@
 import React from 'react';
-import { type Transaction } from '@/lib/firebase';
+import { type Transaction } from '@/lib/firebase/types';
 import { useBusiness } from '../../context/BusinessContext';
 
 interface Props {

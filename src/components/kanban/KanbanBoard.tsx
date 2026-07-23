@@ -1,9 +1,12 @@
 import { useEffect, useState, useCallback } from "react";
-import { type JobCard, JobCardStatus, type InventoryItem, type JobCardPart, updateJobCardStatus, addPartToJobCard, searchInventory, getJobCards, getCustomer, type Customer } from '@/lib/firebase';
+import { type JobCard, JobCardStatus, type InventoryItem, type JobCardPart, type Customer } from '@/lib/firebase/types';
+import { updateJobCardStatus, addPartToJobCard, getJobCards } from '@/lib/firebase/api/jobCards';
+import { searchInventory } from '@/lib/firebase/api/inventory';
+import { getCustomer } from '@/lib/firebase/api/customers';
 import { usePOS } from '../../context/POSContext';
 import { useAuth } from '../../context/AuthContext';
 import { JobCardIntake } from './JobCardIntake';
-import { addInventoryItem } from '@/lib/firebase';
+import { addInventoryItem } from '@/lib/firebase/api/inventory';
 import toast from 'react-hot-toast';
 
 export interface KanbanBoardProps {
