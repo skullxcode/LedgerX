@@ -189,15 +189,53 @@
 }
 
 @media print {
-  body, html, #root, .overflow-hidden, .overflow-y-auto {
-    height: auto !important;
-    overflow: visible !important;
-    position: static !important;
+  body {
+    background-color: #ffffff !important;
+    color: #000000 !important;
   }
-  /* Components will use print:hidden and print:block classes to manage visibility natively */
-  #print-invoice, #print-statement-of-account {
-    zoom: 0.9;
-    transform: scale(0.9);
-    transform-origin: top center;
+
+  /* Hide all elements on the body except printable targets */
+  body * {
+    visibility: hidden !important;
+  }
+
+  /* Make print-invoice fully visible and positioned at top left */
+  #print-invoice, #print-invoice * {
+    visibility: visible !important;
+  }
+
+  #print-invoice {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+    zoom: 1 !important;
+    transform: none !important;
+  }
+
+  /* Make print-statement-of-account fully visible */
+  #print-statement-of-account, #print-statement-of-account * {
+    visibility: visible !important;
+  }
+
+  #print-statement-of-account {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    box-shadow: none !important;
+    border: none !important;
+    zoom: 1 !important;
+    transform: none !important;
   }
 }
