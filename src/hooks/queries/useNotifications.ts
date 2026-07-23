@@ -24,9 +24,6 @@ export const useNotifications = (storeId: string | undefined) => {
     queryFn: async () => {
       if (!storeId) return [];
       
-      // Retrieve dismissed notification IDs from localStorage
-      const dismissedIds = JSON.parse(localStorage.getItem('ledgerx_dismissed_notifications') || '[]');
-      
       const notifications: NotificationItem[] = [];
 
       // 1. Low Stock
@@ -129,13 +126,10 @@ export const useNotifications = (storeId: string | undefined) => {
         console.warn("Error fetching vendor notifications:", e);
       }
 
-      // Filter out dismissed notifications before returning
-      const finalNotifications = notifications.filter(n => !dismissedIds.includes(n.id));
-
       // Sort by createdAt desc
-      finalNotifications.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
+      notifications.sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
       
-      return finalNotifications;
+      return notifications;
     },
     enabled: !!storeId,
     refetchInterval: 1000 * 60 * 5,
@@ -147,23 +141,14 @@ export const useNotificationActions = () => {
   const queryClient = useQueryClient();
 
   const dismissNotification = (id: string, storeId: string | undefined) => {
-    if (!storeId) return;
-    
-    // 1. Add to local storage
+    // 1. Add to local storage and broadcast update
     const dismissedIds = JSON.parse(localStorage.getItem('ledgerx_dismissed_notifications') || '[]');
     if (!dismissedIds.includes(id)) {
       dismissedIds.push(id);
       localStorage.setItem('ledgerx_dismissed_notifications', JSON.stringify(dismissedIds));
       window.dispatchEvent(new Event('ledgerx_notifications_dismissed'));
     }
-
-    // 2. Optimistically update the cache
-    queryClient.setQueryData<NotificationItem[]>([NOTIFICATIONS_QUERY_KEY, storeId], (oldData) => {
-      if (!oldData) return [];
-      return oldData.filter(n => n.id !== id);
-    });
   };
 
   return { dismissNotification };
 };
-

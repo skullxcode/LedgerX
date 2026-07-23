@@ -1,6 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { useNotifications, NotificationItem, useNotificationActions } from '../../hooks/queries/useNotifications';
 import { useAuth } from '../../context/AuthContext';
+import { useDismissedNotifications } from '../../hooks/useDismissedNotifications';
 
 interface NotificationDropdownProps {
   isOpen: boolean;
@@ -10,8 +11,11 @@ interface NotificationDropdownProps {
 
 export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOpen, onClose, onNavigate }) => {
   const { profile } = useAuth();
-  const { data: notifications = [], isLoading } = useNotifications(profile?.store_id);
+  const { data: rawNotifications = [], isLoading } = useNotifications(profile?.store_id);
   const { dismissNotification } = useNotificationActions();
+  const dismissedIds = useDismissedNotifications();
+  // Filter dismissed notifications in the UI layer so the query cache stays clean
+  const notifications = rawNotifications.filter(n => !dismissedIds.includes(n.id));
   const [filterTab, setFilterTab] = React.useState<'ALL' | 'STOCK' | 'REPAIRS' | 'BILLS'>('ALL');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
