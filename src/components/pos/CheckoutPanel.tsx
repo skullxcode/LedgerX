@@ -63,6 +63,30 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
   const [gstRegion, setGstRegion] = useState<'INTRA' | 'INTER'>('INTRA');
 
   /**
+   * Keyboard shortcuts for faster POS operations.
+   * Ctrl+Enter: finalize/submit checkout.
+   * Escape: clear cart (if not empty and not currently typing in an input).
+   */
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const tag = (e.target as HTMLElement)?.tagName;
+      const isTyping = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        // Trigger submit on the checkout form
+        document.getElementById('checkout-submit-btn')?.click();
+      }
+
+      if (e.key === 'Escape' && !isTyping && cart.length > 0) {
+        if (window.confirm('Clear the current cart?')) clearCart();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [cart, clearCart]);
+
+  /**
    * Automatically search for existing customers as the user types a phone number or name.
    */
   useEffect(() => {
@@ -605,11 +629,14 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
 
         <div className="flex gap-3">
           <button 
+            id="checkout-submit-btn"
             disabled={cart.length === 0 || isProcessing}
             onClick={handleFinalize}
+            title="Ctrl+Enter"
             className="flex-1 py-4 bg-primary text-on-primary font-bold text-label-md rounded hover:opacity-90 transition-opacity flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
           >
             {isProcessing ? "PROCESSING..." : (documentType === DocumentType.QUOTE ? "SAVE QUOTE" : "PROCEED TO CHECKOUT")}
+            {!isProcessing && <span className="opacity-50 text-[10px] font-normal hidden md:inline ml-1">(Ctrl+↵)</span>}
           </button>
         </div>
       </div>
