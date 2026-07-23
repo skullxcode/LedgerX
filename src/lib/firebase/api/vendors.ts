@@ -15,6 +15,17 @@ import { db } from '../config';
 import type { Vendor } from '../types';
 
 /**
+ * Helper to generate consistent search terms for a vendor.
+ */
+const generateVendorSearchTerms = (data: { name?: string; phone?: string; address?: string }): string[] => {
+  return [
+    (data.name || '').toLowerCase(),
+    (data.phone || '').toLowerCase(),
+    (data.address || '').toLowerCase()
+  ].filter(Boolean);
+};
+
+/**
  * Creates a new vendor.
  */
 export const addVendor = async (
@@ -24,11 +35,7 @@ export const addVendor = async (
   const vendorId = `VEND_${Date.now()}`;
   const docRef = doc(db, 'Vendors', vendorId);
   
-  const searchTerms = [
-    data.name.toLowerCase(),
-    data.phone?.toLowerCase() || '',
-    data.address?.toLowerCase() || ''
-  ].filter(Boolean);
+  const searchTerms = generateVendorSearchTerms(data);
 
   const vendor: Vendor = {
     ...data,
@@ -74,12 +81,8 @@ export const updateVendor = async (vendorId: string, updates: Partial<Vendor>): 
     updated_at: serverTimestamp(),
   };
   
-  if (updates.name || updates.phone || updates.address) {
-    const searchTerms = [
-      (updates.name || '').toLowerCase(),
-      (updates.phone || '').toLowerCase(),
-      (updates.address || '').toLowerCase()
-    ].filter(Boolean);
+  if (updates.name !== undefined || updates.phone !== undefined || updates.address !== undefined) {
+    const searchTerms = generateVendorSearchTerms(updates);
     if (searchTerms.length > 0) {
       dataToUpdate.search_terms = searchTerms; 
     }
