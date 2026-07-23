@@ -65,6 +65,10 @@ const HeaderProfileName = ({ defaultName }: { defaultName: string }) => {
 function MainApp() {
   // --- Navigation & Layout State ---
   const [activeTab, setActiveTab] = useState<TabType>(() => {
+    const hash = window.location.hash.replace('#', '');
+    if (['ANALYTICS', 'POS', 'INVENTORY', 'REPAIRS', 'TRANSACTIONS', 'CRM', 'SETTINGS'].includes(hash)) {
+      return hash as TabType;
+    }
     return (localStorage.getItem('ledgerx_active_tab') as TabType) || 'ANALYTICS';
   });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -78,11 +82,26 @@ function MainApp() {
   const { user, profile, loading } = useAuth();
 
   /**
-   * Persist active tab selection to local storage.
+   * Persist active tab selection to local storage and update URL hash.
    */
   useEffect(() => {
     localStorage.setItem('ledgerx_active_tab', activeTab);
+    window.location.hash = activeTab;
   }, [activeTab]);
+
+  /**
+   * Listen for browser back/forward navigation.
+   */
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '');
+      if (['ANALYTICS', 'POS', 'INVENTORY', 'REPAIRS', 'TRANSACTIONS', 'CRM', 'SETTINGS'].includes(hash)) {
+        setActiveTab(hash as TabType);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   // ============================================================================
   // CONDITIONAL RENDERS (AUTH & ONBOARDING)

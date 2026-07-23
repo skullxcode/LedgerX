@@ -57,6 +57,8 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [customerSuggestions, setCustomerSuggestions] = useState<Customer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
+  const [isCreatingNewCustomer, setIsCreatingNewCustomer] = useState<boolean>(false);
+  const [customerSearchQuery, setCustomerSearchQuery] = useState<string>('');
   const [gstRegion, setGstRegion] = useState<'INTRA' | 'INTER'>('INTRA');
 
   /**
@@ -64,8 +66,8 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
    */
   useEffect(() => {
     const fetchCustomer = async () => {
-      const searchTerm = customerPhone.trim() || customerName.trim();
-      if (searchTerm.length >= 3 && !customer && profile?.store_id) {
+      const searchTerm = customerSearchQuery.trim();
+      if (searchTerm.length >= 3 && !customer && profile?.store_id && !isCreatingNewCustomer) {
         try {
           const results = await searchCustomers(profile.store_id, searchTerm);
           setCustomerSuggestions(results);
@@ -81,7 +83,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
     
     const timeout = setTimeout(fetchCustomer, 300);
     return () => clearTimeout(timeout);
-  }, [customerPhone, customerName, customer, profile?.store_id]);
+  }, [customerSearchQuery, customer, profile?.store_id, isCreatingNewCustomer]);
 
   /**
    * Fetch the next sequential document number when the document type changes.
@@ -114,9 +116,22 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
   const handleFinalize = async () => {
     if (cart.length === 0 || !profile?.store_id) return;
     
-    if (!customer && (!customerName.trim() || !customerPhone.trim())) {
-      alert("Customer Name and Mobile No are required.");
-      return;
+    if (!customer) {
+      if (isCreatingNewCustomer) {
+        if (!customerName.trim() || !customerPhone.trim()) {
+          alert("Customer Name and Mobile No are required for new customers.");
+          return;
+        }
+      } else {
+        // Just a walk-in, or no customer selected
+        // We can allow blank customers as WALK_IN, or require name.
+        // If they searched but didn't pick, let's treat it as WALK_IN with no name unless they typed one.
+        if (customerSearchQuery.trim()) {
+          // Attempting to checkout without selecting a customer from search
+          alert("Please select a customer from the search results, or click '+ Add New Customer' to create one.");
+          return;
+        }
+      }
     }
     
     setIsProcessing(true);
@@ -232,6 +247,9 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
       setCustomerPhone('');
       setCustomerAddress('');
       setCustomerGstin('');
+      setCustomerEmail('');
+      setCustomerSearchQuery('');
+      setIsCreatingNewCustomer(false);
       
       // Refresh the next document number automatically
       let prefix = 'INV-';
@@ -280,6 +298,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                     setCustomerName('');
                     setCustomerPhone('');
                     setCustomerEmail('');
+                    setCustomerSearchQuery('');
                   }} 
                   className="text-error hover:bg-error-container p-1 rounded transition-colors"
                   aria-label="Remove Customer"
@@ -287,8 +306,19 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                   <span className="material-symbols-outlined text-[16px]">close</span>
                 </button>
               </div>
-            ) : (
-              <div className="space-y-2 relative">
+            ) : isCreatingNewCustomer ? (
+              <div className="space-y-3 relative bg-surface-container-low p-4 rounded border border-outline-variant">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="font-bold text-primary text-body-md">New Customer Details</span>
+                  <button 
+                    className="text-secondary hover:text-error text-[12px] font-bold underline"
+                    onClick={() => {
+                      setIsCreatingNewCustomer(false);
+                      setCustomerName('');
+                      setCustomerPhone('');
+                    }}
+                  >Cancel</button>
+                </div>
                 <div className="flex gap-2">
                   <input 
                     type="text"
@@ -296,7 +326,6 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                     className="flex-1 bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
-                    onFocus={() => { if (customerSuggestions.length > 0) setShowSuggestions(true); }}
                   />
                   <input 
                     type="tel"
@@ -304,7 +333,6 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                     className="flex-1 bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
-                    onFocus={() => { if (customerSuggestions.length > 0) setShowSuggestions(true); }}
                   />
                 </div>
                 <div className="flex gap-2">
@@ -332,6 +360,37 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                     onChange={(e) => setCustomerGstin(e.target.value)}
                   />
                 </div>
+              </div>
+            ) : (
+              <div className="space-y-2 relative">
+                <div className="flex gap-2 relative">
+                  <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary text-[18px]">search</span>
+                  <input 
+                    type="text"
+                    placeholder="Search customer by name or phone..."
+                    className="flex-1 bg-white border border-outline-variant rounded py-2 pl-9 pr-2 text-body-md outline-none focus:border-primary transition-colors"
+                    value={customerSearchQuery}
+                    onChange={(e) => setCustomerSearchQuery(e.target.value)}
+                    onFocus={() => { if (customerSuggestions.length > 0) setShowSuggestions(true); }}
+                  />
+                </div>
+                <button 
+                  className="w-full py-2 bg-surface-container-high hover:bg-surface-container border border-outline-variant text-primary font-bold text-label-md rounded transition-colors flex items-center justify-center gap-2"
+                  onClick={() => {
+                    setIsCreatingNewCustomer(true);
+                    setCustomerSuggestions([]);
+                    setShowSuggestions(false);
+                    // Pre-fill name or phone if they started typing it
+                    if (/^\d+$/.test(customerSearchQuery)) {
+                      setCustomerPhone(customerSearchQuery);
+                    } else {
+                      setCustomerName(customerSearchQuery);
+                    }
+                  }}
+                >
+                  <span className="material-symbols-outlined text-[18px]">person_add</span>
+                  Add New Customer
+                </button>
                 
                 {/* Auto-fill Suggestions Dropdown */}
                 {showSuggestions && customerSuggestions.length > 0 && (
@@ -345,8 +404,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                           onClick={() => {
                             setCustomer(c);
                             setShowSuggestions(false);
-                            setCustomerName('');
-                            setCustomerPhone('');
+                            setCustomerSearchQuery('');
                           }}
                         >
                           <div className="font-bold text-body-md text-primary">{c.name}</div>
