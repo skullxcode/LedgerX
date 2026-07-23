@@ -12,6 +12,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../config';
 import type { Expense, ExpenseCategory } from '../types';
+import { updateVendorBalance } from './vendors';
 
 /**
  * Creates a new expense/payable record.
@@ -114,7 +115,18 @@ export const updateExpense = async (expenseId: string, updates: Partial<Expense>
 /**
  * Deletes an expense.
  */
-export const deleteExpense = async (expenseId: string): Promise<void> => {
-  const docRef = doc(db, 'Expenses', expenseId);
+export const deleteExpense = async (expense: Expense): Promise<void> => {
+  const docRef = doc(db, 'Expenses', expense.expense_id);
+  
+  if (expense.vendor_id) {
+    if (expense.category === 'VENDOR_PAYMENT') {
+      // Deleting a payment means we owe them again, increase balance
+      await updateVendorBalance(expense.vendor_id, expense.amount);
+    } else if (expense.status === 'UNPAID') {
+      // Deleting an unpaid bill means we no longer owe them, decrease balance
+      await updateVendorBalance(expense.vendor_id, -expense.amount);
+    }
+  }
+
   await deleteDoc(docRef);
 };

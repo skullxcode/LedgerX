@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { addExpense, searchExpenses, updateExpense, deleteExpense } from '@/lib/firebase/api/expenses';
 import type { Expense } from '@/lib/firebase';
+import { VENDORS_QUERY_KEY } from './useVendors';
 
 export const EXPENSES_QUERY_KEY = 'expenses';
 
@@ -25,6 +26,7 @@ export const useExpenseMutations = (storeId: string | undefined) => {
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: [EXPENSES_QUERY_KEY, storeId] });
+    queryClient.invalidateQueries({ queryKey: [VENDORS_QUERY_KEY, storeId] });
   };
 
   const createMutation = useMutation({
@@ -43,8 +45,8 @@ export const useExpenseMutations = (storeId: string | undefined) => {
   });
   
   const deleteMutation = useMutation({
-    mutationFn: (expenseId: string) => {
-      return deleteExpense(expenseId);
+    mutationFn: (expense: Expense) => {
+      return deleteExpense(expense);
     },
     onSuccess: () => invalidate(),
   });

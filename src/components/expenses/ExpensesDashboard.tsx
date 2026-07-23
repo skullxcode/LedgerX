@@ -28,9 +28,9 @@ export const ExpensesDashboard: React.FC = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (expenseId: string) => {
+  const handleDelete = async (expense: Expense) => {
     if (window.confirm("Are you sure you want to delete this expense?")) {
-      await deleteMutation.mutateAsync(expenseId);
+      await deleteMutation.mutateAsync(expense);
     }
   };
 
@@ -178,7 +178,7 @@ export const ExpensesDashboard: React.FC = () => {
                             <span className="material-symbols-outlined text-[20px]">edit</span>
                           </button>
                           <button
-                            onClick={() => handleDelete(expense.expense_id)}
+                            onClick={() => handleDelete(expense)}
                             className="p-2 text-on-surface-variant hover:text-error transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                             title="Delete"
                           >
