@@ -2,12 +2,19 @@ import { useState } from "react";
 import { adjustStock, type InventoryItem, type AdjustmentReason } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 
-interface StockAdjustmentFormProps {
+export interface StockAdjustmentFormProps {
+  /** The inventory item to adjust */
   item: InventoryItem;
+  /** Callback fired to close the modal */
   onClose: () => void;
+  /** Callback fired when stock is successfully adjusted */
   onSuccess: () => void;
 }
 
+/**
+ * A modal form specifically for correcting stock quantities.
+ * Logs the reason for adjustment to maintain a clean audit trail.
+ */
 export const StockAdjustmentForm: React.FC<StockAdjustmentFormProps> = ({ item, onClose, onSuccess }) => {
   const { profile } = useAuth();
   const [newStock, setNewStock] = useState(item.current_stock.toString());

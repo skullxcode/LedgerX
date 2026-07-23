@@ -5,10 +5,14 @@ import { Input } from '../ui/Input';
 import toast from 'react-hot-toast';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-interface InventoryFormProps {
+export interface InventoryFormProps {
+  /** If provided, the form populates with this data and runs an update instead of a create */
   initialData?: InventoryItem;
+  /** Callback fired to close the modal */
   onClose: () => void;
+  /** Callback fired when a new item is successfully created */
   onSuccess?: (itemId: string, data: any) => void;
+  /** Existing categories for auto-complete */
   categories?: string[];
 }
 
@@ -29,6 +33,11 @@ const DEFAULT_FORM_DATA = {
 
 const DRAFT_KEY = 'ledgerx_inventory_draft';
 
+/**
+ * A comprehensive form component for adding and editing inventory items.
+ * Supports image uploads to Firebase Storage, tax-inclusive price calculation, 
+ * and draft restoration.
+ */
 export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClose, onSuccess, categories = [] }) => {
   const { profile } = useAuth();
   
@@ -54,8 +63,8 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClo
     try {
       const draft = localStorage.getItem(DRAFT_KEY);
       if (draft) return JSON.parse(draft);
-    } catch(e) {
-      console.warn("Could not load draft", e);
+    } catch (error) {
+      console.warn("Could not load draft", error);
     }
     return DEFAULT_FORM_DATA;
   });
@@ -63,7 +72,9 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClo
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Auto-save Draft
+  /**
+   * Auto-save Draft for new items
+   */
   useEffect(() => {
     if (!initialData) {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(formData));
@@ -74,7 +85,7 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClo
     setFormData(prev => ({ ...prev, [key]: value }));
   };
 
-  // Profit Margin Calculation
+  // --- Profit Margin Calculation ---
   const parsedPurchase = parseFloat(formData.purchasePrice) || 0;
   let parsedSelling = parseFloat(formData.sellingPrice) || 0;
   const parsedGst = parseFloat(formData.gstRate) || 0;
@@ -86,7 +97,9 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClo
   const profit = parsedSelling - parsedPurchase;
   const margin = parsedSelling > 0 ? ((profit / parsedSelling) * 100).toFixed(1) : '0.0';
 
-  // Escape key to close
+  /**
+   * Close form on Escape key
+   */
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -95,6 +108,9 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClo
     return () => window.removeEventListener('keydown', handleEsc);
   }, [onClose]);
 
+  /**
+   * Handle image uploads directly to Firebase Storage.
+   */
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !profile?.store_id) return;
@@ -115,6 +131,9 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClo
     }
   };
 
+  /**
+   * Validate, format, and save the item to Firestore.
+   */
   const processSubmit = async (addAnother: boolean = false) => {
     setIsSubmitting(true);
     

@@ -6,6 +6,10 @@ import { InventoryList } from './InventoryList';
 import { InventoryForm } from './InventoryForm';
 import { BulkImportModal } from './BulkImportModal';
 
+/**
+ * The main dashboard for managing the store's inventory.
+ * Displays aggregate metrics, allows searching, and renders the `InventoryList`.
+ */
 export const InventoryDashboard: React.FC = () => {
   const { profile } = useAuth();
   const [items, setItems] = useState<InventoryItem[]>([]);
@@ -50,6 +54,9 @@ export const InventoryDashboard: React.FC = () => {
     return items.reduce((acc, item) => acc + (item.current_stock || 0), 0);
   }, [items]);
 
+  /**
+   * Fetch total sales turnover periodically to calculate turnover rate against stock value.
+   */
   useEffect(() => {
     const fetchTurnover = async () => {
       if (!profile?.store_id || totalValue === 0) return;
@@ -66,12 +73,15 @@ export const InventoryDashboard: React.FC = () => {
         });
         setTurnoverRate(totalSales / totalValue);
       } catch (e) {
-        console.error(e);
+        console.error("Failed to calculate turnover", e);
       }
     };
     fetchTurnover();
   }, [profile?.store_id, totalValue]);
 
+  /**
+   * Generates a CSV file from the current inventory items and prompts download.
+   */
   const handleExportCSV = () => {
     if (items.length === 0) {
       alert("No inventory data to export");

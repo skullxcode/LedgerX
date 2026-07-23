@@ -3,10 +3,15 @@ import { type InventoryItem, ItemType, softDeleteInventoryItem } from '@/lib/fir
 import { InventoryForm } from './InventoryForm';
 import { StockAdjustmentForm } from './StockAdjustmentForm';
 
-interface InventoryListProps {
+export interface InventoryListProps {
+  /** The list of inventory items to display */
   items: InventoryItem[];
 }
 
+/**
+ * A dual-view (desktop table/mobile card) list component for displaying and managing inventory.
+ * Provides inline actions for editing, adjusting stock, and deleting items.
+ */
 export const InventoryList: React.FC<InventoryListProps> = ({ items }) => {
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [adjustingItem, setAdjustingItem] = useState<InventoryItem | null>(null);
