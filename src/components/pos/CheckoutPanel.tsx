@@ -3,6 +3,7 @@ import { usePOS } from '../../context/POSContext';
 import { useAuth } from '../../context/AuthContext';
 import { useCustomers } from '@/hooks/queries/useCustomers';
 import { ConfirmationDialog } from '../ui/ConfirmationDialog';
+import { formatCurrency } from '../../lib/utils/formatters';
 import { 
   DocumentType, 
   FormatMode, 
@@ -494,7 +495,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                   </div>
                   <div className="flex justify-between items-end">
                     <div>
-                      <p className="font-code text-code text-secondary">₹{item.price.toLocaleString(undefined, {minimumFractionDigits: 2})}</p>
+                      <p className="font-code text-code text-secondary">{formatCurrency(item.price)}</p>
                     </div>
                     <div className="flex items-center border border-outline-variant rounded">
                       <button onClick={() => updateCartItemQty(item.item_id, Math.max(1, item.qty - 1))} className="px-2 py-0.5 hover:bg-surface-container transition-colors"><span className="material-symbols-outlined text-xs">remove</span></button>
@@ -594,7 +595,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
         <div className="space-y-2 mb-6">
           <div className="flex justify-between">
             <span className="text-body-md text-secondary">Subtotal</span>
-            <span className="font-code text-body-md text-primary">₹{cartTotal.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+            <span className="font-code text-body-md text-primary">{formatCurrency(cartTotal)}</span>
           </div>
           {formatMode === FormatMode.FORMAL_TAXED && (
             <>
@@ -602,28 +603,28 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                 <>
                   <div className="flex justify-between">
                     <span className="text-body-md text-secondary">CGST</span>
-                    <span className="font-code text-body-md text-secondary">₹{((cartTotalWithTax - cartTotal) / 2).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                    <span className="font-code text-body-md text-secondary">{formatCurrency((cartTotalWithTax - cartTotal) / 2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-body-md text-secondary">SGST</span>
-                    <span className="font-code text-body-md text-secondary">₹{((cartTotalWithTax - cartTotal) / 2).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                    <span className="font-code text-body-md text-secondary">{formatCurrency((cartTotalWithTax - cartTotal) / 2)}</span>
                   </div>
                 </>
               ) : (
                 <div className="flex justify-between">
                   <span className="text-body-md text-secondary">IGST</span>
-                  <span className="font-code text-body-md text-secondary">₹{(cartTotalWithTax - cartTotal).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                  <span className="font-code text-body-md text-secondary">{formatCurrency(cartTotalWithTax - cartTotal)}</span>
                 </div>
               )}
               <div className="flex justify-between">
                 <span className="text-body-md text-secondary font-bold">Total Tax</span>
-                <span className="font-code text-body-md text-primary font-bold">₹{(cartTotalWithTax - cartTotal).toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+                <span className="font-code text-body-md text-primary font-bold">{formatCurrency(cartTotalWithTax - cartTotal)}</span>
               </div>
             </>
           )}
           <div className="pt-2 border-t border-outline-variant flex justify-between">
             <span className="font-headline-md text-headline-md font-bold text-primary">Total</span>
-            <span className="font-headline-md text-headline-md font-bold text-primary">₹{cartTotalWithTax.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
+            <span className="font-headline-md text-headline-md font-bold text-primary">{formatCurrency(cartTotalWithTax)}</span>
           </div>
         </div>
 
