@@ -3,7 +3,7 @@ import Papa from "papaparse";
 import toast from "react-hot-toast";
 import { useAuth } from "../../context/AuthContext";
 import { ItemType } from '@/lib/firebase/types';
-import { bulkAddInventoryItems } from '@/lib/firebase/index';
+import { bulkAddInventoryItems } from '@/lib/firebase/api/inventory';
 
 interface BulkImportModalProps {
   onClose: () => void;

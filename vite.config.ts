@@ -64,5 +64,19 @@ export default defineConfig(({ mode }) => {
         '@': path.resolve(__dirname, './src')
       }
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes('/src/context/') || id.includes('/src/lib/firebase/') || id.includes('node_modules/firebase/')) {
+              return 'firebase-core';
+            }
+            if (id.includes('node_modules')) {
+              return 'vendor';
+            }
+          }
+        }
+      }
+    }
   }
 })
