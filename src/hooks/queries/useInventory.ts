@@ -7,6 +7,7 @@ import {
   adjustStock
 } from '@/lib/firebase/api/inventory';
 import type { InventoryItem, AdjustmentReason } from '@/lib/firebase/types';
+import { NOTIFICATIONS_QUERY_KEY } from './useNotifications';
 
 export const INVENTORY_QUERY_KEY = 'inventory';
 
@@ -49,11 +50,30 @@ export const useInventoryMutations = (storeId: string | undefined) => {
   });
 
   const adjustMutation = useMutation({
-    mutationFn: ({ itemId, previousStock, adjustedStock, reason, adjustedBy }: { itemId: string; previousStock: number; adjustedStock: number; reason: AdjustmentReason; adjustedBy?: string }) => {
+    mutationFn: ({ itemId, previousStock, adjustedStock, reason, adjustedBy, minStock }: { itemId: string; previousStock: number; adjustedStock: number; reason: AdjustmentReason; adjustedBy?: string; minStock?: number }) => {
       if (!storeId) throw new Error("No store ID");
       return adjustStock(storeId, itemId, previousStock, adjustedStock, reason, adjustedBy);
     },
-    onSuccess: () => invalidate(),
+    onSuccess: (_data, variables) => {
+      // 1. Invalidate inventory cache
+      invalidate();
+
+      // 2. Invalidate notifications cache so new low-stock alerts surface immediately
+      queryClient.invalidateQueries({ queryKey: [NOTIFICATIONS_QUERY_KEY, storeId] });
+
+      // 3. If the new stock is at or below the min threshold, remove the dismissed ID
+      //    so the notification fires again instead of staying silently suppressed
+      const threshold = variables.minStock ?? 5;
+      if (variables.adjustedStock <= threshold) {
+        const notifId = `stock-${variables.itemId}`;
+        try {
+          const dismissedIds: string[] = JSON.parse(localStorage.getItem('ledgerx_dismissed_notifications') || '[]');
+          const filtered = dismissedIds.filter(id => id !== notifId);
+          localStorage.setItem('ledgerx_dismissed_notifications', JSON.stringify(filtered));
+          window.dispatchEvent(new Event('ledgerx_notifications_dismissed'));
+        } catch (_) { /* ignore storage errors */ }
+      }
+    },
   });
 
   return {

@@ -33,7 +33,8 @@ export const StockAdjustmentForm: React.FC<StockAdjustmentFormProps> = ({ item, 
         previousStock: item.current_stock,
         adjustedStock: parseFloat(newStock),
         reason,
-        adjustedBy: profile?.user_id
+        adjustedBy: profile?.user_id,
+        minStock: item.min_stock ?? 5
       });
       toast.success("Stock adjusted successfully");
       onSuccess();
