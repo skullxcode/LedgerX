@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { type Transaction, DocumentType, PaymentStatus, searchTransactions, FormatMode } from '@/lib/firebase';
+import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
 import { StatementOfAccount } from './StatementOfAccount';
 
@@ -25,6 +26,19 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
   
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(0);
+  const [pageCursors, setPageCursors] = useState<(QueryDocumentSnapshot<DocumentData> | null)[]>([null]);
+  const [hasMore, setHasMore] = useState(true);
+  const PAGE_SIZE = 50;
+
+  // Reset pagination on filter change
+  useEffect(() => {
+    setCurrentPage(0);
+    setPageCursors([null]);
+    setHasMore(true);
+  }, [query, docFilter, paymentFilter, statusFilter, datePreset]);
 
   useEffect(() => {
     const fetchTx = async () => {
@@ -46,8 +60,30 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
         }
 
         if (!profile?.store_id) return;
-        const res = await searchTransactions(profile.store_id, query, docFilter, paymentFilter, startDate, endDate, statusFilter);
-        setTransactions(res);
+        const res = await searchTransactions(
+          profile.store_id, 
+          query, 
+          docFilter, 
+          paymentFilter, 
+          startDate, 
+          endDate, 
+          statusFilter,
+          PAGE_SIZE,
+          pageCursors[currentPage]
+        );
+        
+        setTransactions(res.transactions);
+        
+        if (res.transactions.length < PAGE_SIZE) {
+          setHasMore(false);
+        } else {
+          setHasMore(true);
+          setPageCursors(prev => {
+            const newCursors = [...prev];
+            newCursors[currentPage + 1] = res.lastDoc;
+            return newCursors;
+          });
+        }
       } catch (e) {
         console.error("Search failed", e);
       } finally {
@@ -57,7 +93,7 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
 
     const debounce = setTimeout(fetchTx, 400);
     return () => clearTimeout(debounce);
-  }, [query, docFilter, paymentFilter, statusFilter, datePreset, profile?.store_id]);
+  }, [query, docFilter, paymentFilter, statusFilter, datePreset, profile?.store_id, currentPage, pageCursors]);
 
   const handleClearFilters = () => {
     setQuery('');
@@ -317,9 +353,27 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
           )}
         </div>
         
-        {/* Pagination placeholder matching Stitch design */}
+        {/* Pagination controls */}
         <div className="px-6 py-4 bg-surface-container-lowest border-t border-outline-variant flex items-center justify-between shrink-0">
-          <span className="font-label-md text-secondary">Showing {transactions.length} transactions</span>
+          <span className="font-label-md text-secondary">
+            Page {currentPage + 1} • Showing {transactions.length} transactions
+          </span>
+          <div className="flex gap-2">
+            <button 
+              disabled={currentPage === 0 || isLoading}
+              onClick={() => setCurrentPage(prev => prev - 1)}
+              className="px-4 py-2 border border-outline-variant rounded font-label-md text-primary hover:bg-surface-container disabled:opacity-50 transition-colors"
+            >
+              Previous
+            </button>
+            <button 
+              disabled={!hasMore || isLoading}
+              onClick={() => setCurrentPage(prev => prev + 1)}
+              className="px-4 py-2 border border-outline-variant rounded font-label-md text-primary hover:bg-surface-container disabled:opacity-50 transition-colors"
+            >
+              Next
+            </button>
+          </div>
         </div>
       </div>
 
@@ -334,10 +388,10 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
         </div>
         <div className="bg-white border border-outline-variant rounded-lg p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
-            <span className="text-secondary font-label-md tracking-widest uppercase">Filtered Docs</span>
+            <span className="text-secondary font-label-md tracking-widest uppercase">Page Items</span>
             <span className="material-symbols-outlined text-on-secondary-container text-[20px]">description</span>
           </div>
-          <div className="font-headline-md text-headline-md text-primary">{transactions.length} Items</div>
+          <div className="font-headline-md text-headline-md text-primary">{transactions.length}</div>
         </div>
       </div>
     </div>

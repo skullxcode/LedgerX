@@ -319,43 +319,43 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                     }}
                   >Cancel</button>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full">
                   <input 
                     type="text"
                     placeholder="Name *"
-                    className="flex-1 bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors"
+                    className="flex-1 w-1/2 bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors min-w-0"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                   />
                   <input 
                     type="tel"
                     placeholder="Phone *"
-                    className="flex-1 bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors"
+                    className="flex-1 w-1/2 bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors min-w-0"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                   />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full">
                   <input 
                     type="text"
                     placeholder="Address (Optional)"
-                    className="flex-1 bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors"
+                    className="flex-1 w-[55%] bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors min-w-0"
                     value={customerAddress}
                     onChange={(e) => setCustomerAddress(e.target.value)}
                   />
                   <input 
                     type="email"
                     placeholder="Email (Optional)"
-                    className="w-[45%] bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors"
+                    className="flex-1 w-[45%] bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors min-w-0"
                     value={customerEmail}
                     onChange={(e) => setCustomerEmail(e.target.value)}
                   />
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 w-full">
                   <input 
                     type="text"
                     placeholder="GSTIN (Optional)"
-                    className="flex-1 bg-white border border-outline-variant rounded p-2 text-[11px] outline-none focus:border-primary transition-colors uppercase"
+                    className="w-full bg-white border border-outline-variant rounded p-2 text-[11px] outline-none focus:border-primary transition-colors uppercase min-w-0"
                     value={customerGstin}
                     onChange={(e) => setCustomerGstin(e.target.value)}
                   />

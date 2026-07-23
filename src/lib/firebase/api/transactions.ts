@@ -8,7 +8,10 @@ import {
   QueryConstraint, 
   runTransaction, 
   Timestamp, 
-  limit 
+  limit,
+  startAfter,
+  QueryDocumentSnapshot,
+  DocumentData
 } from "firebase/firestore";
 import { db } from "../config";
 import { DocumentType, PaymentStatus, type Transaction, type VoidLog } from "../types";
@@ -18,10 +21,15 @@ import { prepareTransactionForFirestore } from "../utils/search";
 // READ OPERATIONS
 // ============================================================================
 
+export interface PaginatedTransactions {
+  transactions: Transaction[];
+  lastDoc: QueryDocumentSnapshot<DocumentData> | null;
+}
+
 /**
  * Searches and filters transactions for a specific store.
- * Filters are applied in-memory after fetching recent transactions to bypass
- * complex Firestore composite index limitations.
+ * Uses native Firestore cursor pagination where possible.
+ * If a composite index is missing, it gracefully falls back to in-memory filtering.
  */
 export const searchTransactions = async (
   storeId: string,
@@ -30,68 +38,139 @@ export const searchTransactions = async (
   payStatus?: PaymentStatus | 'ALL',
   startDate?: Date,
   endDate?: Date,
-  statusFilter: 'ACTIVE' | 'VOIDED' | 'ALL' = 'ACTIVE'
-): Promise<Transaction[]> => {
+  statusFilter: 'ACTIVE' | 'VOIDED' | 'ALL' = 'ACTIVE',
+  pageSize: number = 50,
+  startAfterDoc?: QueryDocumentSnapshot<DocumentData> | null
+): Promise<PaginatedTransactions> => {
   
   const constraints: QueryConstraint[] = [
     where("store_id", "==", storeId)
   ];
 
-  const q = query(collection(db, "Transactions"), ...constraints);
-  const snap = await getDocs(q);
-  
-  let txs = snap.docs
-    .map(doc => doc.data() as Transaction)
-    .filter(tx => tx.is_deleted !== true)
-    .sort((a, b) => {
-      const aTime = a.created_at?.seconds || 0;
-      const bTime = b.created_at?.seconds || 0;
-      return bTime - aTime;
-    });
-  
-  // 1. Status Filter
-  if (statusFilter === 'ACTIVE') {
-    txs = txs.filter(tx => tx.status !== 'VOIDED');
-  } else if (statusFilter === 'VOIDED') {
-    txs = txs.filter(tx => tx.status === 'VOIDED');
-  }
-
-  // 2. Text Search Filter
+  // Note: Firestore requires composite indexes if multiple fields are queried alongside orderBy
   if (searchTerm) {
-    const term = searchTerm.toLowerCase();
-    txs = txs.filter(tx => 
-      (tx.customer_name || '').toLowerCase().includes(term) ||
-      (tx.custom_doc_no || '').toLowerCase().includes(term) ||
-      (tx.search_terms || []).some(t => t.includes(term))
-    );
+    constraints.push(where("search_terms", "array-contains", searchTerm.toLowerCase().trim()));
   }
-  
-  // 3. Document Type Filter
+  if (statusFilter === 'ACTIVE') {
+    constraints.push(where("status", "==", "COMPLETED"));
+  } else if (statusFilter === 'VOIDED') {
+    constraints.push(where("status", "==", "VOIDED"));
+  }
   if (docType && docType !== 'ALL') {
-    txs = txs.filter(tx => tx.document_type === docType);
+    constraints.push(where("document_type", "==", docType));
   }
-  
-  // 4. Payment Status Filter (Quotes do not have a real payment status)
   if (payStatus && payStatus !== 'ALL') {
-    txs = txs.filter(tx => tx.payment_status === payStatus && tx.document_type !== DocumentType.QUOTE);
+    constraints.push(where("payment_status", "==", payStatus));
   }
-
-  // 5. Date Range Filters
   if (startDate) {
-    txs = txs.filter(tx => {
-      const ts = tx.created_at?.seconds ? tx.created_at.seconds * 1000 : (tx as any).created_at;
-      return new Date(ts) >= startDate;
-    });
+    constraints.push(where("created_at", ">=", Timestamp.fromDate(startDate)));
   }
-  
   if (endDate) {
-    txs = txs.filter(tx => {
-      const ts = tx.created_at?.seconds ? tx.created_at.seconds * 1000 : (tx as any).created_at;
-      return new Date(ts) <= endDate;
-    });
+    constraints.push(where("created_at", "<=", Timestamp.fromDate(endDate)));
   }
 
-  return txs;
+  // Ordering and Pagination
+  constraints.push(orderBy("created_at", "desc"));
+  if (startAfterDoc) {
+    constraints.push(startAfter(startAfterDoc));
+  }
+  constraints.push(limit(pageSize));
+
+  const q = query(collection(db, "Transactions"), ...constraints);
+  
+  try {
+    const snap = await getDocs(q);
+    const txs = snap.docs.map(doc => doc.data() as Transaction).filter(tx => tx.is_deleted !== true);
+    
+    return {
+      transactions: txs,
+      lastDoc: snap.docs.length > 0 ? snap.docs[snap.docs.length - 1] : null
+    };
+  } catch (error: any) {
+    // If it fails due to missing index, fallback to in-memory filter logic
+    if (error.message && error.message.includes('index')) {
+      console.warn("Missing Firestore Index. Falling back to in-memory filter. Check console for index link:", error.message);
+      
+      // FALLBACK LOGIC
+      const fallbackQ = query(collection(db, "Transactions"), where("store_id", "==", storeId));
+      const fallbackSnap = await getDocs(fallbackQ);
+      
+      let txs = fallbackSnap.docs
+        .map(doc => doc.data() as Transaction)
+        .filter(tx => tx.is_deleted !== true)
+        .sort((a, b) => {
+          const aTime = a.created_at?.seconds || 0;
+          const bTime = b.created_at?.seconds || 0;
+          return bTime - aTime;
+        });
+      
+      // 1. Status Filter
+      if (statusFilter === 'ACTIVE') {
+        txs = txs.filter(tx => tx.status !== 'VOIDED');
+      } else if (statusFilter === 'VOIDED') {
+        txs = txs.filter(tx => tx.status === 'VOIDED');
+      }
+
+      // 2. Text Search Filter
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        txs = txs.filter(tx => 
+          (tx.customer_name || '').toLowerCase().includes(term) ||
+          (tx.custom_doc_no || '').toLowerCase().includes(term) ||
+          (tx.search_terms || []).some(t => t.includes(term))
+        );
+      }
+      
+      // 3. Document Type Filter
+      if (docType && docType !== 'ALL') {
+        txs = txs.filter(tx => tx.document_type === docType);
+      }
+      
+      // 4. Payment Status Filter (Quotes do not have a real payment status)
+      if (payStatus && payStatus !== 'ALL') {
+        txs = txs.filter(tx => tx.payment_status === payStatus && tx.document_type !== DocumentType.QUOTE);
+      }
+
+      // 5. Date Range Filters
+      if (startDate) {
+        txs = txs.filter(tx => {
+          const ts = tx.created_at?.seconds ? tx.created_at.seconds * 1000 : (tx as any).created_at;
+          return new Date(ts) >= startDate;
+        });
+      }
+      
+      if (endDate) {
+        txs = txs.filter(tx => {
+          const ts = tx.created_at?.seconds ? tx.created_at.seconds * 1000 : (tx as any).created_at;
+          return new Date(ts) <= endDate;
+        });
+      }
+
+      // Apply limit and startAfter manually for fallback
+      let startIdx = 0;
+      if (startAfterDoc) {
+        const afterId = startAfterDoc.id;
+        const idx = txs.findIndex(t => t.transaction_id === afterId);
+        if (idx !== -1) startIdx = idx + 1;
+      }
+      
+      const pagedTxs = txs.slice(startIdx, startIdx + pageSize);
+      
+      // Find the corresponding QueryDocumentSnapshot for the last item in the page to act as the next cursor
+      let fallbackLastDoc = null;
+      if (pagedTxs.length > 0) {
+        const lastTxId = pagedTxs[pagedTxs.length - 1].transaction_id;
+        fallbackLastDoc = fallbackSnap.docs.find(d => d.id === lastTxId) || null;
+      }
+
+      return {
+        transactions: pagedTxs,
+        lastDoc: fallbackLastDoc
+      };
+    } else {
+      throw error;
+    }
+  }
 };
 
 /**

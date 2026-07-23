@@ -1,6 +1,6 @@
 import { initializeApp, getApps, getApp } from "firebase/app";
 import type { FirebaseApp } from "firebase/app";
-import { getFirestore, Firestore } from "firebase/firestore";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, Firestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import type { Auth } from "firebase/auth";
 import { getStorage, FirebaseStorage } from "firebase/storage";
@@ -42,7 +42,10 @@ let storage: FirebaseStorage;
 
 try {
   app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  db = getFirestore(app);
+  // Enable offline persistence with multi-tab support
+  db = initializeFirestore(app, {
+    localCache: persistentLocalCache({ tabManager: persistentMultipleTabManager() })
+  });
   auth = getAuth(app);
   storage = getStorage(app);
 } catch (error) {
