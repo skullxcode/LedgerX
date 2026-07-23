@@ -20,6 +20,49 @@ const ACTION_CODE_SETTINGS = {
 };
 
 // ============================================================================
+// INTERNAL HELPERS
+// ============================================================================
+
+/**
+ * Helper to initialize tenant infrastructure (User Profile & Settings) for a new user.
+ */
+const initializeNewTenant = async (
+  uid: string,
+  businessName: string,
+  ownerName: string,
+  phone: string
+): Promise<UserProfile> => {
+  const newStoreId = "STORE_" + Date.now();
+  const newUserProfile: UserProfile = {
+    uid: uid,
+    store_id: newStoreId,
+    role: 'ADMIN',
+    phone: phone,
+    name: ownerName,
+    is_active: true,
+    created_at: Timestamp.now()
+  };
+
+  const batch = writeBatch(db);
+  batch.set(doc(db, "Users", uid), newUserProfile);
+  batch.set(doc(db, "Settings", newStoreId), {
+    business_id: newStoreId,
+    store_id: newStoreId,
+    business_name: businessName,
+    owner_name: ownerName,
+    phone: phone,
+    address: '',
+    gstin: '',
+    upi_id: '',
+    bank_account: '',
+    bank_ifsc: ''
+  });
+
+  await batch.commit();
+  return newUserProfile;
+};
+
+// ============================================================================
 // EMAIL / PASSWORD AUTHENTICATION
 // ============================================================================
 
@@ -66,42 +109,7 @@ export const signUpWithEmail = async (
   const result = await createUserWithEmailAndPassword(auth, email, password);
   const user = result.user;
 
-  // Generate a unique store ID for the new tenant
-  const newStoreId = "STORE_" + Date.now();
-  const newUserProfile: UserProfile = {
-    uid: user.uid,
-    store_id: newStoreId,
-    role: 'ADMIN',
-    phone: phone,
-    name: ownerName,
-    is_active: true,
-    created_at: Timestamp.now()
-  };
-  
-  const batch = writeBatch(db);
-  
-  // 1. Create User Profile
-  const userRef = doc(db, "Users", user.uid);
-  batch.set(userRef, newUserProfile);
-  
-  // 2. Create Initial Business Settings
-  const settingsRef = doc(db, "Settings", newStoreId);
-  batch.set(settingsRef, {
-    business_id: newStoreId,
-    store_id: newStoreId,
-    business_name: businessName,
-    owner_name: ownerName,
-    phone: phone,
-    address: '',
-    gstin: '',
-    upi_id: '',
-    bank_account: '',
-    bank_ifsc: ''
-  });
-
-  await batch.commit();
-
-  return newUserProfile;
+  return await initializeNewTenant(user.uid, businessName, ownerName, phone);
 };
 
 // ============================================================================
@@ -151,29 +159,12 @@ export const completeSignInWithLink = async (
   }
 
   // Handle New User
-  const newStoreId = "STORE_" + Date.now();
-  const newUserProfile: UserProfile = {
-    uid: user.uid,
-    store_id: newStoreId,
-    role: 'ADMIN',
-    phone: phone || '',
-    name: ownerName || '',
-    is_active: true,
-    created_at: Timestamp.now()
-  };
-
-  const batch = writeBatch(db);
-  batch.set(userRef, newUserProfile);
-  batch.set(doc(db, "Settings", newStoreId), {
-    business_id: newStoreId,
-    store_id: newStoreId,
-    business_name: businessName || '',
-    owner_name: ownerName || '',
-    phone: phone || '',
-    address: '', gstin: '', upi_id: '', bank_account: '', bank_ifsc: ''
-  });
-
-  await batch.commit();
+  const newUserProfile = await initializeNewTenant(
+    user.uid, 
+    businessName || '', 
+    ownerName || '', 
+    phone || ''
+  );
 
   return { isNewUser: true, profile: newUserProfile };
 };
@@ -263,29 +254,12 @@ export const signInWithGoogle = async (): Promise<{ isNewUser: boolean; profile:
   }
 
   // Handle New User
-  const newStoreId = "STORE_" + Date.now();
-  const newUserProfile: UserProfile = {
-    uid: user.uid,
-    store_id: newStoreId,
-    role: 'ADMIN',
-    phone: user.phoneNumber || '',
-    name: user.displayName || '',
-    is_active: true,
-    created_at: Timestamp.now()
-  };
-
-  const batch = writeBatch(db);
-  batch.set(userRef, newUserProfile);
-  batch.set(doc(db, "Settings", newStoreId), {
-    business_id: newStoreId,
-    store_id: newStoreId,
-    business_name: user.displayName || 'My Business',
-    owner_name: user.displayName || '',
-    phone: user.phoneNumber || '',
-    address: '', gstin: '', upi_id: '', bank_account: '', bank_ifsc: ''
-  });
-  
-  await batch.commit();
+  const newUserProfile = await initializeNewTenant(
+    user.uid,
+    user.displayName || 'My Business',
+    user.displayName || '',
+    user.phoneNumber || ''
+  );
 
   return { isNewUser: true, profile: newUserProfile };
 };
