@@ -147,6 +147,7 @@ const VendorFormModal: React.FC<{ isOpen: boolean, onClose: () => void, initialD
       }
       onClose();
     } catch (err) {
+      console.error(err);
       alert("Failed to save vendor.");
     }
   };

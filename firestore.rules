@@ -31,12 +31,12 @@ service cloud.firestore {
     match /{collectionName}/{docId} {
       
       // Standard collections (Accessible to all employees of the store)
-      allow read: if isAuthenticated() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters') && (resource == null || resource.data.store_id == getStoreId());
-      allow create: if isAuthenticated() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters') && request.resource.data.store_id == getStoreId();
-      allow update: if isAuthenticated() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters') && resource.data.store_id == getStoreId() && request.resource.data.store_id == getStoreId();
+      allow read: if isAuthenticated() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters' || collectionName == 'Expenses' || collectionName == 'Vendors') && (resource == null || resource.data.store_id == getStoreId());
+      allow create: if isAuthenticated() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters' || collectionName == 'Expenses' || collectionName == 'Vendors') && request.resource.data.store_id == getStoreId();
+      allow update: if isAuthenticated() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters' || collectionName == 'Expenses' || collectionName == 'Vendors') && resource.data.store_id == getStoreId() && request.resource.data.store_id == getStoreId();
 
       // Allow admins to delete documents from their own store (used for Wipe All Data)
-      allow delete: if isTenantAdmin() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters') && resource.data.store_id == getStoreId();
+      allow delete: if isTenantAdmin() && (collectionName == 'Inventory' || collectionName == 'Transactions' || collectionName == 'Customers' || collectionName == 'JobCards' || collectionName == 'StockAdjustments' || collectionName == 'Counters' || collectionName == 'Expenses' || collectionName == 'Vendors') && resource.data.store_id == getStoreId();
 
       // Admin-only collections
       allow read: if isTenantAdmin() && (collectionName == 'Settings' || collectionName == 'VoidLogs') && (resource == null || resource.data.store_id == getStoreId());
