@@ -24,7 +24,14 @@ export const useNotifications = (storeId: string | undefined) => {
     queryFn: async () => {
       if (!storeId) return [];
       
-      const notifications: NotificationItem[] = [];
+      const notifications: NotificationItem[] = [{
+        id: 'dummy-test',
+        type: 'LOW_STOCK',
+        title: 'Test Notification',
+        description: 'If you see this, the hook is running and rendering correctly.',
+        createdAt: new Date(),
+        isRead: false
+      }];
 
       // 1. Low Stock
       try {
@@ -48,8 +55,11 @@ export const useNotifications = (storeId: string | undefined) => {
              }
           }
         });
-      } catch (e) {
+      } catch (e: any) {
         console.warn("Error fetching inventory notifications:", e);
+        notifications.push({
+          id: 'error-inv', type: 'LOW_STOCK', title: 'Inventory Error', description: e.message || String(e), createdAt: new Date(), isRead: false
+        });
       }
 
       // 2. Active Repairs
