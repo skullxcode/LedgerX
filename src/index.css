@@ -194,17 +194,14 @@
     color: #000000 !important;
   }
 
-  /* Hide all elements on the body except printable targets */
-  body * {
-    visibility: hidden !important;
+  /* Hide app navigation and controls when printing */
+  header, aside, nav, button, .print\:hidden {
+    display: none !important;
   }
 
-  /* Make print-invoice fully visible and positioned at top left */
-  #print-invoice, #print-invoice * {
-    visibility: visible !important;
-  }
-
+  /* Make print-invoice fully visible and taking over the page */
   #print-invoice {
+    display: flex !important;
     position: absolute !important;
     left: 0 !important;
     top: 0 !important;
@@ -220,11 +217,8 @@
   }
 
   /* Make print-statement-of-account fully visible */
-  #print-statement-of-account, #print-statement-of-account * {
-    visibility: visible !important;
-  }
-
   #print-statement-of-account {
+    display: block !important;
     position: absolute !important;
     left: 0 !important;
     top: 0 !important;
