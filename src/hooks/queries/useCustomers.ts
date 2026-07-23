@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { searchCustomers, getCustomer, createCustomer, updateCustomer } from '@/lib/firebase/api/customers';
-import type { Customer } from '@/lib/firebase';
+import type { Customer } from '@/lib/firebase/types';
 
 import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 

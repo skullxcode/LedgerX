@@ -5,7 +5,7 @@ import {
   updateInventoryItem, 
   softDeleteInventoryItem 
 } from '@/lib/firebase/api/inventory';
-import type { InventoryItem } from '@/lib/firebase';
+import type { InventoryItem } from '@/lib/firebase/types';
 
 export const INVENTORY_QUERY_KEY = 'inventory';
 

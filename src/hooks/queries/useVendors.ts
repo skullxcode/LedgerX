@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { addVendor, searchVendors, updateVendor, updateVendorBalance, deleteVendor } from '@/lib/firebase/api/vendors';
 import { addExpense } from '@/lib/firebase/api/expenses';
-import { ExpenseCategory, type Vendor } from '@/lib/firebase';
+import { ExpenseCategory, type Vendor } from '@/lib/firebase/types';
 import { EXPENSES_QUERY_KEY } from './useExpenses';
 
 export const VENDORS_QUERY_KEY = 'vendors';

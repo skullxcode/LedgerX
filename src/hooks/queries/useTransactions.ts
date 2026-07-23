@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { searchTransactions } from '@/lib/firebase/api/transactions';
 import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
-import { DocumentType, PaymentStatus } from '@/lib/firebase';
+import { DocumentType, PaymentStatus } from '@/lib/firebase/types';
 
 export const TRANSACTIONS_QUERY_KEY = 'transactions';
 
