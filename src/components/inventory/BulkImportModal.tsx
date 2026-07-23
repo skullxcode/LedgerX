@@ -128,7 +128,7 @@ export const BulkImportModal: React.FC<BulkImportModalProps> = ({ onClose }) => 
               onChange={handleFileUpload}
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
             />
-            <button className="px-4 py-2 bg-primary text-white font-label-md rounded flex items-center gap-2 hover:opacity-90 transition-opacity">
+            <button className="px-4 py-2 bg-primary text-on-primary font-label-md rounded flex items-center gap-2 hover:opacity-90 transition-opacity">
               <span className="material-symbols-outlined text-[18px]">upload_file</span>
               Select CSV File
             </button>

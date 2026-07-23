@@ -452,7 +452,7 @@ export const LoginScreen: React.FC = () => {
           type="button"
           onClick={handleGoogleSignIn}
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-3 bg-white border border-outline-variant py-3 px-4 rounded-xl text-on-surface font-medium hover:bg-surface-variant transition-colors shadow-sm disabled:opacity-50 mb-6"
+          className="w-full flex items-center justify-center gap-3 bg-surface-container-lowest border border-outline-variant py-3 px-4 rounded-xl text-on-surface font-medium hover:bg-surface-variant transition-colors shadow-sm disabled:opacity-50 mb-6"
         >
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
           Continue with Google
@@ -471,7 +471,7 @@ export const LoginScreen: React.FC = () => {
             type="button"
             onClick={() => setAuthMethod('password')}
             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-              authMethod === 'password' ? 'bg-white shadow-sm text-primary' : 'text-on-surface-variant hover:text-primary'
+              authMethod === 'password' ? 'bg-surface-container-lowest shadow-sm text-primary' : 'text-on-surface-variant hover:text-primary'
             }`}
           >
             Password
@@ -480,7 +480,7 @@ export const LoginScreen: React.FC = () => {
             type="button"
             onClick={() => setAuthMethod('otp')}
             className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-              authMethod === 'otp' ? 'bg-white shadow-sm text-primary' : 'text-on-surface-variant hover:text-primary'
+              authMethod === 'otp' ? 'bg-surface-container-lowest shadow-sm text-primary' : 'text-on-surface-variant hover:text-primary'
             }`}
           >
             Email Code

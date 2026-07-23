@@ -136,7 +136,7 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
       </div>
 
       {/* Filter Bar */}
-      <div className="bg-white border border-outline-variant p-4 md:p-6 mb-4 md:mb-8 grid grid-cols-1 md:flex md:flex-wrap items-center gap-4 rounded-lg shadow-sm shrink-0">
+      <div className="bg-surface-container-lowest border border-outline-variant p-4 md:p-6 mb-4 md:mb-8 grid grid-cols-1 md:flex md:flex-wrap items-center gap-4 rounded-lg shadow-sm shrink-0">
         <div className="flex-1 w-full md:w-auto md:min-w-[250px] relative">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
           <input 
@@ -152,7 +152,7 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
             <div className="relative">
               <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[14px]">calendar_today</span>
               <select 
-                className="w-full bg-white border border-outline-variant rounded py-2 pl-9 pr-8 text-body-md focus:border-primary appearance-none outline-none"
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded py-2 pl-9 pr-8 text-body-md focus:border-primary appearance-none outline-none"
                 value={datePreset}
                 onChange={(e) => setDatePreset(e.target.value as DatePreset)}
               >
@@ -168,7 +168,7 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
           <div className="flex flex-col gap-1.5 w-full md:w-auto md:min-w-[160px]">
             <div className="relative">
               <select 
-                className="w-full bg-white border border-outline-variant rounded py-2 px-3 text-body-md focus:border-primary appearance-none outline-none"
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded py-2 px-3 text-body-md focus:border-primary appearance-none outline-none"
                 value={docFilter}
                 onChange={(e) => setDocFilter(e.target.value as any)}
               >
@@ -183,7 +183,7 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
           <div className="flex flex-col gap-1.5 w-full md:w-auto md:min-w-[160px]">
             <div className="relative">
               <select 
-                className="w-full bg-white border border-outline-variant rounded py-2 px-3 text-body-md focus:border-primary appearance-none outline-none"
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded py-2 px-3 text-body-md focus:border-primary appearance-none outline-none"
                 value={paymentFilter}
                 onChange={(e) => setPaymentFilter(e.target.value as any)}
               >
@@ -198,7 +198,7 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
           <div className="flex flex-col gap-1.5 w-full md:w-auto md:min-w-[160px]">
             <div className="relative">
               <select 
-                className="w-full bg-white border border-outline-variant rounded py-2 px-3 text-body-md focus:border-primary appearance-none outline-none"
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded py-2 px-3 text-body-md focus:border-primary appearance-none outline-none"
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
               >
@@ -221,7 +221,7 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
       </div>
 
       {/* Data Table Container */}
-      <div className="flex-1 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col shadow-sm min-h-[400px]">
+      <div className="flex-1 bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden flex flex-col shadow-sm min-h-[400px]">
         <div className="flex-1 overflow-auto bg-surface-container-lowest">
           {isLoading ? (
             <div className="flex items-center justify-center h-full text-secondary font-body-md">Loading transactions...</div>
@@ -379,14 +379,14 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
 
       {/* System Status Summary Footer */}
       <div className="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6 shrink-0">
-        <div className="bg-white border border-outline-variant rounded-lg p-5 shadow-sm">
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <span className="text-secondary font-label-md tracking-widest uppercase">Visible Gross</span>
             <span className="material-symbols-outlined text-on-tertiary-container text-[20px]">trending_up</span>
           </div>
           <div className="font-headline-md text-headline-md text-primary">₹{totalGross.toLocaleString(undefined, {minimumFractionDigits: 2})}</div>
         </div>
-        <div className="bg-white border border-outline-variant rounded-lg p-5 shadow-sm">
+        <div className="bg-surface-container-lowest border border-outline-variant rounded-lg p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <span className="text-secondary font-label-md tracking-widest uppercase">Page Items</span>
             <span className="material-symbols-outlined text-on-secondary-container text-[20px]">description</span>

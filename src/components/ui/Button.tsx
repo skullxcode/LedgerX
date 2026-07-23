@@ -23,10 +23,10 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     };
     
     const variantClasses = {
-      primary: 'bg-primary text-white hover:bg-primary/90 border border-transparent',
-      secondary: 'bg-white text-on-surface border border-outline-variant hover:bg-surface-container shadow-sm',
+      primary: 'bg-primary text-on-primary hover:bg-primary/90 border border-transparent',
+      secondary: 'bg-surface-container-lowest text-on-surface border border-outline-variant hover:bg-surface-container shadow-sm',
       ghost: 'bg-transparent text-secondary hover:bg-surface-container border border-transparent',
-      danger: 'bg-error text-white hover:bg-error/90 border border-transparent',
+      danger: 'bg-error text-on-primary hover:bg-error/90 border border-transparent',
     };
     
     const widthClass = fullWidth ? 'w-full' : '';

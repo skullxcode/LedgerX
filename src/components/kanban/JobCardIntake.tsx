@@ -93,7 +93,7 @@ export const JobCardIntake: React.FC<{ onComplete: () => void, onCancel: () => v
               required
             />
             {searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 bg-white border border-outline-variant shadow-lg rounded mt-1 z-10 max-h-40 overflow-y-auto">
+              <div className="absolute top-full left-0 right-0 bg-surface-container-lowest border border-outline-variant shadow-lg rounded mt-1 z-10 max-h-40 overflow-y-auto">
                 {searchResults.map(c => (
                   <div key={c.customer_id} onClick={() => selectCustomer(c)} className="p-3 cursor-pointer hover:bg-surface-container border-b border-outline-variant/30">
                     <div className="font-bold text-primary text-body-md">{c.name}</div>

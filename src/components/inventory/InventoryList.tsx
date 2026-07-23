@@ -57,7 +57,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({ items }) => {
                 {openDropdown === item.item_id && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setOpenDropdown(null)}></div>
-                    <div className="absolute right-0 top-10 w-32 bg-white border border-outline-variant rounded-lg shadow-lg z-50 overflow-hidden py-1">
+                    <div className="absolute right-0 top-10 w-32 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-lg z-50 overflow-hidden py-1">
                       <button 
                         className="w-full text-left px-4 py-2 text-body-md hover:bg-surface-container transition-colors"
                         onClick={() => { setEditingItem(item); setOpenDropdown(null); }}

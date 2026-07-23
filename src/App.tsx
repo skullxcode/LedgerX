@@ -217,7 +217,7 @@ function MainApp() {
             {/* Logo & Branding */}
             <div className="mb-10 px-4 flex items-center gap-3">
               <div className="w-8 h-8 bg-primary rounded flex items-center justify-center">
-                <span className="material-symbols-outlined text-white text-[18px]">account_balance_wallet</span>
+                <span className="material-symbols-outlined text-on-primary text-[18px]">account_balance_wallet</span>
               </div>
               <div>
                 <h1 className="font-headline-md text-[18px] font-bold text-primary dark:text-on-primary-fixed">LedgerX</h1>
@@ -252,7 +252,7 @@ function MainApp() {
             {/* Quick Action Button */}
             <div className="mt-auto px-4 pb-4 pt-4">
               <button 
-                className="w-full py-3 px-4 bg-primary hover:bg-primary/90 text-white rounded font-label-md text-label-md flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                className="w-full py-3 px-4 bg-primary hover:bg-primary/90 text-on-primary rounded font-label-md text-label-md flex items-center justify-center gap-2 active:scale-95 transition-transform"
                 onClick={() => {
                   setActiveTab('POS');
                   setIsMobileMenuOpen(false);

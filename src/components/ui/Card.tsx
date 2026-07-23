@@ -19,7 +19,7 @@ export const Card = React.forwardRef<HTMLDivElement, CardProps>(
       lg: 'p-6',
     };
 
-    const baseClasses = 'bg-white rounded-lg transition-all';
+    const baseClasses = 'bg-surface-container-lowest rounded-lg transition-all';
     const borderClasses = noBorder ? '' : 'border border-outline-variant';
     const paddingClass = paddingClasses[padding] || paddingClasses.md;
 

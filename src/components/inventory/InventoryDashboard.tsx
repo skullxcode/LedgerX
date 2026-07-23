@@ -120,20 +120,20 @@ export const InventoryDashboard: React.FC = () => {
           </div>
           <button 
             onClick={() => setIsImporting(true)}
-            className="px-4 py-2 border border-outline-variant bg-white text-secondary font-label-md rounded flex items-center gap-2 hover:bg-surface-container transition-colors"
+            className="px-4 py-2 border border-outline-variant bg-surface-container-lowest text-secondary font-label-md rounded flex items-center gap-2 hover:bg-surface-container transition-colors"
           >
             <span className="material-symbols-outlined text-[18px]">upload</span>
             Import CSV
           </button>
           <button 
             onClick={handleExportCSV}
-            className="px-4 py-2 border border-outline-variant bg-white text-secondary font-label-md rounded flex items-center gap-2 hover:bg-surface-container transition-colors"
+            className="px-4 py-2 border border-outline-variant bg-surface-container-lowest text-secondary font-label-md rounded flex items-center gap-2 hover:bg-surface-container transition-colors"
           >
             <span className="material-symbols-outlined text-[18px]">download</span>
             Export CSV
           </button>
           <button 
-            className="flex items-center gap-2 px-6 py-2 bg-primary text-white font-label-md text-label-md rounded hover:opacity-90 transition-all"
+            className="flex items-center gap-2 px-6 py-2 bg-primary text-on-primary font-label-md text-label-md rounded hover:opacity-90 transition-all"
             onClick={() => setIsAdding(true)}
           >
             <span className="material-symbols-outlined" data-icon="add_box">add_box</span>
@@ -146,7 +146,7 @@ export const InventoryDashboard: React.FC = () => {
       <div className="md:hidden relative w-full mb-6">
         <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[18px]">search</span>
         <input 
-          className="w-full border border-outline-variant rounded py-3 pl-10 pr-4 focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-body-md bg-white transition-colors"
+          className="w-full border border-outline-variant rounded py-3 pl-10 pr-4 focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-body-md bg-surface-container-lowest transition-colors"
           placeholder="Search inventory..."
           value={searchQuery}
           onChange={e => setSearchQuery(e.target.value)}
@@ -155,7 +155,7 @@ export const InventoryDashboard: React.FC = () => {
 
       {/* Dashboard Summary Bento (Mini) */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 md:gap-6 mb-8">
-        <div className="bg-white border border-outline-variant p-5 rounded-lg flex flex-col justify-between">
+        <div className="bg-surface-container-lowest border border-outline-variant p-5 rounded-lg flex flex-col justify-between">
           <div>
             <p className="text-[10px] font-label-md text-secondary uppercase tracking-widest mb-3">Total Value</p>
             <h3 className="text-headline-md font-headline-md font-bold text-primary">₹{totalValue.toLocaleString(undefined, {minimumFractionDigits: 2})}</h3>
@@ -166,7 +166,7 @@ export const InventoryDashboard: React.FC = () => {
           </div>
         </div>
         
-        <div className="bg-white border border-outline-variant p-5 rounded-lg flex flex-col justify-between">
+        <div className="bg-surface-container-lowest border border-outline-variant p-5 rounded-lg flex flex-col justify-between">
           <div>
             <p className="text-[10px] font-label-md text-secondary uppercase tracking-widest mb-3">Total Units</p>
             <h3 className="text-headline-md font-headline-md font-bold text-primary">{totalUnits.toLocaleString()} Units</h3>
@@ -177,7 +177,7 @@ export const InventoryDashboard: React.FC = () => {
           </div>
         </div>
 
-        <div className="bg-white border border-outline-variant p-5 rounded-lg flex flex-col justify-between">
+        <div className="bg-surface-container-lowest border border-outline-variant p-5 rounded-lg flex flex-col justify-between">
           <div>
             <p className="text-[10px] font-label-md text-secondary uppercase tracking-widest mb-3">Low Stock Alerts</p>
             <h3 className={`text-headline-md font-headline-md font-bold ${lowStockCount > 0 ? 'text-error' : 'text-primary'}`}>{lowStockCount} Items</h3>
@@ -193,7 +193,7 @@ export const InventoryDashboard: React.FC = () => {
           </div>
         </div>
         
-        <div className="bg-white border border-outline-variant p-5 rounded-lg flex flex-col justify-between">
+        <div className="bg-surface-container-lowest border border-outline-variant p-5 rounded-lg flex flex-col justify-between">
           <div>
             <p className="text-[10px] font-label-md text-secondary uppercase tracking-widest mb-3">Active Categories</p>
             <h3 className="text-headline-md font-headline-md font-bold text-primary">{activeCategories} Groups</h3>
@@ -204,7 +204,7 @@ export const InventoryDashboard: React.FC = () => {
           </div>
         </div>
         
-        <div className="bg-white border border-outline-variant p-5 rounded-lg flex flex-col justify-between">
+        <div className="bg-surface-container-lowest border border-outline-variant p-5 rounded-lg flex flex-col justify-between">
           <div>
             <p className="text-[10px] font-label-md text-secondary uppercase tracking-widest mb-3">Turnover Rate</p>
             <h3 className="text-headline-md font-headline-md font-bold text-primary">{turnoverRate.toFixed(2)}x</h3>
@@ -217,7 +217,7 @@ export const InventoryDashboard: React.FC = () => {
       </div>
 
       {/* High Density Data Grid */}
-      <div className="flex-1 bg-white border border-outline-variant flex flex-col">
+      <div className="flex-1 bg-surface-container-lowest border border-outline-variant flex flex-col">
         <InventoryList items={filteredItems} />
       </div>
 

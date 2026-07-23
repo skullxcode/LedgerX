@@ -142,7 +142,7 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
                 </div>
               ) : null}
               {jobCards.map(job => (
-                <div key={job.job_id} className="bg-white border border-outline-variant p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                <div key={job.job_id} className="bg-surface-container-lowest border border-outline-variant p-4 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                   <div className="flex justify-between items-start mb-2">
                     <div className="font-headline-md text-primary font-bold">{job.device}</div>
                     <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-800 uppercase tracking-tight">
@@ -172,7 +172,7 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
               {transactions.map(tx => (
                 <div 
                   key={tx.transaction_id} 
-                  className={`bg-white border p-4 rounded-lg flex items-center justify-between cursor-pointer transition-colors group ${
+                  className={`bg-surface-container-lowest border p-4 rounded-lg flex items-center justify-between cursor-pointer transition-colors group ${
                     tx.status === 'VOIDED' ? 'border-rose-200 bg-rose-50/30 opacity-70' : 'border-outline-variant hover:border-primary shadow-sm'
                   }`}
                   onClick={() => onViewTransaction?.(tx.transaction_id)}
@@ -207,7 +207,7 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
       {/* Edit Modal */}
       {isEditing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary/20 backdrop-blur-sm">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl border border-outline-variant">
+          <div className="bg-surface-container-lowest p-6 rounded-lg w-full max-w-md shadow-xl border border-outline-variant">
             <h3 className="font-headline-md text-headline-md text-primary mb-4">Edit Customer</h3>
             <div className="space-y-4 mb-6">
               <div>
@@ -234,7 +234,7 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
             <div className="flex justify-end gap-3">
               <button className="px-4 py-2 border border-outline-variant rounded text-secondary hover:bg-surface-container" onClick={() => setIsEditing(false)}>Cancel</button>
               <button 
-                className="px-4 py-2 bg-primary text-white rounded hover:opacity-90"
+                className="px-4 py-2 bg-primary text-on-primary rounded hover:opacity-90"
                 onClick={async () => {
                   if (profile?.store_id) {
                     await updateCustomer(profile.store_id, customer.customer_id, {
@@ -258,7 +258,7 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
       {/* Record Payment Modal */}
       {isRecordingPayment && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary/20 backdrop-blur-sm">
-          <div className="bg-white p-6 rounded-lg w-full max-w-sm shadow-xl border border-outline-variant">
+          <div className="bg-surface-container-lowest p-6 rounded-lg w-full max-w-sm shadow-xl border border-outline-variant">
             <h3 className="font-headline-md text-headline-md text-primary mb-4">Record Payment</h3>
             <div className="mb-6">
               <label className="block text-label-md text-secondary mb-1">Amount Received (₹)</label>
@@ -275,7 +275,7 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
             <div className="flex justify-end gap-3">
               <button className="px-4 py-2 border border-outline-variant rounded text-secondary hover:bg-surface-container" onClick={() => { setIsRecordingPayment(false); setPaymentAmount(''); }}>Cancel</button>
               <button 
-                className="px-4 py-2 bg-emerald-600 text-white rounded hover:bg-emerald-700 disabled:opacity-50"
+                className="px-4 py-2 bg-emerald-600 text-on-primary rounded hover:bg-emerald-700 disabled:opacity-50"
                 disabled={!paymentAmount || isNaN(parseFloat(paymentAmount)) || parseFloat(paymentAmount) <= 0}
                 onClick={async () => {
                   const amount = parseFloat(paymentAmount);
@@ -299,7 +299,7 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
       {/* Add Udhaar Modal */}
       {isAddingUdhaar && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary/20 backdrop-blur-sm">
-          <div className="bg-white p-6 rounded-lg w-full max-w-sm shadow-xl border border-outline-variant">
+          <div className="bg-surface-container-lowest p-6 rounded-lg w-full max-w-sm shadow-xl border border-outline-variant">
             <h3 className="font-headline-md text-headline-md text-primary mb-4">Add Udhaar</h3>
             <div className="mb-6">
               <label className="block text-label-md text-secondary mb-1">Udhaar Amount (₹)</label>
@@ -316,7 +316,7 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
             <div className="flex justify-end gap-3">
               <button className="px-4 py-2 border border-outline-variant rounded text-secondary hover:bg-surface-container" onClick={() => { setIsAddingUdhaar(false); setUdhaarAmount(''); }}>Cancel</button>
               <button 
-                className="px-4 py-2 bg-amber-600 text-white rounded hover:bg-amber-700 disabled:opacity-50"
+                className="px-4 py-2 bg-amber-600 text-on-primary rounded hover:bg-amber-700 disabled:opacity-50"
                 disabled={!udhaarAmount || isNaN(parseFloat(udhaarAmount)) || parseFloat(udhaarAmount) <= 0}
                 onClick={async () => {
                   const amount = parseFloat(udhaarAmount);

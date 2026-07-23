@@ -127,7 +127,7 @@ export const SearchDropdown: React.FC = () => {
           <input 
             type="text" 
             placeholder="Search inventory by name or SKU..." 
-            className="w-full bg-white border border-outline-variant rounded-full py-3 pl-10 pr-4 text-body-md outline-none focus:border-primary transition-colors shadow-sm"
+            className="w-full bg-surface-container-lowest border border-outline-variant rounded-full py-3 pl-10 pr-4 text-body-md outline-none focus:border-primary transition-colors shadow-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -143,7 +143,7 @@ export const SearchDropdown: React.FC = () => {
             className={`px-5 py-2 rounded-full font-label-md text-label-md whitespace-nowrap transition-colors ${
               activeCategory === cat 
                 ? 'bg-primary text-on-primary' 
-                : 'bg-white border border-outline-variant text-secondary hover:bg-surface-container'
+                : 'bg-surface-container-lowest border border-outline-variant text-secondary hover:bg-surface-container'
             }`}
           >
             {cat}
@@ -154,7 +154,7 @@ export const SearchDropdown: React.FC = () => {
       {/* Bento Grid of Products */}
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {displayedProducts.map(item => (
-          <div key={item.item_id} onClick={() => handleSelectItem(item)} className="bg-white border border-outline-variant rounded-xl p-4 group cursor-pointer hover:border-primary transition-all flex flex-col">
+          <div key={item.item_id} onClick={() => handleSelectItem(item)} className="bg-surface-container-lowest border border-outline-variant rounded-xl p-4 group cursor-pointer hover:border-primary transition-all flex flex-col">
             <div className="aspect-square bg-surface-container rounded-lg mb-4 overflow-hidden flex items-center justify-center relative">
               {item.image_url ? (
                 <img src={item.image_url} alt="" className="w-full h-full object-cover" />
@@ -170,7 +170,7 @@ export const SearchDropdown: React.FC = () => {
             </p>
             <div className="mt-auto flex justify-between items-center">
               <span className="font-headline-md text-headline-md text-primary">₹{item.selling_price.toLocaleString(undefined, {minimumFractionDigits: 2})}</span>
-              <button className="h-8 w-8 bg-surface-container rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+              <button className="h-8 w-8 bg-surface-container rounded-full flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-all">
                 <span className="material-symbols-outlined text-sm">add</span>
               </button>
             </div>
@@ -195,7 +195,7 @@ export const SearchDropdown: React.FC = () => {
       {/* Custom Product Modal */}
       {showCustomProduct && (
         <div className="fixed inset-0 bg-black/50 z-[100] flex items-center justify-center p-4">
-          <form onSubmit={handleCustomProduct} className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+          <form onSubmit={handleCustomProduct} className="bg-surface-container-lowest rounded-xl shadow-xl p-6 w-full max-w-md">
             <h3 className="text-xl font-bold text-primary mb-4">Add Custom Product</h3>
             <div className="space-y-4">
               <div>
@@ -214,7 +214,7 @@ export const SearchDropdown: React.FC = () => {
               </div>
               <div>
                 <label className="block text-xs font-bold text-secondary mb-1">GST Rate (%) *</label>
-                <select required value={cpGst} onChange={e => setCpGst(e.target.value)} className="w-full border rounded p-2 outline-none focus:border-primary bg-white">
+                <select required value={cpGst} onChange={e => setCpGst(e.target.value)} className="w-full border rounded p-2 outline-none focus:border-primary bg-surface-container-lowest">
                   <option value="0">0%</option>
                   <option value="5">5%</option>
                   <option value="12">12%</option>
@@ -225,7 +225,7 @@ export const SearchDropdown: React.FC = () => {
             </div>
             <div className="flex justify-end gap-3 mt-6">
               <button type="button" onClick={() => setShowCustomProduct(false)} className="px-4 py-2 border rounded text-secondary hover:bg-gray-50">Cancel</button>
-              <button type="submit" className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90">Add to Cart</button>
+              <button type="submit" className="px-4 py-2 bg-primary text-on-primary rounded hover:bg-primary/90">Add to Cart</button>
             </div>
           </form>
         </div>

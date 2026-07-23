@@ -338,20 +338,20 @@ export const SettingsDashboard: React.FC = () => {
             <p className="font-body-md text-body-md text-rose-600/80">Permanent destructive actions. These settings cannot be undone.</p>
           </div>
           <div className="md:w-2/3">
-            <div className="border border-rose-200/50 rounded bg-white p-6 flex flex-col sm:flex-row items-center justify-between gap-6 mb-4">
+            <div className="border border-rose-200/50 rounded bg-surface-container-lowest p-6 flex flex-col sm:flex-row items-center justify-between gap-6 mb-4">
               <div>
                 <h4 className="font-label-md text-label-md text-primary font-bold">Wipe All Data</h4>
                 <p className="font-body-md text-body-md text-secondary mt-1">Delete all transaction history, inventory logs, and customer records. This action is irreversible.</p>
               </div>
               <button 
-                className="whitespace-nowrap rounded border border-rose-600 text-rose-600 hover:bg-rose-600 hover:text-white px-6 py-2.5 font-label-md text-label-md transition-all active:scale-95"
+                className="whitespace-nowrap rounded border border-rose-600 text-rose-600 hover:bg-rose-600 hover:text-on-primary px-6 py-2.5 font-label-md text-label-md transition-all active:scale-95"
                 onClick={() => setShowWipeModal(true)}
               >
                 Wipe All Data
               </button>
             </div>
             
-            <div className="border border-outline-variant rounded bg-white p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div className="border border-outline-variant rounded bg-surface-container-lowest p-6 flex flex-col sm:flex-row items-center justify-between gap-6">
               <div>
                 <h4 className="font-label-md text-label-md text-primary font-bold">Account Access</h4>
                 <p className="font-body-md text-body-md text-secondary mt-1">Sign out of this device securely.</p>
@@ -385,7 +385,7 @@ export const SettingsDashboard: React.FC = () => {
             </p>
             <div className="flex flex-col gap-3">
               <button 
-                className="w-full rounded bg-rose-600 text-white py-3 font-label-md text-label-md hover:bg-rose-700 active:scale-95 transition-all disabled:opacity-50"
+                className="w-full rounded bg-rose-600 text-on-primary py-3 font-label-md text-label-md hover:bg-rose-700 active:scale-95 transition-all disabled:opacity-50"
                 onClick={handleWipeData}
                 disabled={isWiping}
               >

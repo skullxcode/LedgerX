@@ -32,7 +32,7 @@ export const CustomerList: React.FC<CustomerListProps> = ({ onSelect, onAddNew, 
     : customers;
 
   return (
-    <div className="flex flex-col h-full bg-white rounded-lg border border-outline-variant shadow-sm overflow-hidden">
+    <div className="flex flex-col h-full bg-surface-container-lowest rounded-lg border border-outline-variant shadow-sm overflow-hidden">
       <div className="p-4 border-b border-outline-variant bg-surface-container-lowest shrink-0">
         <div className="flex justify-between items-center mb-3">
           <h2 className="font-headline-md text-headline-md text-primary">Directory</h2>

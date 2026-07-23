@@ -271,7 +271,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
   };
 
   return (
-    <section className="w-full bg-white border-l border-outline-variant flex flex-col shadow-[-4px_0_20px_rgba(15,23,42,0.04)] h-full">
+    <section className="w-full bg-surface-container-lowest border-l border-outline-variant flex flex-col shadow-[-4px_0_20px_rgba(15,23,42,0.04)] h-full">
       {/* Scrollable Main Area */}
       <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col">
         
@@ -323,14 +323,14 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                   <input 
                     type="text"
                     placeholder="Name *"
-                    className="flex-1 w-1/2 bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors min-w-0"
+                    className="flex-1 w-1/2 bg-surface-container-lowest border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors min-w-0"
                     value={customerName}
                     onChange={(e) => setCustomerName(e.target.value)}
                   />
                   <input 
                     type="tel"
                     placeholder="Phone *"
-                    className="flex-1 w-1/2 bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors min-w-0"
+                    className="flex-1 w-1/2 bg-surface-container-lowest border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors min-w-0"
                     value={customerPhone}
                     onChange={(e) => setCustomerPhone(e.target.value)}
                   />
@@ -339,14 +339,14 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                   <input 
                     type="text"
                     placeholder="Address (Optional)"
-                    className="flex-1 w-[55%] bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors min-w-0"
+                    className="flex-1 w-[55%] bg-surface-container-lowest border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors min-w-0"
                     value={customerAddress}
                     onChange={(e) => setCustomerAddress(e.target.value)}
                   />
                   <input 
                     type="email"
                     placeholder="Email (Optional)"
-                    className="flex-1 w-[45%] bg-white border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors min-w-0"
+                    className="flex-1 w-[45%] bg-surface-container-lowest border border-outline-variant rounded p-2 text-body-md outline-none focus:border-primary transition-colors min-w-0"
                     value={customerEmail}
                     onChange={(e) => setCustomerEmail(e.target.value)}
                   />
@@ -355,7 +355,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                   <input 
                     type="text"
                     placeholder="GSTIN (Optional)"
-                    className="w-full bg-white border border-outline-variant rounded p-2 text-[11px] outline-none focus:border-primary transition-colors uppercase min-w-0"
+                    className="w-full bg-surface-container-lowest border border-outline-variant rounded p-2 text-[11px] outline-none focus:border-primary transition-colors uppercase min-w-0"
                     value={customerGstin}
                     onChange={(e) => setCustomerGstin(e.target.value)}
                   />
@@ -368,7 +368,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                   <input 
                     type="text"
                     placeholder="Search customer by name or phone..."
-                    className="flex-1 bg-white border border-outline-variant rounded py-2 pl-9 pr-2 text-body-md outline-none focus:border-primary transition-colors"
+                    className="flex-1 bg-surface-container-lowest border border-outline-variant rounded py-2 pl-9 pr-2 text-body-md outline-none focus:border-primary transition-colors"
                     value={customerSearchQuery}
                     onChange={(e) => setCustomerSearchQuery(e.target.value)}
                     onFocus={() => { if (customerSuggestions.length > 0) setShowSuggestions(true); }}
@@ -396,7 +396,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                 {showSuggestions && customerSuggestions.length > 0 && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowSuggestions(false)} />
-                    <div className="absolute top-11 left-0 right-0 bg-white border border-outline-variant rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
+                    <div className="absolute top-11 left-0 right-0 bg-surface-container-lowest border border-outline-variant rounded-lg shadow-xl z-50 max-h-48 overflow-y-auto">
                       {customerSuggestions.map(c => (
                         <div 
                           key={c.customer_id}
@@ -429,13 +429,13 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                 <input 
                   type="text"
                   placeholder="Buyer's Order No."
-                  className="flex-1 bg-white border border-outline-variant rounded p-2 text-[11px] outline-none focus:border-primary transition-colors"
+                  className="flex-1 bg-surface-container-lowest border border-outline-variant rounded p-2 text-[11px] outline-none focus:border-primary transition-colors"
                   value={buyersOrderNo}
                   onChange={(e) => setBuyersOrderNo(e.target.value)}
                 />
                 <input 
                   type="date"
-                  className="flex-1 bg-white border border-outline-variant rounded p-2 text-[11px] outline-none focus:border-primary transition-colors"
+                  className="flex-1 bg-surface-container-lowest border border-outline-variant rounded p-2 text-[11px] outline-none focus:border-primary transition-colors"
                   value={buyersOrderDate}
                   onChange={(e) => setBuyersOrderDate(e.target.value)}
                 />
@@ -489,7 +489,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
             <div>
               <label className="block font-label-md text-label-md text-secondary mb-1.5 uppercase tracking-wider">Doc Type</label>
               <select 
-                className="w-full bg-white border border-outline-variant rounded py-1.5 px-3 text-label-md font-medium outline-none"
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded py-1.5 px-3 text-label-md font-medium outline-none"
                 value={documentType}
                 onChange={(e) => setDocumentType(e.target.value as DocumentType)}
               >
@@ -500,7 +500,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
             <div>
               <label className="block font-label-md text-label-md text-secondary mb-1.5 uppercase tracking-wider">Tax Mode</label>
               <select 
-                className="w-full bg-white border border-outline-variant rounded py-1.5 px-3 text-label-md font-medium outline-none"
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded py-1.5 px-3 text-label-md font-medium outline-none"
                 value={formatMode}
                 onChange={(e) => setFormatMode(e.target.value as FormatMode)}
               >
@@ -516,11 +516,11 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
               <div className="flex h-9 bg-surface-container border border-outline-variant rounded p-1">
                 <button 
                   onClick={() => setGstRegion('INTRA')}
-                  className={`flex-1 rounded font-bold uppercase tracking-tight transition-all text-[10px] ${gstRegion === 'INTRA' ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
+                  className={`flex-1 rounded font-bold uppercase tracking-tight transition-all text-[10px] ${gstRegion === 'INTRA' ? 'bg-primary text-on-primary shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
                 >Intra-State (CGST+SGST)</button>
                 <button 
                   onClick={() => setGstRegion('INTER')}
-                  className={`flex-1 rounded font-bold uppercase tracking-tight transition-all text-[10px] ${gstRegion === 'INTER' ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
+                  className={`flex-1 rounded font-bold uppercase tracking-tight transition-all text-[10px] ${gstRegion === 'INTER' ? 'bg-primary text-on-primary shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
                 >Inter-State (IGST)</button>
               </div>
             </div>
@@ -532,11 +532,11 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
               <div className="flex h-9 bg-surface-container border border-outline-variant rounded p-1">
                 <button 
                   onClick={() => setPaymentStatus(PaymentStatus.PAID_NOW)}
-                  className={`flex-1 rounded font-bold uppercase tracking-tight transition-all text-[10px] ${paymentStatus === PaymentStatus.PAID_NOW ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
+                  className={`flex-1 rounded font-bold uppercase tracking-tight transition-all text-[10px] ${paymentStatus === PaymentStatus.PAID_NOW ? 'bg-primary text-on-primary shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
                 >PAID</button>
                 <button 
                   onClick={() => setPaymentStatus(PaymentStatus.CREDIT)}
-                  className={`flex-1 rounded font-bold uppercase tracking-tight transition-all text-[10px] ${paymentStatus === PaymentStatus.CREDIT ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
+                  className={`flex-1 rounded font-bold uppercase tracking-tight transition-all text-[10px] ${paymentStatus === PaymentStatus.CREDIT ? 'bg-primary text-on-primary shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
                 >CREDIT</button>
               </div>
             </div>
@@ -548,7 +548,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
               <input 
                 value={documentNo}
                 onChange={e => setDocumentNo(e.target.value)}
-                className="w-full bg-white border border-outline-variant rounded py-1.5 px-3 text-label-md font-code outline-none"
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded py-1.5 px-3 text-label-md font-code outline-none"
               />
             </div>
             <div>
@@ -557,7 +557,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                 type="date"
                 value={documentDate}
                 onChange={e => setDocumentDate(e.target.value)}
-                className="w-full bg-white border border-outline-variant rounded py-1.5 px-3 text-label-md outline-none text-secondary"
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded py-1.5 px-3 text-label-md outline-none text-secondary"
               />
             </div>
           </div>
@@ -606,7 +606,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
           <button 
             disabled={cart.length === 0 || isProcessing}
             onClick={handleFinalize}
-            className="flex-1 py-4 bg-primary text-white font-bold text-label-md rounded hover:opacity-90 transition-opacity flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
+            className="flex-1 py-4 bg-primary text-on-primary font-bold text-label-md rounded hover:opacity-90 transition-opacity flex items-center justify-center gap-2 active:scale-[0.98] disabled:opacity-50"
           >
             {isProcessing ? "PROCESSING..." : (documentType === DocumentType.QUOTE ? "SAVE QUOTE" : "PROCEED TO CHECKOUT")}
           </button>

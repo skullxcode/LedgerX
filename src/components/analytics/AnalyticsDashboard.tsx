@@ -211,14 +211,14 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
         <div className="flex flex-wrap gap-3">
           <button 
             onClick={() => setDateFilter(dateFilter === 'LAST_7' ? 'MONTH' : 'LAST_7')}
-            className={`px-4 py-2 border rounded flex items-center gap-2 transition-colors ${dateFilter === 'LAST_7' ? 'bg-surface-container-high border-outline text-primary' : 'border-outline-variant bg-white text-secondary hover:bg-surface-container'}`}
+            className={`px-4 py-2 border rounded flex items-center gap-2 transition-colors ${dateFilter === 'LAST_7' ? 'bg-surface-container-high border-outline text-primary' : 'border-outline-variant bg-surface-container-lowest text-secondary hover:bg-surface-container'}`}
           >
             <span className="material-symbols-outlined text-[18px]">calendar_today</span>
             {dateFilter === 'LAST_7' ? 'Showing Last 7 Days' : 'Last 7 Days'}
           </button>
           <button 
             onClick={handleExportCSV}
-            className="px-4 py-2 bg-primary text-white font-label-md rounded flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all"
+            className="px-4 py-2 bg-primary text-on-primary font-label-md rounded flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all"
           >
             <span className="material-symbols-outlined text-[18px]">download</span>
             Export Report
@@ -229,7 +229,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
       {/* Bento Grid Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-gutter">
         {/* Total Revenue Card */}
-        <div className="col-span-12 md:col-span-4 bg-white border border-outline-variant p-6 rounded-lg flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
+        <div className="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-6 rounded-lg flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
           <div className="flex justify-between items-start">
             <div className="w-10 h-10 bg-surface-container-low flex items-center justify-center rounded">
               <span className="material-symbols-outlined text-primary text-[20px]" data-weight="fill">point_of_sale</span>
@@ -253,7 +253,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
         </div>
 
         {/* Total Pending Credit (Udhaar) */}
-        <div className="col-span-12 md:col-span-4 bg-white border border-outline-variant p-6 rounded-lg flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
+        <div className="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-6 rounded-lg flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
           <div className="flex justify-between items-start">
             <div className="w-10 h-10 bg-error-container flex items-center justify-center rounded">
               <span className="material-symbols-outlined text-error text-[20px]" data-weight="fill">assignment_late</span>
@@ -269,7 +269,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
         </div>
 
         {/* Total Inventory Value */}
-        <div className="col-span-12 md:col-span-4 bg-white border border-outline-variant p-6 rounded-lg flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
+        <div className="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-6 rounded-lg flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
           <div className="flex justify-between items-start">
             <div className="w-10 h-10 bg-secondary-container flex items-center justify-center rounded">
               <span className="material-symbols-outlined text-on-secondary-container text-[20px]" data-weight="fill">inventory_2</span>
@@ -289,7 +289,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
         </div>
 
         {/* Custom SVG Line Chart replaced by Recharts AreaChart */}
-        <div className="col-span-12 lg:col-span-8 bg-white border border-outline-variant p-6 rounded-lg hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
+        <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-6 rounded-lg hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
           <div className="flex justify-between items-center mb-8">
             <div>
               <h4 className="font-headline-md text-headline-md text-primary">Revenue Trends</h4>
@@ -340,14 +340,14 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
         </div>
 
         {/* Recent Activity Table (Asymmetric Span) */}
-        <div className="col-span-12 lg:col-span-4 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
+        <div className="col-span-12 lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
           <div className="p-6 border-b border-outline-variant">
             <h4 className="font-headline-md text-headline-md text-primary">Recent Transactions</h4>
             <p className="text-secondary text-body-md">Latest 5 ledger entries</p>
           </div>
           <div className="flex-1 overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-white">
+              <thead className="bg-surface-container-lowest">
                 <tr>
                   <th className="text-left px-6 py-3 font-label-md text-secondary uppercase text-[10px] border-b border-outline-variant">Reference</th>
                   <th className="text-right px-6 py-3 font-label-md text-secondary uppercase text-[10px] border-b border-outline-variant">Amount</th>
@@ -384,7 +384,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
         </div>
 
         {/* Pending Customers & Active Services Row */}
-        <div className="col-span-12 lg:col-span-6 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
+        <div className="col-span-12 lg:col-span-6 bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
           <div className="p-6 border-b border-outline-variant">
             <h4 className="font-headline-md text-headline-md text-primary">Pending Payments</h4>
             <p className="text-secondary text-body-md">Customers with outstanding Udhaar</p>
@@ -410,7 +410,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
           </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-6 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
+        <div className="col-span-12 lg:col-span-6 bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
           <div className="p-6 border-b border-outline-variant">
             <h4 className="font-headline-md text-headline-md text-primary">Active Repairs</h4>
             <p className="text-secondary text-body-md">Latest ongoing repair jobs</p>
@@ -437,7 +437,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
         </div>
 
         {/* Operational Status (Contextual Card) */}
-        <div className="col-span-12 bg-white border border-outline-variant p-4 md:p-6 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
+        <div className="col-span-12 bg-surface-container-lowest border border-outline-variant p-4 md:p-6 rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 sm:gap-0">
           <div className="flex flex-wrap items-center gap-2 sm:gap-6">
             <div className="flex items-center gap-2">
               <span className="relative flex h-3 w-3">

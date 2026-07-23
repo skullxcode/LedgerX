@@ -83,7 +83,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
   if (loading) {
     return (
       <div className="fixed inset-0 bg-primary/20 backdrop-blur-sm z-50 flex items-center justify-center print:hidden">
-        <div className="bg-white p-8 rounded font-body-md shadow-md">Loading Document...</div>
+        <div className="bg-surface-container-lowest p-8 rounded font-body-md shadow-md">Loading Document...</div>
       </div>
     );
   }
@@ -91,7 +91,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
   if (!transaction) {
     return (
       <div className="fixed inset-0 bg-primary/20 backdrop-blur-sm z-50 flex items-center justify-center print:hidden">
-        <div className="bg-white p-8 rounded font-body-md shadow-md text-error">Document not found</div>
+        <div className="bg-surface-container-lowest p-8 rounded font-body-md shadow-md text-error">Document not found</div>
       </div>
     );
   }
@@ -127,10 +127,10 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
   };
 
   return (
-    <div className="fixed inset-0 bg-surface-container-low/80 backdrop-blur-sm z-[100] flex flex-col print:static print:bg-white print:block">
+    <div className="fixed inset-0 bg-surface-container-low/80 backdrop-blur-sm z-[100] flex flex-col print:static print:bg-surface-container-lowest print:block">
       
       {/* Controls Header (Hidden on Print) */}
-      <div className="flex-none bg-white border-b border-outline-variant p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm z-20 print:hidden">
+      <div className="flex-none bg-surface-container-lowest border-b border-outline-variant p-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm z-20 print:hidden">
         <div className="flex items-center gap-4">
           <button 
             className="bg-surface-container-high p-2 rounded-full hover:bg-surface-container-highest transition-colors" 
@@ -147,13 +147,13 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
             {transaction.document_type === DocumentType.FINAL_SALE && (
               <>
                 <button 
-                  className={`px-3 py-1.5 rounded text-[11px] font-bold uppercase transition-colors ${printMode === DocumentType.FINAL_SALE ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
+                  className={`px-3 py-1.5 rounded text-[11px] font-bold uppercase transition-colors ${printMode === DocumentType.FINAL_SALE ? 'bg-primary text-on-primary shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
                   onClick={() => setPrintMode(DocumentType.FINAL_SALE)}
                 >
                   Tax Invoice
                 </button>
                 <button 
-                  className={`px-3 py-1.5 rounded text-[11px] font-bold uppercase transition-colors ${printMode === 'MEMO' ? 'bg-primary text-white shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
+                  className={`px-3 py-1.5 rounded text-[11px] font-bold uppercase transition-colors ${printMode === 'MEMO' ? 'bg-primary text-on-primary shadow-sm' : 'text-secondary hover:bg-surface-container-high'}`}
                   onClick={() => setPrintMode('MEMO')}
                 >
                   Delivery Memo
@@ -161,14 +161,14 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
               </>
             )}
             {transaction.document_type === DocumentType.QUOTE && (
-              <button className="px-3 py-1.5 rounded text-[11px] font-bold uppercase transition-colors bg-primary text-white shadow-sm">
+              <button className="px-3 py-1.5 rounded text-[11px] font-bold uppercase transition-colors bg-primary text-on-primary shadow-sm">
                 Quotation
               </button>
             )}
           </div>
 
           <button 
-            className="flex items-center gap-1.5 px-4 py-2 bg-primary text-white rounded font-bold text-[11px] uppercase transition-all active:opacity-80" 
+            className="flex items-center gap-1.5 px-4 py-2 bg-primary text-on-primary rounded font-bold text-[11px] uppercase transition-all active:opacity-80" 
             onClick={() => window.print()}
           >
             <span className="material-symbols-outlined text-[16px]">print</span>
@@ -177,7 +177,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
           
           {transaction.document_type === DocumentType.QUOTE && (
             <button 
-              className="flex items-center gap-1.5 px-4 py-2 bg-white border border-outline-variant text-primary rounded font-bold text-[11px] uppercase transition-all hover:bg-surface-container"
+              className="flex items-center gap-1.5 px-4 py-2 bg-surface-container-lowest border border-outline-variant text-primary rounded font-bold text-[11px] uppercase transition-all hover:bg-surface-container"
               onClick={handleConvertToInvoice}
             >
               <span className="material-symbols-outlined text-[16px]">receipt_long</span>
@@ -201,7 +201,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
       <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-start md:justify-center items-start print:p-0">
         <div 
           id="print-invoice" 
-          className="bg-white shrink-0 w-[800px] min-h-[1100px] text-black shadow-xl border border-outline-variant p-6 sm:p-8 md:p-10 flex flex-col relative print:shadow-none print:border-none print:m-0 print:p-0 print:w-full"
+          className="bg-surface-container-lowest shrink-0 w-[800px] min-h-[1100px] text-black shadow-xl border border-outline-variant p-6 sm:p-8 md:p-10 flex flex-col relative print:shadow-none print:border-none print:m-0 print:p-0 print:w-full"
         >
           
           {transaction.status === 'VOIDED' && (

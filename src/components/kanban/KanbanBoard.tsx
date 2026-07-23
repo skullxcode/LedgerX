@@ -137,14 +137,14 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
         </div>
         <div className="flex flex-wrap gap-3">
           <button
-            className="flex items-center gap-2 px-4 py-2 border border-outline-variant bg-white text-secondary hover:bg-surface-container transition-colors rounded font-label-md"
+            className="flex items-center gap-2 px-4 py-2 border border-outline-variant bg-surface-container-lowest text-secondary hover:bg-surface-container transition-colors rounded font-label-md"
             onClick={() => setIsAddingInventory(true)}
           >
             <span className="material-symbols-outlined text-[18px]">inventory_2</span>
             Add to Inventory
           </button>
           <button 
-            className="flex items-center gap-2 px-4 py-2 bg-primary text-white hover:opacity-90 transition-all rounded font-label-md font-bold"
+            className="flex items-center gap-2 px-4 py-2 bg-primary text-on-primary hover:opacity-90 transition-all rounded font-label-md font-bold"
             onClick={() => setIsAddingJob(true)}
           >
             <span className="material-symbols-outlined text-[18px]">add</span>
@@ -201,7 +201,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
       {/* Add to Inventory Modal */}
       {isAddingInventory && (
         <div className="fixed inset-0 bg-primary/20 backdrop-blur-sm z-[60] flex items-center justify-center">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl border border-outline-variant">
+          <div className="bg-surface-container-lowest p-6 rounded-lg w-full max-w-md shadow-xl border border-outline-variant">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-headline-md text-headline-md text-primary">Add to Inventory</h3>
               <button onClick={() => setIsAddingInventory(false)} className="text-secondary hover:text-primary">
@@ -250,7 +250,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
               <button className="px-4 py-2 border border-outline-variant rounded text-secondary hover:bg-surface-container" onClick={() => setIsAddingInventory(false)}>Cancel</button>
               <button
                 disabled={!invName || !invSellPrice || isSavingInv}
-                className="px-4 py-2 bg-primary text-white rounded hover:opacity-90 disabled:opacity-50"
+                className="px-4 py-2 bg-primary text-on-primary rounded hover:opacity-90 disabled:opacity-50"
                 onClick={async () => {
                   if (!profile?.store_id || !invName || !invSellPrice) return;
                   setIsSavingInv(true);
@@ -340,7 +340,7 @@ const JobCardItem: React.FC<{
 
   return (
     <div 
-      className={`bg-white border p-4 rounded hover:border-primary transition-all cursor-grab active:cursor-grabbing group ${
+      className={`bg-surface-container-lowest border p-4 rounded hover:border-primary transition-all cursor-grab active:cursor-grabbing group ${
         isDragging ? 'opacity-50 scale-95' : ''} ${
         isHighlighted ? 'border-primary ring-2 ring-primary ring-offset-1' : 'border-outline-variant'
       }`}
@@ -380,7 +380,7 @@ const JobCardItem: React.FC<{
               onChange={(e) => setPartSearch(e.target.value)}
             />
             {isSearching && searchResults.length > 0 && (
-              <div className="absolute top-full left-0 right-0 bg-white border border-outline-variant shadow-lg rounded mt-1 z-10 max-h-40 overflow-y-auto">
+              <div className="absolute top-full left-0 right-0 bg-surface-container-lowest border border-outline-variant shadow-lg rounded mt-1 z-10 max-h-40 overflow-y-auto">
                 {searchResults.map(res => (
                   <div 
                     key={res.item_id} 

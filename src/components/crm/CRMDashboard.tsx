@@ -45,7 +45,7 @@ export const CRMDashboard: React.FC<CRMDashboardProps> = ({ onViewTransaction, i
           onAddNew={() => setShowAddCustomer(true)}
         />
       </div>
-      <div className={`flex-1 flex-col h-full overflow-hidden bg-white rounded-lg border border-outline-variant shadow-sm min-w-0 ${selectedCustomer ? 'flex' : 'hidden md:flex'}`}>
+      <div className={`flex-1 flex-col h-full overflow-hidden bg-surface-container-lowest rounded-lg border border-outline-variant shadow-sm min-w-0 ${selectedCustomer ? 'flex' : 'hidden md:flex'}`}>
         {selectedCustomer ? (
           <CustomerProfile 
             customer={selectedCustomer} 
@@ -64,7 +64,7 @@ export const CRMDashboard: React.FC<CRMDashboardProps> = ({ onViewTransaction, i
 
       {showAddCustomer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-primary/20 backdrop-blur-sm p-4">
-          <div className="bg-white p-6 rounded-lg w-full max-w-md shadow-xl border border-outline-variant">
+          <div className="bg-surface-container-lowest p-6 rounded-lg w-full max-w-md shadow-xl border border-outline-variant">
             <h3 className="font-headline-md text-headline-md text-primary mb-4">Add New Customer</h3>
             <form onSubmit={async (e) => {
               e.preventDefault();
@@ -126,7 +126,7 @@ export const CRMDashboard: React.FC<CRMDashboardProps> = ({ onViewTransaction, i
                 <button 
                   type="submit"
                   disabled={isSubmitting}
-                  className="px-4 py-2 bg-primary text-white rounded hover:opacity-90 disabled:opacity-50"
+                  className="px-4 py-2 bg-primary text-on-primary rounded hover:opacity-90 disabled:opacity-50"
                 >
                   {isSubmitting ? 'Saving...' : 'Add Customer'}
                 </button>
