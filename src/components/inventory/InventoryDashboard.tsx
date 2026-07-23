@@ -101,7 +101,7 @@ export const InventoryDashboard: React.FC = () => {
   };
 
   return (
-    <div className="p-4 md:p-6 lg:p-10 flex-1 flex flex-col overflow-hidden h-full">
+    <div className="p-4 md:p-6 lg:p-10 w-full flex flex-col h-[calc(100dvh-4rem)] overflow-y-auto">
       {/* Page Header */}
       <div className="flex justify-between items-end mb-8">
         <div>
