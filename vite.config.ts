@@ -61,7 +61,6 @@ export default defineConfig(({ mode }) => {
     },
     resolve: {
       alias: {
-        '@/lib/firebase': path.resolve(__dirname, './src/lib/firebase'),
         '@': path.resolve(__dirname, './src')
       }
     },
