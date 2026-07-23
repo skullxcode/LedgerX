@@ -3,9 +3,10 @@ import {
   searchInventory, 
   addInventoryItem, 
   updateInventoryItem, 
-  softDeleteInventoryItem 
+  softDeleteInventoryItem,
+  adjustStock
 } from '@/lib/firebase/api/inventory';
-import type { InventoryItem } from '@/lib/firebase/types';
+import type { InventoryItem, AdjustmentReason } from '@/lib/firebase/types';
 
 export const INVENTORY_QUERY_KEY = 'inventory';
 
@@ -47,9 +48,18 @@ export const useInventoryMutations = (storeId: string | undefined) => {
     onSuccess: () => invalidate(),
   });
 
+  const adjustMutation = useMutation({
+    mutationFn: ({ itemId, previousStock, adjustedStock, reason, adjustedBy }: { itemId: string; previousStock: number; adjustedStock: number; reason: AdjustmentReason; adjustedBy?: string }) => {
+      if (!storeId) throw new Error("No store ID");
+      return adjustStock(storeId, itemId, previousStock, adjustedStock, reason, adjustedBy);
+    },
+    onSuccess: () => invalidate(),
+  });
+
   return {
     addMutation,
     updateMutation,
-    deleteMutation
+    deleteMutation,
+    adjustMutation
   };
 };

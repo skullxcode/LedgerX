@@ -1,7 +1,7 @@
 import { useState } from "react";
-import { adjustStock } from '@/lib/firebase/api/inventory';
 import { type InventoryItem, type AdjustmentReason } from '@/lib/firebase/types';
 import { useAuth } from '../../context/AuthContext';
+import { useInventoryMutations } from '../../hooks/queries/useInventory';
 import toast from 'react-hot-toast';
 
 export interface StockAdjustmentFormProps {
@@ -19,30 +19,28 @@ export interface StockAdjustmentFormProps {
  */
 export const StockAdjustmentForm: React.FC<StockAdjustmentFormProps> = ({ item, onClose, onSuccess }) => {
   const { profile } = useAuth();
+  const { adjustMutation } = useInventoryMutations(profile?.store_id);
   const [newStock, setNewStock] = useState(item.current_stock.toString());
   const [reason, setReason] = useState<AdjustmentReason>('CORRECTION');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    if (!profile?.store_id) return;
     
     try {
-      if (!profile?.store_id) return;
-      await adjustStock(
-        profile.store_id,
-        item.item_id,
-        item.current_stock,
-        parseFloat(newStock),
-        reason
-      );
+      await adjustMutation.mutateAsync({
+        itemId: item.item_id,
+        previousStock: item.current_stock,
+        adjustedStock: parseFloat(newStock),
+        reason,
+        adjustedBy: profile?.user_id
+      });
+      toast.success("Stock adjusted successfully");
       onSuccess();
     } catch (error: any) {
       console.error("Stock adjustment error:", error);
       const msg = error?.message || error?.code || String(error);
       toast.error(`Failed to adjust stock: ${msg}`);
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -91,16 +89,16 @@ export const StockAdjustmentForm: React.FC<StockAdjustmentFormProps> = ({ item, 
               type="button" 
               className="px-6 py-3 border border-outline-variant rounded font-label-md text-label-md text-primary hover:bg-surface-container transition-colors" 
               onClick={onClose} 
-              disabled={isSubmitting}
+              disabled={adjustMutation.isPending}
             >
               Cancel
             </button>
             <button 
               type="submit" 
               className="px-8 py-3 bg-primary rounded font-label-md text-label-md text-on-primary shadow-[0_4px_20px_rgba(15,23,42,0.04)] hover:opacity-90 transition-opacity disabled:opacity-50" 
-              disabled={isSubmitting}
+              disabled={adjustMutation.isPending}
             >
-              {isSubmitting ? 'Adjusting...' : 'Confirm'}
+              {adjustMutation.isPending ? 'Adjusting...' : 'Confirm'}
             </button>
           </div>
         </form>
