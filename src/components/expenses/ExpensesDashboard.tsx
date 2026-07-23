@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useExpenses, useExpenseMutations } from '../../hooks/queries/useExpenses';
 import { ExpenseForm } from './ExpenseForm';
 import { VendorList } from './VendorList';
+import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 import { type Expense } from '@/lib/firebase';
 
 const formatCurrency = (amount: number) => `₹${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
@@ -28,9 +29,12 @@ export const ExpensesDashboard: React.FC = () => {
     setIsFormOpen(true);
   };
 
-  const handleDelete = async (expense: Expense) => {
-    if (window.confirm("Are you sure you want to delete this expense?")) {
-      await deleteMutation.mutateAsync(expense);
+  const [expenseToDelete, setExpenseToDelete] = useState<Expense | null>(null);
+
+  const executeDelete = async () => {
+    if (expenseToDelete) {
+      await deleteMutation.mutateAsync(expenseToDelete);
+      setExpenseToDelete(null);
     }
   };
 
@@ -178,7 +182,7 @@ export const ExpensesDashboard: React.FC = () => {
                             <span className="material-symbols-outlined text-[20px]">edit</span>
                           </button>
                           <button
-                            onClick={() => handleDelete(expense)}
+                            onClick={() => setExpenseToDelete(expense)}
                             className="p-2 text-on-surface-variant hover:text-error transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
                             title="Delete"
                           >
@@ -203,6 +207,16 @@ export const ExpensesDashboard: React.FC = () => {
         isOpen={isFormOpen} 
         onClose={() => setIsFormOpen(false)} 
         initialData={editingExpense} 
+      />
+
+      <ConfirmationDialog
+        isOpen={!!expenseToDelete}
+        title="Delete Expense"
+        message="Are you sure you want to delete this expense? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={executeDelete}
+        onCancel={() => setExpenseToDelete(null)}
+        isDestructive={true}
       />
     </div>
   );

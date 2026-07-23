@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useVendors, useVendorMutations } from '../../hooks/queries/useVendors';
 import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
+import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 import type { Vendor } from '@/lib/firebase';
 import toast from 'react-hot-toast';
 
@@ -18,17 +19,25 @@ export const VendorList: React.FC = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
 
-  const handleDelete = async (vendor: Vendor) => {
+  const [vendorToDelete, setVendorToDelete] = useState<Vendor | null>(null);
+
+  const confirmDelete = (vendor: Vendor) => {
     if (vendor.payable_balance > 0) {
       toast.error(`Cannot delete ${vendor.name} — they have an outstanding balance of ₹${vendor.payable_balance.toFixed(2)}.`);
       return;
     }
-    if (!window.confirm(`Delete ${vendor.name}? This cannot be undone.`)) return;
+    setVendorToDelete(vendor);
+  };
+
+  const executeDelete = async () => {
+    if (!vendorToDelete) return;
     try {
-      await deleteMutation.mutateAsync(vendor.vendor_id);
-      toast.success(`${vendor.name} has been deleted.`);
+      await deleteMutation.mutateAsync(vendorToDelete.vendor_id);
+      toast.success(`${vendorToDelete.name} has been deleted.`);
     } catch (err) {
       toast.error('Failed to delete vendor.');
+    } finally {
+      setVendorToDelete(null);
     }
   };
 
@@ -87,7 +96,7 @@ export const VendorList: React.FC = () => {
                     <span className="material-symbols-outlined text-[18px]">edit</span>
                   </button>
                   <button
-                    onClick={() => handleDelete(vendor)}
+                    onClick={() => confirmDelete(vendor)}
                     className="p-1.5 text-on-surface-variant hover:text-error rounded-full hover:bg-error/10 transition-colors"
                     title="Delete vendor"
                   >
@@ -134,6 +143,16 @@ export const VendorList: React.FC = () => {
           vendor={selectedVendor}
         />
       )}
+
+      <ConfirmationDialog
+        isOpen={!!vendorToDelete}
+        title="Delete Vendor"
+        message={`Are you sure you want to delete ${vendorToDelete?.name}? This action cannot be undone.`}
+        confirmLabel="Delete"
+        onConfirm={executeDelete}
+        onCancel={() => setVendorToDelete(null)}
+        isDestructive={true}
+      />
     </div>
   );
 };

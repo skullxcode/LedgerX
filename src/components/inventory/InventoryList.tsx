@@ -2,6 +2,7 @@ import { useState } from "react";
 import { type InventoryItem, ItemType, softDeleteInventoryItem } from '@/lib/firebase';
 import { InventoryForm } from './InventoryForm';
 import { StockAdjustmentForm } from './StockAdjustmentForm';
+import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 
 export interface InventoryListProps {
   /** The list of inventory items to display */
@@ -16,11 +17,13 @@ export const InventoryList: React.FC<InventoryListProps> = ({ items }) => {
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [adjustingItem, setAdjustingItem] = useState<InventoryItem | null>(null);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
-  const handleDelete = async (itemId: string) => {
-    if (window.confirm("Are you sure you want to delete this item? This will hide it from the catalog.")) {
-      await softDeleteInventoryItem(itemId);
+  const executeDelete = async () => {
+    if (itemToDelete) {
+      await softDeleteInventoryItem(itemToDelete);
       setOpenDropdown(null);
+      setItemToDelete(null);
     }
   };
 
@@ -75,7 +78,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({ items }) => {
                       <div className="h-px w-full bg-outline-variant my-1"></div>
                       <button 
                         className="w-full text-left px-4 py-2 text-body-md text-error hover:bg-rose-50 transition-colors"
-                        onClick={() => handleDelete(item.item_id)}
+                        onClick={() => { setItemToDelete(item.item_id); setOpenDropdown(null); }}
                       >
                         Delete
                       </button>
@@ -216,7 +219,7 @@ export const InventoryList: React.FC<InventoryListProps> = ({ items }) => {
                     )}
                     <button 
                       title="Delete Item"
-                      onClick={() => handleDelete(item.item_id)}
+                      onClick={() => setItemToDelete(item.item_id)}
                       className="p-1.5 hover:bg-rose-50 text-secondary hover:text-error rounded transition-colors"
                     >
                       <span className="material-symbols-outlined text-[20px]">delete</span>
@@ -247,6 +250,16 @@ export const InventoryList: React.FC<InventoryListProps> = ({ items }) => {
           onSuccess={() => setAdjustingItem(null)}
         />
       )}
+
+      <ConfirmationDialog
+        isOpen={!!itemToDelete}
+        title="Delete Item"
+        message="Are you sure you want to delete this item? This will hide it from the catalog."
+        confirmLabel="Delete"
+        onConfirm={executeDelete}
+        onCancel={() => setItemToDelete(null)}
+        isDestructive={true}
+      />
     </div>
   );
 };

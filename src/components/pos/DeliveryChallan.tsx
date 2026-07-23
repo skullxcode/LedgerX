@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useBusiness } from '../../context/BusinessContext';
 import { usePOS } from '../../context/POSContext';
 import { generatePDF, sharePDF } from '../../lib/utils/pdf';
+import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 import toast from 'react-hot-toast';
 
 export interface DeliveryChallanProps {
@@ -29,6 +30,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
   const [transaction, setTransaction] = useState<Transaction | null>(null);
   const [loading, setLoading] = useState(true);
   const [printMode, setPrintMode] = useState<DocumentType | 'MEMO'>(DocumentType.FINAL_SALE);
+  const [isConfirmVoidOpen, setIsConfirmVoidOpen] = useState(false);
 
   /**
    * Fetches the transaction details on mount.
@@ -59,16 +61,15 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
    * Requires confirmation due to irreversible financial impact.
    */
   const handleVoid = async () => {
-    if (window.confirm("Are you sure you want to void this transaction? This cannot be undone.")) {
-      try {
-        if (!authProfile?.store_id) return;
-        await voidTransaction(authProfile.store_id, transactionId, authProfile.uid, "Voided from viewer");
-        toast.success("Transaction voided successfully.");
-        onClose();
-      } catch (error) {
-        console.error("Failed to void", error);
-        toast.error("Failed to void transaction");
-      }
+    try {
+      if (!authProfile?.store_id) return;
+      await voidTransaction(authProfile.store_id, transactionId, authProfile.uid, "Voided from viewer");
+      toast.success("Transaction voided successfully.");
+      setIsConfirmVoidOpen(false);
+      onClose();
+    } catch (error) {
+      console.error("Failed to void", error);
+      toast.error("Failed to void transaction");
     }
   };
 
@@ -206,7 +207,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
           {transaction.status !== 'VOIDED' && (
             <button 
               className="flex items-center gap-1.5 px-4 py-2 bg-rose-50 border border-rose-200 text-rose-700 rounded font-bold text-[11px] uppercase transition-all hover:bg-rose-100"
-              onClick={handleVoid}
+              onClick={() => setIsConfirmVoidOpen(true)}
             >
               <span className="material-symbols-outlined text-[16px]">block</span>
               Void
@@ -490,6 +491,16 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
           
         </div>
       </div>
+
+      <ConfirmationDialog
+        isOpen={isConfirmVoidOpen}
+        title="Void Transaction"
+        message="Are you sure you want to void this transaction? This cannot be undone."
+        confirmLabel="Void Transaction"
+        onConfirm={handleVoid}
+        onCancel={() => setIsConfirmVoidOpen(false)}
+        isDestructive={true}
+      />
     </div>
   );
 };

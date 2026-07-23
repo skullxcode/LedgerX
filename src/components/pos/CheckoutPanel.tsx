@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { usePOS } from '../../context/POSContext';
 import { useAuth } from '../../context/AuthContext';
 import { useCustomers } from '@/hooks/queries/useCustomers';
+import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 import { 
   DocumentType, 
   FormatMode, 
@@ -61,6 +62,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
   const [customerSearchQuery, setCustomerSearchQuery] = useState<string>('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
   const [gstRegion, setGstRegion] = useState<'INTRA' | 'INTER'>('INTRA');
+  const [isConfirmClearOpen, setIsConfirmClearOpen] = useState(false);
 
   /**
    * Keyboard shortcuts for faster POS operations.
@@ -79,12 +81,12 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
       }
 
       if (e.key === 'Escape' && !isTyping && cart.length > 0) {
-        if (window.confirm('Clear the current cart?')) clearCart();
+        setIsConfirmClearOpen(true);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [cart, clearCart]);
+  }, [cart]);
 
   /**
    * Automatically search for existing customers as the user types a phone number or name.
@@ -638,6 +640,19 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
           </button>
         </div>
       </div>
+
+      <ConfirmationDialog
+        isOpen={isConfirmClearOpen}
+        title="Clear Cart"
+        message="Are you sure you want to clear the current cart? All items will be removed."
+        confirmLabel="Clear Cart"
+        onConfirm={() => {
+          clearCart();
+          setIsConfirmClearOpen(false);
+        }}
+        onCancel={() => setIsConfirmClearOpen(false)}
+        isDestructive={true}
+      />
     </section>
   );
 };

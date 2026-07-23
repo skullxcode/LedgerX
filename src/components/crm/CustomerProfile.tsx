@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { type Customer, type Transaction, type JobCard, getTransactionsByCustomer, getJobCardsByCustomer, updateCustomer, deleteCustomer, updateCustomerUdhaarBalance } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
+import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 import toast from 'react-hot-toast';
 
 interface CustomerProfileProps {
@@ -24,6 +25,7 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
   const [paymentAmount, setPaymentAmount] = useState('');
   const [isAddingUdhaar, setIsAddingUdhaar] = useState(false);
   const [udhaarAmount, setUdhaarAmount] = useState('');
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -86,14 +88,7 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
             </button>
             <button 
               className="px-4 py-1.5 border border-rose-200 rounded font-label-md text-label-md text-error hover:bg-rose-50 transition-colors"
-              onClick={async () => {
-                if (window.confirm("Are you sure you want to delete this customer?")) {
-                  if (profile?.store_id) {
-                    await deleteCustomer(profile.store_id, customer.customer_id);
-                    window.location.reload(); // Refresh the page to reset the list
-                  }
-                }
-              }}
+              onClick={() => setIsConfirmDeleteOpen(true)}
             >
               Delete
             </button>
@@ -337,6 +332,21 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
           </div>
         </div>
       )}
+
+      <ConfirmationDialog
+        isOpen={isConfirmDeleteOpen}
+        title="Delete Customer"
+        message="Are you sure you want to delete this customer? This action cannot be undone."
+        confirmLabel="Delete"
+        onConfirm={async () => {
+          if (profile?.store_id) {
+            await deleteCustomer(profile.store_id, customer.customer_id);
+            window.location.reload();
+          }
+        }}
+        onCancel={() => setIsConfirmDeleteOpen(false)}
+        isDestructive={true}
+      />
     </div>
   );
 };
