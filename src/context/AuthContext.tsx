@@ -3,34 +3,62 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { auth, getUserProfile, type UserProfile } from '@/lib/firebase';
 
+// ============================================================================
+// TYPES
+// ============================================================================
+
+/**
+ * Defines the shape of the global Authentication context.
+ */
 interface AuthContextType {
+  /** The raw Firebase Auth user object, if authenticated */
   user: User | null;
+  /** The business profile associated with the user, fetched from Firestore */
   profile: UserProfile | null;
+  /** True while initial auth state is being determined */
   loading: boolean;
 }
 
+// ============================================================================
+// CONTEXT SETUP
+// ============================================================================
+
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Provides global authentication state to the application.
+ * Listens to Firebase Auth state changes and automatically fetches the user's
+ * business profile from Firestore upon successful login.
+ */
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  // --- State ---
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // --- Effects ---
   useEffect(() => {
+    // Subscribe to Firebase auth state changes
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
+      
       if (firebaseUser) {
         try {
+          // Fetch additional profile data from Firestore
           const userProfile = await getUserProfile(firebaseUser.uid);
           setProfile(userProfile);
-        } catch (e) {
-          console.error("Failed to fetch user profile", e);
+        } catch (error) {
+          console.error("AuthContext: Failed to fetch user profile", error);
         }
       } else {
+        // Clear profile if user logs out
         setProfile(null);
       }
+      
       setLoading(false);
     });
+    
+    // Cleanup subscription on unmount
     return unsubscribe;
   }, []);
 
@@ -41,6 +69,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   );
 };
 
+// ============================================================================
+// CUSTOM HOOK
+// ============================================================================
+
+/**
+ * Custom hook to consume the AuthContext safely.
+ * Throws an error if used outside of an AuthProvider.
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
