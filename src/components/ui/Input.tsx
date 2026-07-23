@@ -11,13 +11,15 @@ export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> 
   leftIcon?: React.ReactNode;
   /** Optional icon to display on the right side of the input */
   rightIcon?: React.ReactNode;
+  /** Optional helper text to display below the input (hidden if there is an error) */
+  helperText?: string;
 }
 
 /**
  * Standardized text input component with built-in label and error handling.
  */
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
-  ({ className = '', label, error, fullWidth, style, leftIcon, rightIcon, ...props }, ref) => {
+  ({ className = '', label, error, fullWidth, style, leftIcon, rightIcon, helperText, ...props }, ref) => {
     const containerClasses = `flex flex-col gap-1 mb-3 ${fullWidth ? 'w-full' : 'w-auto'}`;
     const labelClasses = 'text-label-md font-medium text-on-surface';
     
@@ -53,6 +55,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error && <span className={errorClasses}>{error}</span>}
+        {!error && helperText && <span className="text-label-md text-on-surface-variant">{helperText}</span>}
       </div>
     );
   }
