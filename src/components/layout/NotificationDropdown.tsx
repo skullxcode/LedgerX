@@ -1,5 +1,5 @@
 import React, { useRef, useEffect } from 'react';
-import { useNotifications, NotificationItem } from '../../hooks/queries/useNotifications';
+import { useNotifications, NotificationItem, useNotificationActions } from '../../hooks/queries/useNotifications';
 import { useAuth } from '../../context/AuthContext';
 
 interface NotificationDropdownProps {
@@ -11,6 +11,7 @@ interface NotificationDropdownProps {
 export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOpen, onClose, onNavigate }) => {
   const { profile } = useAuth();
   const { data: notifications = [], isLoading } = useNotifications(profile?.store_id);
+  const { dismissNotification } = useNotificationActions();
   const [filterTab, setFilterTab] = React.useState<'ALL' | 'STOCK' | 'REPAIRS' | 'BILLS'>('ALL');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -90,7 +91,7 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOp
             {filteredNotifications.map(notif => (
               <div 
                 key={notif.id} 
-                className="p-4 hover:bg-surface-container-low transition-colors cursor-pointer flex gap-3 items-start"
+                className="p-4 hover:bg-surface-container-low transition-colors cursor-pointer flex gap-3 items-start group"
                 onClick={() => {
                   if (notif.actionUrl) {
                     onNavigate(notif.actionUrl, notif.actionId);
@@ -101,9 +102,19 @@ export const NotificationDropdown: React.FC<NotificationDropdownProps> = ({ isOp
                 <div className="mt-1 shrink-0 bg-surface-container w-8 h-8 rounded-full flex items-center justify-center">
                   {getIcon(notif.type)}
                 </div>
-                <div className="flex-1 min-w-0">
+                <div className="flex-1 min-w-0 pr-6 relative">
                   <div className="flex justify-between items-start gap-2">
                     <p className="text-sm font-bold text-on-surface truncate">{notif.title}</p>
+                    <button 
+                      className="absolute right-0 top-0 p-1 text-secondary hover:text-error hover:bg-surface-container-high rounded-full transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        dismissNotification(notif.id, profile?.store_id);
+                      }}
+                      title="Dismiss notification"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">close</span>
+                    </button>
                   </div>
                   <p className="text-xs text-secondary mt-0.5 line-clamp-2 leading-relaxed">{notif.description}</p>
                 </div>
