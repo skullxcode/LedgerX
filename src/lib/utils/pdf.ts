@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
+import { toJpeg } from 'html-to-image';
 
 /**
  * Captures an HTML element and converts it to a PDF Blob using html2canvas and jspdf.
@@ -17,14 +17,11 @@ export const createPdfBlob = async (elementId: string): Promise<Blob> => {
   element.style.display = 'block';
 
   try {
-    const canvas = await html2canvas(element, {
-      scale: 2, // High resolution
-      useCORS: true,
-      logging: false,
+    const imgData = await toJpeg(element, {
+      quality: 1.0,
+      pixelRatio: 2,
       backgroundColor: '#ffffff'
     });
-
-    const imgData = canvas.toDataURL('image/jpeg', 1.0);
     
     // A4 dimensions in mm
     const pdf = new jsPDF({
@@ -35,8 +32,14 @@ export const createPdfBlob = async (elementId: string): Promise<Blob> => {
 
     const pdfWidth = pdf.internal.pageSize.getWidth();
     const pdfHeight = pdf.internal.pageSize.getHeight();
-    const imgWidth = canvas.width;
-    const imgHeight = canvas.height;
+    
+    // We need to calculate aspect ratio. Create an image to get intrinsic dimensions.
+    const img = new Image();
+    img.src = imgData;
+    await new Promise((resolve) => { img.onload = resolve; });
+    
+    const imgWidth = img.width;
+    const imgHeight = img.height;
     
     const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
     const imgX = (pdfWidth - imgWidth * ratio) / 2;
