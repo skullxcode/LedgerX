@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { usePOS } from '../../context/POSContext';
 import { useAuth } from '../../context/AuthContext';
+import { useCustomers } from '@/hooks/queries/useCustomers';
 import { 
   DocumentType, 
   FormatMode, 
@@ -8,8 +9,7 @@ import {
   finalizeTransaction, 
   createCustomer, 
   getLatestDocumentNo, 
-  type Customer, 
-  searchCustomers 
+  type Customer
 } from '@/lib/firebase';
 import toast from 'react-hot-toast';
 
@@ -56,10 +56,10 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
   
   // Local State: Processing & UI
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [customerSuggestions, setCustomerSuggestions] = useState<Customer[]>([]);
   const [showSuggestions, setShowSuggestions] = useState<boolean>(false);
   const [isCreatingNewCustomer, setIsCreatingNewCustomer] = useState<boolean>(false);
   const [customerSearchQuery, setCustomerSearchQuery] = useState<string>('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>('');
   const [gstRegion, setGstRegion] = useState<'INTRA' | 'INTER'>('INTRA');
 
   /**
@@ -90,25 +90,24 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
    * Automatically search for existing customers as the user types a phone number or name.
    */
   useEffect(() => {
-    const fetchCustomer = async () => {
-      const searchTerm = customerSearchQuery.trim();
-      if (searchTerm.length >= 3 && !customer && profile?.store_id && !isCreatingNewCustomer) {
-        try {
-          const results = await searchCustomers(profile.store_id, searchTerm);
-          setCustomerSuggestions(results);
-          setShowSuggestions(true);
-        } catch (error) {
-          console.error("Auto-fill search failed", error);
-        }
-      } else {
-        setCustomerSuggestions([]);
-        setShowSuggestions(false);
-      }
-    };
-    
-    const timeout = setTimeout(fetchCustomer, 300);
-    return () => clearTimeout(timeout);
-  }, [customerSearchQuery, customer, profile?.store_id, isCreatingNewCustomer]);
+    const timer = setTimeout(() => setDebouncedSearchQuery(customerSearchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [customerSearchQuery]);
+
+  const { data: searchResults = [] } = useCustomers(
+    profile?.store_id, 
+    debouncedSearchQuery.length >= 3 ? debouncedSearchQuery : ''
+  );
+
+  const customerSuggestions = debouncedSearchQuery.length >= 3 ? searchResults : [];
+
+  useEffect(() => {
+    if (debouncedSearchQuery.length >= 3 && !customer && !isCreatingNewCustomer) {
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  }, [debouncedSearchQuery, customer, isCreatingNewCustomer]);
 
   /**
    * Fetch the next sequential document number when the document type changes.
@@ -401,11 +400,10 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
                 </div>
                 <button 
                   className="w-full py-2 bg-surface-container-high hover:bg-surface-container border border-outline-variant text-primary font-bold text-label-md rounded transition-colors flex items-center justify-center gap-2"
-                  onClick={() => {
-                    setIsCreatingNewCustomer(true);
-                    setCustomerSuggestions([]);
-                    setShowSuggestions(false);
-                    // Pre-fill name or phone if they started typing it
+                    onClick={() => {
+                      setIsCreatingNewCustomer(true);
+                      setShowSuggestions(false);
+                      // Pre-fill name or phone if they started typing it
                     if (/^\d+$/.test(customerSearchQuery)) {
                       setCustomerPhone(customerSearchQuery);
                     } else {
