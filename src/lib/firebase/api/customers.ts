@@ -1,21 +1,86 @@
-import { doc, runTransaction, setDoc, getDoc, collection, query, where, getDocs, limit, orderBy } from "firebase/firestore";
-import { Timestamp } from "firebase/firestore";
+import { 
+  doc, 
+  runTransaction, 
+  setDoc, 
+  getDoc, 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  Timestamp 
+} from "firebase/firestore";
 import { db } from "../config";
-import { Customer } from "../types";
+import type { Customer } from "../types";
 import { generateSearchTerms } from "../utils/search";
 import { logger } from "../utils/logger";
 import { validateString, validatePhone } from "../utils/validation";
-import { NotFoundError, ValidationError } from "../utils/errors";
 
+// ============================================================================
+// READ OPERATIONS
+// ============================================================================
+
+/**
+ * Retrieves a customer's profile by ID.
+ * Returns null if the customer is marked as deleted or does not belong to the store.
+ * 
+ * @param storeId - The store/tenant ID to authorize the read.
+ * @param customerId - The unique ID of the customer.
+ */
 export const getCustomer = async (storeId: string, customerId: string): Promise<Customer | null> => {
   const docRef = doc(db, "Customers", customerId);
   const docSnap = await getDoc(docRef);
+  
   if (docSnap.exists() && docSnap.data().store_id === storeId && !docSnap.data().is_deleted) {
     return docSnap.data() as Customer;
   }
+  
   return null;
 };
 
+/**
+ * Searches for active customers by matching a search term against name, phone, or tags.
+ * If no search term is provided, returns all active customers for the store.
+ * 
+ * @param storeId - The store/tenant ID.
+ * @param searchTerm - The string to search for.
+ */
+export const searchCustomers = async (storeId: string, searchTerm: string): Promise<Customer[]> => {
+  try {
+    const q = query(
+      collection(db, "Customers"),
+      where("store_id", "==", storeId)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    // Filter out logically deleted customers
+    const activeCustomers = querySnapshot.docs
+      .map((d) => d.data() as Customer)
+      .filter(c => !c.is_deleted);
+    
+    if (!searchTerm) {
+      return activeCustomers;
+    }
+    
+    const lowerTerm = searchTerm.toLowerCase();
+    return activeCustomers.filter(c => 
+      (c.name || '').toLowerCase().includes(lowerTerm) || 
+      (c.phone || '').includes(lowerTerm) ||
+      (c.search_terms || []).some(term => term.includes(lowerTerm))
+    );
+  } catch (error) {
+    logger.error("Failed to search customers", error as Error);
+    throw error;
+  }
+};
+
+// ============================================================================
+// WRITE OPERATIONS
+// ============================================================================
+
+/**
+ * Creates a new customer profile and increments the customer ID counter atomically.
+ */
 export const createCustomer = async (
   storeId: string,
   customerId: string,
@@ -27,14 +92,16 @@ export const createCustomer = async (
   createdBy?: string
 ): Promise<void> => {
   try {
-    // Validate inputs
+    // Strict runtime validation
     validateString(storeId, "storeId", { required: true, minLength: 1 });
     validateString(customerId, "customerId", { required: true, minLength: 1 });
     validateString(name, "name", { required: true, minLength: 2, maxLength: 100 });
     validatePhone(phone, "phone");
 
     const now = Timestamp.now();
-    const rawCustomer: any = {
+    
+    // Construct the payload safely, dropping undefined values
+    const rawCustomer: Partial<Customer> & { [key: string]: any } = {
       customer_id: customerId,
       store_id: storeId,
       name,
@@ -54,6 +121,7 @@ export const createCustomer = async (
     await runTransaction(db, async (transaction) => {
       transaction.set(doc(db, "Customers", customerId), rawCustomer);
 
+      // Increment sequence counter if the ID matches standard format (e.g., CUST-100)
       const prefixMatch = customerId.match(/^([A-Z]+-)/);
       if (prefixMatch) {
         const prefix = prefixMatch[1];
@@ -73,6 +141,47 @@ export const createCustomer = async (
   }
 };
 
+/**
+ * Updates specific fields on an existing customer profile.
+ * Automatically recalculates search terms if the name or phone is changed.
+ */
+export const updateCustomer = async (
+  storeId: string,
+  customerId: string,
+  updates: Partial<Customer>
+): Promise<void> => {
+  const customerRef = doc(db, "Customers", customerId);
+  const snap = await getDoc(customerRef);
+  
+  if (!snap.exists() || snap.data().store_id !== storeId) {
+    throw new Error("Customer does not exist or unauthorized!");
+  }
+  
+  const currentData = snap.data() as Customer;
+  const updateData: Partial<Customer> = {
+    ...updates,
+    updated_at: Timestamp.now(),
+    version: (currentData.version || 1) + 1
+  };
+  
+  // Re-generate search terms if core identity fields change
+  if (updates.name || updates.phone) {
+    updateData.search_terms = generateSearchTerms(
+      updates.name || currentData.name,
+      updates.phone || currentData.phone,
+      []
+    );
+  }
+  
+  await setDoc(customerRef, updateData, { merge: true });
+};
+
+/**
+ * Atomically updates a customer's Udhaar (credit) balance.
+ * Prevents race conditions when multiple transactions occur simultaneously.
+ * 
+ * @param amountToAdd - The positive (credit added) or negative (payment received) amount.
+ */
 export const updateCustomerUdhaarBalance = async (
   storeId: string,
   customerId: string,
@@ -96,68 +205,21 @@ export const updateCustomerUdhaarBalance = async (
         version: (customerDoc.data().version || 1) + 1
       });
     });
-  } catch (e) {
-    console.error("Transaction failed: ", e);
-    throw e;
-  }
-};
-
-export const searchCustomers = async (storeId: string, searchTerm: string): Promise<Customer[]> => {
-  try {
-    const q = query(
-      collection(db, "Customers"),
-      where("store_id", "==", storeId)
-    );
-    
-    const querySnapshot = await getDocs(q);
-    const customers = querySnapshot.docs.map((doc) => doc.data() as Customer)
-      .filter(c => c.is_deleted !== true);
-    
-    if (!searchTerm) {
-      return customers;
-    }
-    
-    const lowerTerm = searchTerm.toLowerCase();
-    return customers.filter(c => 
-      (c.name || '').toLowerCase().includes(lowerTerm) || 
-      (c.phone || '').includes(lowerTerm) ||
-      (c.search_terms || []).some(term => term.includes(lowerTerm))
-    );
   } catch (error) {
-    logger.error("Failed to search customers", error as Error);
+    logger.error("Failed to update Udhaar balance", error as Error, "updateCustomerUdhaarBalance", { customerId, amountToAdd });
     throw error;
   }
 };
 
-export const updateCustomer = async (
-  storeId: string,
-  customerId: string,
-  updates: Partial<Customer>
-): Promise<void> => {
-  const customerRef = doc(db, "Customers", customerId);
-  const snap = await getDoc(customerRef);
-  if (!snap.exists() || snap.data().store_id !== storeId) {
-    throw new Error("Customer does not exist or unauthorized!");
-  }
-  
-  const currentData = snap.data() as Customer;
-  const updateData: Partial<Customer> = {
-    ...updates,
-    updated_at: Timestamp.now(),
-    version: (currentData.version || 1) + 1
-  };
-  
-  if (updates.name || updates.phone) {
-    updateData.search_terms = generateSearchTerms(
-      updates.name || currentData.name,
-      updates.phone || currentData.phone,
-      []
-    );
-  }
-  
-  await setDoc(customerRef, updateData, { merge: true });
-};
+// ============================================================================
+// DELETION OPERATIONS
+// ============================================================================
 
+/**
+ * Performs a soft delete on a customer profile.
+ * The data is preserved in the database for auditing and historical transactions, 
+ * but `is_deleted` is set to true so they no longer appear in searches.
+ */
 export const deleteCustomer = async (
   storeId: string,
   customerId: string,
@@ -165,17 +227,19 @@ export const deleteCustomer = async (
 ): Promise<void> => {
   const customerRef = doc(db, "Customers", customerId);
   const snap = await getDoc(customerRef);
+  
   if (!snap.exists() || snap.data().store_id !== storeId) {
     throw new Error("Customer does not exist or unauthorized!");
   }
-  // Soft delete - preserves data for audit trail
+  
   const currentData = snap.data() as Customer;
-  const deletePayload: any = {
+  const deletePayload: Partial<Customer> & { [key: string]: any } = {
     is_deleted: true,
     deleted_at: Timestamp.now(),
     updated_at: Timestamp.now(),
     version: (currentData.version || 1) + 1,
     ...(deletedBy ? { deleted_by: deletedBy } : {}),
   };
+  
   await setDoc(customerRef, deletePayload, { merge: true });
 };

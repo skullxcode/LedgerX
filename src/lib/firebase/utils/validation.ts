@@ -1,11 +1,17 @@
-/**
- * Input validation utilities
- */
-
 import { ValidationError } from './errors';
 
+// ============================================================================
+// STRING VALIDATION
+// ============================================================================
+
 /**
- * Validate string input
+ * Validates and trims string inputs based on predefined rules.
+ * 
+ * @param value - The input value to validate.
+ * @param fieldName - The human-readable name of the field for error messages.
+ * @param options - Validation constraints (required, length, regex pattern).
+ * @returns The sanitized, trimmed string.
+ * @throws ValidationError if constraints are violated.
  */
 export function validateString(
   value: any,
@@ -37,15 +43,11 @@ export function validateString(
   }
 
   if (trimmed.length < minLength) {
-    throw new ValidationError(
-      `${fieldName} must be at least ${minLength} characters long`
-    );
+    throw new ValidationError(`${fieldName} must be at least ${minLength} characters long`);
   }
 
   if (trimmed.length > maxLength) {
-    throw new ValidationError(
-      `${fieldName} must not exceed ${maxLength} characters`
-    );
+    throw new ValidationError(`${fieldName} must not exceed ${maxLength} characters`);
   }
 
   if (pattern && !pattern.test(trimmed)) {
@@ -56,7 +58,42 @@ export function validateString(
 }
 
 /**
- * Validate number input
+ * Validates a standard email format.
+ */
+export function validateEmail(value: any, fieldName: string = 'Email'): string {
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return validateString(value, fieldName, {
+    required: true,
+    minLength: 5,
+    maxLength: 254,
+    pattern: emailPattern,
+  });
+}
+
+/**
+ * Validates phone number formats (supports basic international structures).
+ */
+export function validatePhone(value: any, fieldName: string = 'Phone'): string {
+  const phonePattern = /^[\d\s\-\+\(\)]{10,}$/;
+  return validateString(value, fieldName, {
+    required: true,
+    minLength: 10,
+    maxLength: 20,
+    pattern: phonePattern,
+  });
+}
+
+// ============================================================================
+// NUMBER VALIDATION
+// ============================================================================
+
+/**
+ * Validates numeric inputs.
+ * 
+ * @param value - The input value to validate.
+ * @param fieldName - The human-readable name of the field for error messages.
+ * @param options - Validation constraints (min, max, integer flag).
+ * @returns The validated number.
  */
 export function validateNumber(
   value: any,
@@ -98,34 +135,12 @@ export function validateNumber(
   return num;
 }
 
-/**
- * Validate email format
- */
-export function validateEmail(value: any, fieldName: string = 'Email'): string {
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return validateString(value, fieldName, {
-    required: true,
-    minLength: 5,
-    maxLength: 254,
-    pattern: emailPattern,
-  });
-}
+// ============================================================================
+// COMPLEX STRUCTURE VALIDATION
+// ============================================================================
 
 /**
- * Validate phone number (basic format)
- */
-export function validatePhone(value: any, fieldName: string = 'Phone'): string {
-  const phonePattern = /^[\d\s\-\+\(\)]{10,}$/;
-  return validateString(value, fieldName, {
-    required: true,
-    minLength: 10,
-    maxLength: 20,
-    pattern: phonePattern,
-  });
-}
-
-/**
- * Validate array
+ * Validates an array and recursively validates its items if an itemValidator is provided.
  */
 export function validateArray<T>(
   value: any,
@@ -147,15 +162,11 @@ export function validateArray<T>(
   }
 
   if (value.length < minLength) {
-    throw new ValidationError(
-      `${fieldName} must have at least ${minLength} items`
-    );
+    throw new ValidationError(`${fieldName} must have at least ${minLength} items`);
   }
 
   if (value.length > maxLength) {
-    throw new ValidationError(
-      `${fieldName} must not exceed ${maxLength} items`
-    );
+    throw new ValidationError(`${fieldName} must not exceed ${maxLength} items`);
   }
 
   if (itemValidator) {
@@ -166,7 +177,8 @@ export function validateArray<T>(
 }
 
 /**
- * Validate object structure
+ * Validates a complex object structure against a map of validator functions.
+ * Useful for validating entire payloads before inserting into Firestore.
  */
 export function validateObject<T>(
   value: any,
@@ -195,8 +207,13 @@ export function validateObject<T>(
   return result as T;
 }
 
+// ============================================================================
+// SANITIZATION
+// ============================================================================
+
 /**
- * Sanitize string input (prevent injection attacks)
+ * Sanitizes a string input to prevent XSS injection attacks.
+ * Converts potentially dangerous HTML characters into HTML entities.
  */
 export function sanitizeString(value: string): string {
   return value
@@ -209,6 +226,6 @@ export function sanitizeString(value: string): string {
         "'": '&#x27;',
         '&': '&amp;',
       };
-      return escapeMap[char];
+      return escapeMap[char] || char;
     });
 }

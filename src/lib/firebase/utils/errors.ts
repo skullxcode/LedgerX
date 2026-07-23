@@ -1,7 +1,15 @@
 /**
- * Custom error types for better error handling and logging
+ * Custom error types for better error handling and standardized logging across the application.
  */
 
+// ============================================================================
+// BASE ERROR
+// ============================================================================
+
+/**
+ * The base application error class that all custom errors should extend.
+ * Provides a standardized structure for JSON serialization.
+ */
 export class AppError extends Error {
   constructor(
     message: string,
@@ -14,6 +22,9 @@ export class AppError extends Error {
     Object.setPrototypeOf(this, AppError.prototype);
   }
 
+  /**
+   * Serializes the error to a plain object suitable for API responses or logging.
+   */
   toJSON() {
     return {
       name: this.name,
@@ -25,6 +36,13 @@ export class AppError extends Error {
   }
 }
 
+// ============================================================================
+// SPECIFIC ERRORS
+// ============================================================================
+
+/**
+ * Thrown when input data fails schema or format validation.
+ */
 export class ValidationError extends AppError {
   constructor(message: string, details?: Record<string, any>) {
     super(message, 'VALIDATION_ERROR', 400, details);
@@ -33,6 +51,9 @@ export class ValidationError extends AppError {
   }
 }
 
+/**
+ * Thrown when a requested resource (like a document or user) cannot be found.
+ */
 export class NotFoundError extends AppError {
   constructor(message: string, details?: Record<string, any>) {
     super(message, 'NOT_FOUND', 404, details);
@@ -41,6 +62,9 @@ export class NotFoundError extends AppError {
   }
 }
 
+/**
+ * Thrown when the user is not authenticated or lacks required permissions.
+ */
 export class AuthorizationError extends AppError {
   constructor(message: string, details?: Record<string, any>) {
     super(message, 'UNAUTHORIZED', 401, details);
@@ -49,6 +73,9 @@ export class AuthorizationError extends AppError {
   }
 }
 
+/**
+ * Thrown when a state conflict occurs (e.g., trying to void an already voided transaction).
+ */
 export class ConflictError extends AppError {
   constructor(message: string, details?: Record<string, any>) {
     super(message, 'CONFLICT', 409, details);
@@ -57,6 +84,9 @@ export class ConflictError extends AppError {
   }
 }
 
+/**
+ * Thrown when the user hits an API rate limit.
+ */
 export class RateLimitError extends AppError {
   constructor(message: string, retryAfter?: number) {
     super(message, 'RATE_LIMIT', 429, { retryAfter });
@@ -65,15 +95,23 @@ export class RateLimitError extends AppError {
   }
 }
 
+// ============================================================================
+// ERROR HANDLERS
+// ============================================================================
+
 /**
- * Type guard to check if error is AppError
+ * Type guard to check if an unknown error is an instance of AppError.
  */
 export function isAppError(error: unknown): error is AppError {
   return error instanceof AppError;
 }
 
 /**
- * Handle errors safely and return standardized error response
+ * Intercepts errors safely and returns a standardized error response object.
+ * Logs unknown errors automatically.
+ * 
+ * @param error - The error thrown in a catch block.
+ * @param context - Optional context string for logging (e.g., 'API Route Handler').
  */
 export function handleError(error: unknown, context?: string) {
   if (isAppError(error)) {

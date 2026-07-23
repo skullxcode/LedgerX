@@ -7,9 +7,30 @@ import {
   signOut as firebaseSignOut 
 } from "firebase/auth";
 import { auth, db } from "../config";
-import { doc, getDoc, setDoc, writeBatch, Timestamp } from "firebase/firestore";
-import { UserProfile } from "../types";
+import { doc, getDoc, writeBatch, Timestamp } from "firebase/firestore";
+import type { UserProfile } from "../types";
 
+// ============================================================================
+// CONSTANTS
+// ============================================================================
+
+const ACTION_CODE_SETTINGS = {
+  url: window.location.origin + '/',
+  handleCodeInApp: true,
+};
+
+// ============================================================================
+// EMAIL / PASSWORD AUTHENTICATION
+// ============================================================================
+
+/**
+ * Signs in a user using their email and password.
+ * 
+ * @param email - The user's email address.
+ * @param password - The user's password.
+ * @returns The associated UserProfile from Firestore.
+ * @throws Error if authentication fails or if the user profile does not exist.
+ */
 export const signInWithEmail = async (email: string, password: string): Promise<UserProfile> => {
   const result = await signInWithEmailAndPassword(auth, email, password);
   const user = result.user;
@@ -24,6 +45,17 @@ export const signInWithEmail = async (email: string, password: string): Promise<
   return userSnap.data() as UserProfile;
 };
 
+/**
+ * Creates a new user account with email and password, and initializes 
+ * their tenant infrastructure (Store ID, Settings, Profile) in Firestore.
+ * 
+ * @param email - The user's email address.
+ * @param password - The user's desired password.
+ * @param businessName - The name of the business.
+ * @param ownerName - The owner's name.
+ * @param phone - The business contact number.
+ * @returns The newly created UserProfile.
+ */
 export const signUpWithEmail = async (
   email: string, 
   password: string,
@@ -34,7 +66,7 @@ export const signUpWithEmail = async (
   const result = await createUserWithEmailAndPassword(auth, email, password);
   const user = result.user;
 
-  // Generate a new store_id for a new tenant
+  // Generate a unique store ID for the new tenant
   const newStoreId = "STORE_" + Date.now();
   const newUserProfile: UserProfile = {
     uid: user.uid,
@@ -46,14 +78,13 @@ export const signUpWithEmail = async (
     created_at: Timestamp.now()
   };
   
-  const { writeBatch } = await import('firebase/firestore');
   const batch = writeBatch(db);
   
-  // Create user profile FIRST
+  // 1. Create User Profile
   const userRef = doc(db, "Users", user.uid);
   batch.set(userRef, newUserProfile);
   
-  // Create initial business profile SECOND
+  // 2. Create Initial Business Settings
   const settingsRef = doc(db, "Settings", newStoreId);
   batch.set(settingsRef, {
     business_id: newStoreId,
@@ -73,30 +104,30 @@ export const signUpWithEmail = async (
   return newUserProfile;
 };
 
-export const getUserProfile = async (uid: string): Promise<UserProfile | null> => {
-  const userRef = doc(db, "Users", uid);
-  const userSnap = await getDoc(userRef);
-  if (userSnap.exists()) {
-    return userSnap.data() as UserProfile;
-  }
-  return null;
-};
+// ============================================================================
+// MAGIC LINK AUTHENTICATION
+// ============================================================================
 
-export const signOut = async () => {
-  return await firebaseSignOut(auth);
-};
-
-const ACTION_CODE_SETTINGS = {
-  url: window.location.origin + '/',
-  handleCodeInApp: true,
-};
-
+/**
+ * Sends a magic sign-in link to the provided email address.
+ */
 export const sendSignInLink = async (email: string): Promise<void> => {
   await sendSignInLinkToEmail(auth, email, ACTION_CODE_SETTINGS);
-  // Store the email locally so we can confirm on return
+  // Store the email locally so we can confirm it upon redirect return
   window.localStorage.setItem('emailForSignIn', email);
 };
 
+/**
+ * Validates if a given URL string contains a valid Firebase Email Link.
+ */
+export const checkIsSignInWithEmailLink = (link: string): boolean => {
+  return isSignInWithEmailLink(auth, link);
+};
+
+/**
+ * Completes the authentication process using an email magic link.
+ * If the user is new, their tenant infrastructure is created automatically.
+ */
 export const completeSignInWithLink = async (
   email: string,
   link: string,
@@ -107,6 +138,7 @@ export const completeSignInWithLink = async (
   if (!isSignInWithEmailLink(auth, link)) {
     throw new Error('Invalid sign-in link.');
   }
+  
   const result = await signInWithEmailLink(auth, email, link);
   const user = result.user;
   window.localStorage.removeItem('emailForSignIn');
@@ -118,7 +150,7 @@ export const completeSignInWithLink = async (
     return { isNewUser: false, profile: userSnap.data() as UserProfile };
   }
 
-  // New user — create profile
+  // Handle New User
   const newStoreId = "STORE_" + Date.now();
   const newUserProfile: UserProfile = {
     uid: user.uid,
@@ -130,7 +162,6 @@ export const completeSignInWithLink = async (
     created_at: Timestamp.now()
   };
 
-  const { writeBatch } = await import('firebase/firestore');
   const batch = writeBatch(db);
   batch.set(userRef, newUserProfile);
   batch.set(doc(db, "Settings", newStoreId), {
@@ -147,6 +178,77 @@ export const completeSignInWithLink = async (
   return { isNewUser: true, profile: newUserProfile };
 };
 
+// ============================================================================
+// OTP AUTHENTICATION
+// ============================================================================
+
+/**
+ * Requests the backend to send a 6-digit OTP to the provided email.
+ */
+export const sendEmailOTP = async (email: string): Promise<void> => {
+  const response = await fetch('/api/auth/send-otp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email })
+  });
+  
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to send OTP verification code.');
+  }
+};
+
+/**
+ * Verifies an OTP code via the backend API and logs the user in using a Custom Token.
+ */
+export const verifyEmailOTP = async (
+  email: string, 
+  code: string,
+  _businessName?: string,
+  _ownerName?: string,
+  _phone?: string
+): Promise<{ isNewUser: boolean; profile: UserProfile | null }> => {
+  const response = await fetch('/api/auth/verify-otp', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code })
+  });
+  
+  const rawText = await response.text();
+  let data;
+  try {
+    data = JSON.parse(rawText);
+  } catch (error) {
+    throw new Error(`Server returned an invalid response: ${rawText.substring(0, 200)}...`);
+  }
+  
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to verify OTP code.');
+  }
+
+  // Authenticate the client using the Custom Token from the backend
+  const { signInWithCustomToken } = await import('firebase/auth');
+  const result = await signInWithCustomToken(auth, data.token);
+  const user = result.user;
+
+  // Retrieve the profile if it exists
+  const userRef = doc(db, "Users", user.uid);
+  const userSnap = await getDoc(userRef);
+
+  return { 
+    isNewUser: data.isNewUser, 
+    profile: userSnap.exists() ? userSnap.data() as UserProfile : null 
+  };
+};
+
+// ============================================================================
+// OAUTH & SOCIAL AUTHENTICATION
+// ============================================================================
+
+/**
+ * Initiates Google OAuth popup flow.
+ * If the user is new, creates their tenant infrastructure.
+ */
 export const signInWithGoogle = async (): Promise<{ isNewUser: boolean; profile: UserProfile }> => {
   const { signInWithPopup, GoogleAuthProvider } = await import('firebase/auth');
   const provider = new GoogleAuthProvider();
@@ -160,7 +262,7 @@ export const signInWithGoogle = async (): Promise<{ isNewUser: boolean; profile:
     return { isNewUser: false, profile: userSnap.data() as UserProfile };
   }
 
-  // New user — create profile
+  // Handle New User
   const newStoreId = "STORE_" + Date.now();
   const newUserProfile: UserProfile = {
     uid: user.uid,
@@ -182,59 +284,39 @@ export const signInWithGoogle = async (): Promise<{ isNewUser: boolean; profile:
     phone: user.phoneNumber || '',
     address: '', gstin: '', upi_id: '', bank_account: '', bank_ifsc: ''
   });
+  
   await batch.commit();
 
   return { isNewUser: true, profile: newUserProfile };
 };
 
+// ============================================================================
+// UTILITIES
+// ============================================================================
+
+/**
+ * Fetches the user profile from Firestore by User ID.
+ */
+export const getUserProfile = async (uid: string): Promise<UserProfile | null> => {
+  const userRef = doc(db, "Users", uid);
+  const userSnap = await getDoc(userRef);
+  if (userSnap.exists()) {
+    return userSnap.data() as UserProfile;
+  }
+  return null;
+};
+
+/**
+ * Initiates the password reset flow.
+ */
 export const resetPassword = async (email: string): Promise<void> => {
   const { sendPasswordResetEmail } = await import('firebase/auth');
   await sendPasswordResetEmail(auth, email);
 };
 
-export const checkIsSignInWithEmailLink = (link: string): boolean => {
-  return isSignInWithEmailLink(auth, link);
-};
-
-export const sendEmailOTP = async (email: string): Promise<void> => {
-  const res = await fetch('/api/auth/send-otp', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email })
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || 'Failed to send OTP');
-};
-
-export const verifyEmailOTP = async (
-  email: string, 
-  code: string,
-  businessName?: string,
-  ownerName?: string,
-  phone?: string
-): Promise<{ isNewUser: boolean; profile: UserProfile }> => {
-  const res = await fetch('/api/auth/verify-otp', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email, code })
-  });
-  
-  const rawText = await res.text();
-  let data;
-  try {
-    data = JSON.parse(rawText);
-  } catch (err) {
-    throw new Error(`Server returned non-JSON response: ${rawText.substring(0, 200)}...`);
-  }
-  
-  if (!res.ok) throw new Error(data.error || 'Failed to verify OTP');
-
-  const { signInWithCustomToken } = await import('firebase/auth');
-  const result = await signInWithCustomToken(auth, data.token);
-  const user = result.user;
-
-  const userRef = doc(db, "Users", user.uid);
-  const userSnap = await getDoc(userRef);
-
-  return { isNewUser: data.isNewUser, profile: userSnap.exists() ? userSnap.data() as UserProfile : null };
+/**
+ * Signs out the currently authenticated user.
+ */
+export const signOut = async (): Promise<void> => {
+  return await firebaseSignOut(auth);
 };
