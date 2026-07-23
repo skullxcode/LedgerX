@@ -20,6 +20,7 @@ const InventoryDashboard = lazy(() => import('./components/inventory/InventoryDa
 const KanbanBoard = lazy(() => import('./components/kanban/KanbanBoard').then(m => ({ default: m.KanbanBoard })));
 const TransactionsDashboard = lazy(() => import('./components/transactions/TransactionsDashboard').then(m => ({ default: m.TransactionsDashboard })));
 const CRMDashboard = lazy(() => import('./components/crm/CRMDashboard').then(m => ({ default: m.CRMDashboard })));
+const ExpensesDashboard = lazy(() => import('./components/expenses/ExpensesDashboard').then(m => ({ default: m.ExpensesDashboard })));
 const SettingsDashboard = lazy(() => import('./components/settings/SettingsDashboard').then(m => ({ default: m.SettingsDashboard })));
 const AnalyticsDashboard = lazy(() => import('./components/analytics/AnalyticsDashboard').then(m => ({ default: m.AnalyticsDashboard })));
 
@@ -28,7 +29,7 @@ import './index.css';
 // ============================================================================
 // TYPES & CONSTANTS
 // ============================================================================
-type TabType = 'ANALYTICS' | 'POS' | 'INVENTORY' | 'REPAIRS' | 'TRANSACTIONS' | 'CRM' | 'SETTINGS';
+type TabType = 'ANALYTICS' | 'POS' | 'INVENTORY' | 'REPAIRS' | 'TRANSACTIONS' | 'CRM' | 'EXPENSES' | 'SETTINGS';
 
 const NAV_ITEMS: { id: TabType; label: string; icon: string }[] = [
   { id: 'ANALYTICS', label: 'Dashboard', icon: 'dashboard' },
@@ -37,6 +38,7 @@ const NAV_ITEMS: { id: TabType; label: string; icon: string }[] = [
   { id: 'REPAIRS', label: 'Repairs', icon: 'build_circle' },
   { id: 'TRANSACTIONS', label: 'Transactions', icon: 'receipt_long' },
   { id: 'CRM', label: 'Customers', icon: 'group' },
+  { id: 'EXPENSES', label: 'Expenses', icon: 'account_balance' },
   { id: 'SETTINGS', label: 'Settings', icon: 'settings' },
 ];
 
@@ -368,6 +370,12 @@ function MainApp() {
                     {activeTab === 'CRM' && (
                       <div className="p-margin-desktop h-full">
                         <CRMDashboard onViewTransaction={setChallanTxId} initialCustomerId={deepLinkCustomerId} />
+                      </div>
+                    )}
+
+                    {activeTab === 'EXPENSES' && (
+                      <div className="p-margin-desktop h-full">
+                        <ExpensesDashboard />
                       </div>
                     )}
 

@@ -21,3 +21,4 @@ export {
 } from './api/jobCards';
 export * from "./api/settings";
 export * from "./api/auth";
+export * from "./api/expenses";

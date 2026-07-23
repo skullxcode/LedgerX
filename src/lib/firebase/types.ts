@@ -251,3 +251,30 @@ export interface AuditLog extends AuditBase {
   new_values?: Record<string, any>;
   ip_address?: string;
 }
+
+// ============================================================================
+// EXPENSES & PAYABLES
+// ============================================================================
+
+export enum ExpenseCategory {
+  PROCUREMENT = "PROCUREMENT",
+  SALARY = "SALARY",
+  UTILITIES = "UTILITIES",
+  RENT = "RENT",
+  MAINTENANCE = "MAINTENANCE",
+  OTHER = "OTHER"
+}
+
+export interface Expense extends AuditBase {
+  expense_id: string;
+  store_id: string;
+  amount: number;
+  category: ExpenseCategory | string;
+  vendor_name?: string;
+  date: Timestamp | any;
+  notes?: string;
+  payment_method?: string;
+  status: 'PAID' | 'UNPAID';
+  receipt_url?: string;
+  search_terms: string[];
+}
