@@ -3,6 +3,7 @@ import { type Transaction, DocumentType, PaymentStatus, searchTransactions, Form
 import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
 import { StatementOfAccount } from './StatementOfAccount';
+import { generatePDF, sharePDF } from '../../lib/utils/pdf';
 
 type DatePreset = 'ALL' | 'TODAY' | 'LAST_7' | 'THIS_MONTH';
 
@@ -131,6 +132,20 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
           >
             <span className="material-symbols-outlined text-[18px]">print</span>
             Print Batch
+          </button>
+          <button 
+            className="bg-surface-container-lowest border border-outline-variant px-4 py-2 flex items-center gap-2 font-label-md hover:bg-surface-container transition-colors rounded text-primary"
+            onClick={() => generatePDF('print-statement-of-account', `Statement_${new Date().toISOString().split('T')[0]}`)}
+          >
+            <span className="material-symbols-outlined text-[18px]">download</span>
+            Download PDF
+          </button>
+          <button 
+            className="bg-surface-container-lowest border border-outline-variant px-4 py-2 flex items-center gap-2 font-label-md hover:bg-surface-container transition-colors rounded text-primary"
+            onClick={() => sharePDF('print-statement-of-account', `Statement_${new Date().toISOString().split('T')[0]}`, 'Statement of Account', 'Here is your Statement of Account.')}
+          >
+            <span className="material-symbols-outlined text-[18px]">share</span>
+            Share
           </button>
         </div>
       </div>

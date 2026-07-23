@@ -5,6 +5,7 @@ import { app } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 import { useBusiness } from '../../context/BusinessContext';
 import { usePOS } from '../../context/POSContext';
+import { generatePDF, sharePDF } from '../../lib/utils/pdf';
 
 export interface DeliveryChallanProps {
   /** The unique ID of the transaction to display */
@@ -173,6 +174,22 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
           >
             <span className="material-symbols-outlined text-[16px]">print</span>
             Print
+          </button>
+          
+          <button 
+            className="flex items-center gap-1.5 px-4 py-2 bg-surface-container-lowest border border-outline-variant text-primary rounded font-bold text-[11px] uppercase transition-all hover:bg-surface-container"
+            onClick={() => generatePDF('print-invoice', `Invoice_${transaction.custom_doc_no || transaction.transaction_id.substring(0,8)}`)}
+          >
+            <span className="material-symbols-outlined text-[16px]">download</span>
+            Download PDF
+          </button>
+
+          <button 
+            className="flex items-center gap-1.5 px-4 py-2 bg-surface-container-lowest border border-outline-variant text-primary rounded font-bold text-[11px] uppercase transition-all hover:bg-surface-container"
+            onClick={() => sharePDF('print-invoice', `Invoice_${transaction.custom_doc_no || transaction.transaction_id.substring(0,8)}`, 'Invoice', 'Here is your invoice.')}
+          >
+            <span className="material-symbols-outlined text-[16px]">share</span>
+            Share
           </button>
           
           {transaction.document_type === DocumentType.QUOTE && (
