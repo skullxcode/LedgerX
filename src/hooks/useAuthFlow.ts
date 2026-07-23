@@ -6,7 +6,7 @@ import {
   verifyEmailOTP, 
   signInWithGoogle, 
   resetPassword 
-} from '@/lib/firebase';
+} from '@/lib/firebase/api/auth';
 
 export type AuthMode = 'login' | 'signup' | 'forgot_password' | 'otp_sent' | 'otp_sent_signup';
 export type AuthMethod = 'password' | 'otp';

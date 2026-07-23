@@ -1,7 +1,8 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { auth, getUserProfile, type UserProfile } from '@/lib/firebase';
+import { auth } from '@/lib/firebase/config';
+import { getUserProfile } from '@/lib/firebase/api/auth';
+import type { UserProfile } from '@/lib/firebase/types';
 
 // ============================================================================
 // TYPES

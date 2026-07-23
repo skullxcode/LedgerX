@@ -18,7 +18,7 @@ export {
   addPartToJobCard,
   deleteJobCard,
   getJobCardsByCustomer
-} from './api/jobCards';
+} from './api/jobcards';
 export * from "./api/settings";
 export * from "./api/auth";
 export * from "./api/expenses";

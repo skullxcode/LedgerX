@@ -1,6 +1,6 @@
-/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
-import { type BusinessProfile, getBusinessProfile } from '@/lib/firebase';
+import type { BusinessProfile } from '@/lib/firebase/types';
+import { getBusinessProfile } from '@/lib/firebase/api/settings';
 import { useAuth } from './AuthContext';
 
 // ============================================================================
