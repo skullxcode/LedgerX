@@ -1,104 +1,174 @@
-import React, { useState } from 'react';
-import { signInWithEmail, signUpWithEmail, sendEmailOTP, verifyEmailOTP, signInWithGoogle, resetPassword } from '@/lib/firebase';
+import React, { useState, useEffect } from 'react';
+import { 
+  signInWithEmail, 
+  sendEmailOTP, 
+  verifyEmailOTP, 
+  signInWithGoogle, 
+  resetPassword 
+} from '@/lib/firebase';
 
+/**
+ * Defines the possible states of the authentication flow.
+ * - 'login': Standard sign-in screen
+ * - 'signup': New account creation screen
+ * - 'forgot_password': Password reset request screen
+ * - 'otp_sent': Awaiting OTP confirmation for login
+ * - 'otp_sent_signup': Awaiting OTP confirmation for signup
+ */
 type AuthMode = 'login' | 'signup' | 'forgot_password' | 'otp_sent' | 'otp_sent_signup';
 
+/**
+ * Defines the selected authentication mechanism.
+ */
+type AuthMethod = 'password' | 'otp';
+
 export const LoginScreen: React.FC = () => {
-  const [mode, setMode] = useState<AuthMode>('login');
-  const [authMethod, setAuthMethod] = useState<'password' | 'otp'>('password');
+  // --- View State ---
+  const [currentMode, setCurrentMode] = useState<AuthMode>('login');
+  const [selectedAuthMethod, setSelectedAuthMethod] = useState<AuthMethod>('password');
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  // --- Form Data ---
+  const [emailAddress, setEmailAddress] = useState('');
+  const [userPassword, setUserPassword] = useState('');
   const [businessName, setBusinessName] = useState('');
-  const [otpCode, setOtpCode] = useState('');
+  const [verificationCode, setVerificationCode] = useState('');
   
-  const [globalError, setGlobalError] = useState('');
-  const [successMsg, setSuccessMsg] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [timeLeft, setTimeLeft] = React.useState(60);
+  // --- UI Feedback State ---
+  const [errorMessage, setErrorMessage] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [otpResendTimer, setOtpResendTimer] = useState(60);
 
-  React.useEffect(() => {
-    let timer: any;
-    if ((mode === 'otp_sent' || mode === 'otp_sent_signup') && timeLeft > 0) {
-      timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+  /**
+   * Manages the countdown timer for resending OTP emails.
+   * Decrements every second when in an OTP confirmation mode.
+   */
+  useEffect(() => {
+    let countdownInterval: NodeJS.Timeout;
+    const isOtpMode = currentMode === 'otp_sent' || currentMode === 'otp_sent_signup';
+    
+    if (isOtpMode && otpResendTimer > 0) {
+      countdownInterval = setInterval(() => setOtpResendTimer(prev => prev - 1), 1000);
     }
-    return () => clearInterval(timer);
-  }, [mode, timeLeft]);
+    
+    return () => {
+      if (countdownInterval) clearInterval(countdownInterval);
+    };
+  }, [currentMode, otpResendTimer]);
 
-  // ── Handlers ────────────────────────────────────────────────────────────────
+  // ============================================================================
+  // EVENT HANDLERS
+  // ============================================================================
+
+  /**
+   * Initiates the Google OAuth sign-in flow.
+   * Firebase handles the popup/redirect and App.tsx automatically detects the state change.
+   */
   const handleGoogleSignIn = async () => {
-    setLoading(true);
-    setGlobalError('');
+    setIsProcessing(true);
+    setErrorMessage('');
     try {
       await signInWithGoogle();
-      // App.tsx handles auth state changes automatically
-    } catch (err: any) {
-      setGlobalError(err.message || 'Google sign in failed');
+      // Note: On success, AuthContext will update and unmount this component.
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Google sign in failed. Please try again.');
     } finally {
-      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setGlobalError('');
-    setLoading(true);
+  /**
+   * Handles traditional email/password authentication for both login and signup.
+   */
+  const handlePasswordSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setErrorMessage('');
+    setIsProcessing(true);
+
     try {
-      if (mode === 'signup') {
-        if (!businessName) throw new Error("Business Name is required");
+      if (currentMode === 'signup') {
+        if (!businessName.trim()) {
+          throw new Error("Business Name is required for signup.");
+        }
+        
+        // Temporarily store signup details to complete the flow after OTP verification
         window.localStorage.setItem('signup_businessName', businessName.trim());
-        window.localStorage.setItem('signup_password', password);
-        setTimeLeft(60);
-        await sendEmailOTP(email);
-        setMode('otp_sent_signup');
+        window.localStorage.setItem('signup_password', userPassword);
+        
+        setOtpResendTimer(60);
+        await sendEmailOTP(emailAddress);
+        setCurrentMode('otp_sent_signup');
       } else {
-        await signInWithEmail(email, password);
+        await signInWithEmail(emailAddress, userPassword);
       }
-    } catch (err: any) {
-      setGlobalError(err.message || 'Authentication failed');
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Authentication failed. Check your credentials.');
     } finally {
-      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
-  const handleSendOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setGlobalError('');
-    setLoading(true);
+  /**
+   * Initiates the OTP email flow by requesting a code from the backend API.
+   */
+  const handleSendOTP = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setErrorMessage('');
+    setIsProcessing(true);
+
     try {
-      if (mode === 'signup' && !businessName) throw new Error("Business Name is required");
-      
-      if (mode === 'signup') {
+      if (currentMode === 'signup') {
+        if (!businessName.trim()) {
+           throw new Error("Business Name is required for signup.");
+        }
         window.localStorage.setItem('otp_businessName', businessName.trim());
       }
       
-      setTimeLeft(60);
-      await sendEmailOTP(email);
-      setMode('otp_sent');
-    } catch (err: any) {
-      setGlobalError(err.message || 'Failed to send OTP.');
+      setOtpResendTimer(60);
+      await sendEmailOTP(emailAddress);
+      setCurrentMode(currentMode === 'signup' ? 'otp_sent_signup' : 'otp_sent');
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Failed to send verification code. Please try again.');
     } finally {
-      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
-  const handleOTPComplete = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setGlobalError('');
-    try {
-      if (mode === 'otp_sent_signup') {
-        const storedBusinessName = window.localStorage.getItem('signup_businessName') || undefined;
-        const storedPassword = window.localStorage.getItem('signup_password');
+  /**
+   * Completes the OTP verification process. 
+   * For signups, it also configures the initial user profile.
+   */
+  const handleOTPComplete = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setIsProcessing(true);
+    setErrorMessage('');
 
-        const res = await verifyEmailOTP(email, otpCode, storedBusinessName, email.split('@')[0]);
-        
-        if (!res.isNewUser) {
+    try {
+      const storedBusinessName = window.localStorage.getItem(
+        currentMode === 'otp_sent_signup' ? 'signup_businessName' : 'otp_businessName'
+      ) || undefined;
+      
+      // Extract owner name from email prefix as a fallback
+      const ownerNameFallback = emailAddress.split('@')[0];
+
+      // Verify the code via our custom backend
+      const verificationResponse = await verifyEmailOTP(
+        emailAddress, 
+        verificationCode, 
+        storedBusinessName, 
+        ownerNameFallback
+      );
+
+      if (currentMode === 'otp_sent_signup') {
+        // Prevent existing users from completing a signup flow
+        if (!verificationResponse.isNewUser) {
            const { getAuth, signOut } = await import('firebase/auth');
            await signOut(getAuth());
            throw new Error("An account with this email already exists. Please log in instead.");
         }
 
+        // Apply the password if it was set during the password signup flow
+        const storedPassword = window.localStorage.getItem('signup_password');
         if (storedPassword) {
            const { updatePassword, getAuth } = await import('firebase/auth');
            const auth = getAuth();
@@ -106,63 +176,75 @@ export const LoginScreen: React.FC = () => {
               await updatePassword(auth.currentUser, storedPassword);
            }
         }
+        
+        // Clean up temporary storage
         window.localStorage.removeItem('signup_businessName');
         window.localStorage.removeItem('signup_password');
       } else {
-        const storedBusinessName = window.localStorage.getItem('otp_businessName') || undefined;
-        await verifyEmailOTP(email, otpCode, storedBusinessName, email.split('@')[0]);
         window.localStorage.removeItem('otp_businessName');
       }
-    } catch (err: any) {
-      setGlobalError(err.message || 'Failed to verify OTP.');
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Failed to verify OTP code.');
     } finally {
-      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
-  const handleForgotPassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setGlobalError('');
-    setSuccessMsg('');
-    if (!email) {
-      setGlobalError('Please enter your email first.');
+  /**
+   * Requests a password reset email from Firebase Auth.
+   */
+  const handleForgotPassword = async (event: React.FormEvent) => {
+    event.preventDefault();
+    setErrorMessage('');
+    setSuccessMessage('');
+    
+    if (!emailAddress) {
+      setErrorMessage('Please enter your email address first.');
       return;
     }
-    setLoading(true);
+    
+    setIsProcessing(true);
     try {
-      await resetPassword(email);
-      setSuccessMsg('Password reset email sent! Check your inbox.');
-    } catch (err: any) {
-      setGlobalError(err.message || 'Failed to send reset email.');
+      await resetPassword(emailAddress);
+      setSuccessMessage('Password reset email sent! Please check your inbox.');
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Failed to send password reset email.');
     } finally {
-      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
+  /**
+   * Resends the OTP email and resets the countdown timer.
+   */
   const handleResendOTP = async () => {
-    setGlobalError('');
-    setLoading(true);
+    setErrorMessage('');
+    setIsProcessing(true);
     try {
-      await sendEmailOTP(email);
-      setTimeLeft(60);
-      setSuccessMsg('A new verification code has been sent!');
-    } catch (err: any) {
-      setGlobalError(err.message || 'Failed to resend OTP.');
+      await sendEmailOTP(emailAddress);
+      setOtpResendTimer(60);
+      setSuccessMessage('A new verification code has been sent!');
+    } catch (error: any) {
+      setErrorMessage(error.message || 'Failed to resend the verification code.');
     } finally {
-      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
-  // ── Forgot Password Screen ──────────────────────────────────────────────────
-  if (mode === 'forgot_password') {
+  // ============================================================================
+  // RENDER HELPERS
+  // ============================================================================
+
+  // --- Render: Forgot Password View ---
+  if (currentMode === 'forgot_password') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
         <div className="w-full max-w-md bg-surface-container-lowest rounded-2xl shadow-xl border border-outline-variant/30 p-8">
           <h2 className="text-2xl font-bold text-primary mb-2">Reset Password</h2>
           <p className="text-on-surface-variant text-sm mb-6">Enter your email and we will send you a link to reset your password.</p>
           
-          {globalError && <div className="mb-4 p-3 bg-error-container text-on-error-container text-sm rounded-lg">{globalError}</div>}
-          {successMsg && <div className="mb-4 p-3 bg-green-100 text-green-800 text-sm rounded-lg">{successMsg}</div>}
+          {errorMessage && <div className="mb-4 p-3 bg-error-container text-on-error-container text-sm rounded-lg">{errorMessage}</div>}
+          {successMessage && <div className="mb-4 p-3 bg-green-100 text-green-800 text-sm rounded-lg">{successMessage}</div>}
 
           <form onSubmit={handleForgotPassword} className="space-y-4">
             <div>
@@ -172,20 +254,20 @@ export const LoginScreen: React.FC = () => {
                 required
                 className="w-full border border-outline-variant rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none p-3"
                 placeholder="you@example.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
+                value={emailAddress}
+                onChange={e => setEmailAddress(e.target.value)}
               />
             </div>
             <button
               type="submit"
-              disabled={loading || !email}
+              disabled={isProcessing || !emailAddress}
               className="w-full bg-primary text-on-primary py-3 rounded-lg font-bold disabled:opacity-50 transition-opacity"
             >
-              {loading ? 'Sending...' : 'Send Reset Link'}
+              {isProcessing ? 'Sending...' : 'Send Reset Link'}
             </button>
           </form>
 
-          <button onClick={() => { setMode('login'); setGlobalError(''); setSuccessMsg(''); }} className="mt-6 w-full text-center text-primary text-sm font-medium hover:underline">
+          <button onClick={() => { setCurrentMode('login'); setErrorMessage(''); setSuccessMessage(''); }} className="mt-6 w-full text-center text-primary text-sm font-medium hover:underline">
             ← Back to login
           </button>
         </div>
@@ -193,8 +275,8 @@ export const LoginScreen: React.FC = () => {
     );
   }
 
-  // ── OTP Confirm Screen ────────────────────────────────────────────────────────
-  if (mode === 'otp_sent' || mode === 'otp_sent_signup') {
+  // --- Render: OTP Confirmation View ---
+  if (currentMode === 'otp_sent' || currentMode === 'otp_sent_signup') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
         <div className="w-full max-w-md bg-surface-container-lowest rounded-2xl shadow-xl border border-outline-variant/30 p-8 text-center">
@@ -203,12 +285,12 @@ export const LoginScreen: React.FC = () => {
           </div>
           <h2 className="text-2xl font-bold text-primary mb-2">Check your email</h2>
           <p className="text-on-surface-variant text-sm mb-6">
-            We've sent a 6-digit verification code to <span className="font-bold text-on-surface">{email}</span>.
+            We've sent a 6-digit verification code to <span className="font-bold text-on-surface">{emailAddress}</span>.
             <br/><span className="text-[12px] italic mt-2 block text-secondary">Please check spam emails for OTP as it might be delivered there.</span>
           </p>
           
-          {successMsg && <div className="mb-4 p-3 bg-green-100 text-green-800 text-sm rounded-lg text-left">{successMsg}</div>}
-          {globalError && <div className="mb-4 p-3 bg-error-container text-on-error-container text-sm rounded-lg text-left">{globalError}</div>}
+          {successMessage && <div className="mb-4 p-3 bg-green-100 text-green-800 text-sm rounded-lg text-left">{successMessage}</div>}
+          {errorMessage && <div className="mb-4 p-3 bg-error-container text-on-error-container text-sm rounded-lg text-left">{errorMessage}</div>}
           
           <form onSubmit={handleOTPComplete} className="space-y-6 mb-6">
             <input
@@ -216,27 +298,27 @@ export const LoginScreen: React.FC = () => {
               maxLength={6}
               className="w-full text-center tracking-[1em] font-mono text-3xl border border-outline-variant rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none p-4"
               placeholder="000000"
-              value={otpCode}
-              onChange={e => setOtpCode(e.target.value.replace(/\D/g, ''))}
+              value={verificationCode}
+              onChange={e => setVerificationCode(e.target.value.replace(/\D/g, ''))} // Ensure only numbers
             />
             <button
               type="submit"
-              disabled={loading || otpCode.length !== 6}
+              disabled={isProcessing || verificationCode.length !== 6}
               className="w-full bg-primary text-on-primary py-3 rounded-lg font-bold disabled:opacity-50 transition-opacity shadow-sm"
             >
-              {loading ? 'Verifying...' : 'Verify & Sign In'}
+              {isProcessing ? 'Verifying...' : 'Verify & Sign In'}
             </button>
             <button
               type="button"
               onClick={handleResendOTP}
-              disabled={timeLeft > 0 || loading}
+              disabled={otpResendTimer > 0 || isProcessing}
               className="w-full mt-4 text-primary text-sm font-medium hover:underline disabled:opacity-50 disabled:no-underline"
             >
-              {timeLeft > 0 ? `Resend Code in ${timeLeft}s` : 'Resend Code'}
+              {otpResendTimer > 0 ? `Resend Code in ${otpResendTimer}s` : 'Resend Code'}
             </button>
           </form>
 
-          <button onClick={() => { setMode('login'); setOtpCode(''); }} className="text-primary text-sm font-medium hover:underline">
+          <button onClick={() => { setCurrentMode('login'); setVerificationCode(''); }} className="text-primary text-sm font-medium hover:underline">
             ← Back to login
           </button>
         </div>
@@ -244,62 +326,68 @@ export const LoginScreen: React.FC = () => {
     );
   }
 
-  // ── Main Auth Screen ─────────────────────────────────────────────────────────
+  // --- Render: Main Authentication View ---
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4 py-8">
       <div className="w-full max-w-md bg-surface-container-lowest rounded-2xl shadow-xl border border-outline-variant/30 p-8">
         
-        {/* Header */}
+        {/* Header Section */}
         <div className="text-center mb-8">
           <h2 className="text-3xl font-bold text-primary tracking-tight mb-2">LedgerX</h2>
           <p className="text-on-surface-variant text-sm">
-            {mode === 'login' ? 'Welcome back to your business' : 'Create your business account'}
+            {currentMode === 'login' ? 'Welcome back to your business' : 'Create your business account'}
           </p>
         </div>
 
-        {globalError && (
+        {/* Global Error Banner */}
+        {errorMessage && (
           <div className="mb-6 p-3 bg-error-container text-on-error-container text-sm rounded-lg flex items-start gap-2">
             <span className="material-symbols-outlined text-lg shrink-0">error</span>
-            <span>{globalError}</span>
+            <span>{errorMessage}</span>
           </div>
         )}
 
-        {/* Google Sign In */}
+        {/* Social Authentication */}
         <button
+          type="button"
           onClick={handleGoogleSignIn}
-          disabled={loading}
+          disabled={isProcessing}
           className="w-full flex items-center justify-center gap-3 bg-white border border-outline-variant py-3 px-4 rounded-xl text-on-surface font-medium hover:bg-surface-variant transition-colors shadow-sm disabled:opacity-50 mb-6"
         >
           <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" className="w-5 h-5" />
           Continue with Google
         </button>
 
+        {/* Divider */}
         <div className="flex items-center gap-4 mb-6">
           <div className="flex-1 h-px bg-outline-variant/50"></div>
           <span className="text-xs text-on-surface-variant font-medium uppercase tracking-wider">Or</span>
           <div className="flex-1 h-px bg-outline-variant/50"></div>
         </div>
 
-        {/* Auth Method Toggle */}
+        {/* Authentication Method Toggle (Password vs OTP) */}
         <div className="flex bg-surface-variant/50 p-1.5 rounded-xl mb-6">
           <button
-            onClick={() => setAuthMethod('password')}
-            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${authMethod === 'password' ? 'bg-white shadow-sm text-primary' : 'text-on-surface-variant hover:text-primary'}`}
+            type="button"
+            onClick={() => setSelectedAuthMethod('password')}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${selectedAuthMethod === 'password' ? 'bg-white shadow-sm text-primary' : 'text-on-surface-variant hover:text-primary'}`}
           >
             Password
           </button>
           <button
-            onClick={() => setAuthMethod('otp')}
-            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${authMethod === 'otp' ? 'bg-white shadow-sm text-primary' : 'text-on-surface-variant hover:text-primary'}`}
+            type="button"
+            onClick={() => setSelectedAuthMethod('otp')}
+            className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${selectedAuthMethod === 'otp' ? 'bg-white shadow-sm text-primary' : 'text-on-surface-variant hover:text-primary'}`}
           >
             Email Code
           </button>
         </div>
 
-        {/* Main Form */}
-        <form onSubmit={authMethod === 'password' ? handlePasswordSubmit : handleSendOTP} className="space-y-4">
+        {/* Credentials Form */}
+        <form onSubmit={selectedAuthMethod === 'password' ? handlePasswordSubmit : handleSendOTP} className="space-y-4">
           
-          {mode === 'signup' && (
+          {/* Business Name Field (Signup Only) */}
+          {currentMode === 'signup' && (
             <div>
               <label className="block text-sm font-medium text-on-surface mb-1">Business Name</label>
               <input
@@ -313,6 +401,7 @@ export const LoginScreen: React.FC = () => {
             </div>
           )}
 
+          {/* Email Field (Always Required) */}
           <div>
             <label className="block text-sm font-medium text-on-surface mb-1">Email Address</label>
             <input
@@ -320,17 +409,18 @@ export const LoginScreen: React.FC = () => {
               required
               className="w-full border border-outline-variant rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none p-3 bg-surface"
               placeholder="you@example.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
+              value={emailAddress}
+              onChange={e => setEmailAddress(e.target.value)}
             />
           </div>
 
-          {authMethod === 'password' && (
+          {/* Password Field (Only if Password method selected) */}
+          {selectedAuthMethod === 'password' && (
             <div>
               <div className="flex items-center justify-between mb-1">
                 <label className="block text-sm font-medium text-on-surface">Password</label>
-                {mode === 'login' && (
-                  <button type="button" onClick={() => setMode('forgot_password')} className="text-xs font-medium text-primary hover:underline">
+                {currentMode === 'login' && (
+                  <button type="button" onClick={() => setCurrentMode('forgot_password')} className="text-xs font-medium text-primary hover:underline">
                     Forgot?
                   </button>
                 )}
@@ -340,37 +430,39 @@ export const LoginScreen: React.FC = () => {
                 required
                 className="w-full border border-outline-variant rounded-lg focus:border-primary focus:ring-1 focus:ring-primary outline-none p-3 bg-surface"
                 placeholder="••••••••"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
+                value={userPassword}
+                onChange={e => setUserPassword(e.target.value)}
               />
             </div>
           )}
 
+          {/* Submit Action */}
           <button
             type="submit"
-            disabled={loading}
+            disabled={isProcessing}
             className="w-full bg-primary text-on-primary py-3 rounded-lg font-bold shadow-sm hover:shadow-md transition-all disabled:opacity-50 mt-2"
           >
-            {loading ? (
+            {isProcessing ? (
               <span className="flex items-center justify-center gap-2">
                 <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
                 Processing...
               </span>
             ) : (
-              authMethod === 'password' ? (mode === 'login' ? 'Sign In' : 'Create Account') : 'Send 6-Digit Code'
+              selectedAuthMethod === 'password' ? (currentMode === 'login' ? 'Sign In' : 'Create Account') : 'Send 6-Digit Code'
             )}
           </button>
         </form>
 
-        {/* Footer Toggle */}
+        {/* Form Footer (Toggle Login/Signup) */}
         <div className="mt-8 text-center border-t border-outline-variant/30 pt-6">
           <p className="text-sm text-on-surface-variant">
-            {mode === 'login' ? "Don't have an account?" : "Already have an account?"}
+            {currentMode === 'login' ? "Don't have an account?" : "Already have an account?"}
             <button 
-              onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setGlobalError(''); }}
+              type="button"
+              onClick={() => { setCurrentMode(currentMode === 'login' ? 'signup' : 'login'); setErrorMessage(''); }}
               className="ml-2 font-bold text-primary hover:underline"
             >
-              {mode === 'login' ? 'Sign up' : 'Log in'}
+              {currentMode === 'login' ? 'Sign up' : 'Log in'}
             </button>
           </p>
         </div>
