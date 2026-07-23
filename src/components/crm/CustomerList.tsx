@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { type Customer, searchCustomers } from '@/lib/firebase';
+import { type Customer } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
+import { useCustomers } from '../../hooks/queries/useCustomers';
 
 interface CustomerListProps {
   onSelect: (customer: Customer) => void;
@@ -11,25 +12,12 @@ interface CustomerListProps {
 export const CustomerList: React.FC<CustomerListProps> = ({ onSelect, onAddNew, selectedId }) => {
   const { profile } = useAuth();
   const [query, setQuery] = useState('');
-  const [customers, setCustomers] = useState<Customer[]>([]);
   const [showPendingOnly, setShowPendingOnly] = useState(false);
-
-  useEffect(() => {
-    const fetchCust = async () => {
-      if (profile?.store_id) {
-        const res = await searchCustomers(profile.store_id, query);
-        setCustomers(res);
-      } else {
-        setCustomers([]);
-      }
-    };
-    const debounce = setTimeout(fetchCust, 300);
-    return () => clearTimeout(debounce);
-  }, [query, profile?.store_id]);
+  const { data: allCustomers = [] } = useCustomers(profile?.store_id, query);
 
   const displayedCustomers = showPendingOnly
-    ? customers.filter(c => c.udhaar_balance && c.udhaar_balance > 0)
-    : customers;
+    ? allCustomers.filter(c => c.udhaar_balance && c.udhaar_balance > 0)
+    : allCustomers;
 
   return (
     <div className="flex flex-col h-full bg-surface-container-lowest rounded-lg border border-outline-variant shadow-sm overflow-hidden">

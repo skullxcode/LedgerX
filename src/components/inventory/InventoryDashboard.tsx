@@ -1,7 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
-import { type InventoryItem, subscribeToInventory, app, type Transaction } from '@/lib/firebase';
+import { type InventoryItem, app, type Transaction } from '@/lib/firebase';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
+import { useInventory } from '../../hooks/queries/useInventory';
 import { InventoryList } from './InventoryList';
 import { InventoryForm } from './InventoryForm';
 import { BulkImportModal } from './BulkImportModal';
@@ -12,18 +13,10 @@ import { BulkImportModal } from './BulkImportModal';
  */
 export const InventoryDashboard: React.FC = () => {
   const { profile } = useAuth();
-  const [items, setItems] = useState<InventoryItem[]>([]);
+  const { data: items = [], isLoading } = useInventory(profile?.store_id);
   const [isAdding, setIsAdding] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
   const [turnoverRate, setTurnoverRate] = useState(0);
-
-  useEffect(() => {
-    if (!profile?.store_id) return;
-    const unsubscribe = subscribeToInventory(profile.store_id, (data: InventoryItem[]) => {
-      setItems(data);
-    });
-    return () => unsubscribe();
-  }, [profile?.store_id]);
 
   const [searchQuery, setSearchQuery] = useState('');
 

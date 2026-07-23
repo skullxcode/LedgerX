@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { type InventoryItem, ItemType, addInventoryItem, updateInventoryItem, storage } from '@/lib/firebase';
+import { type InventoryItem, ItemType, storage } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
+import { useInventoryMutations } from '../../hooks/queries/useInventory';
 import { Input } from '../ui/Input';
 import toast from 'react-hot-toast';
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -40,6 +41,7 @@ const DRAFT_KEY = 'ledgerx_inventory_draft';
  */
 export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClose, onSuccess, categories = [] }) => {
   const { profile } = useAuth();
+  const { addMutation, updateMutation } = useInventoryMutations(profile?.store_id);
   
   const [formData, setFormData] = useState(() => {
     if (initialData) {
@@ -165,16 +167,16 @@ export const InventoryForm: React.FC<InventoryFormProps> = ({ initialData, onClo
       };
 
       if (initialData && !addAnother) {
-        await updateInventoryItem(initialData.item_id, data);
+        await updateMutation.mutateAsync({ itemId: initialData.item_id, updates: data });
         toast.success("Item updated successfully");
         onClose();
       } else {
-        const itemId = await addInventoryItem(profile.store_id, data);
+        const result = await addMutation.mutateAsync(data);
         toast.success("Item added successfully");
         localStorage.removeItem(DRAFT_KEY);
         
         if (onSuccess) {
-          onSuccess(itemId, data);
+          onSuccess(result, data);
         }
 
         if (addAnother) {

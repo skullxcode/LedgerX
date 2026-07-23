@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
-import { type Transaction, DocumentType, PaymentStatus, searchTransactions, FormatMode } from '@/lib/firebase';
+import { useState, useEffect, useMemo } from "react";
+import { type Transaction, DocumentType, PaymentStatus, FormatMode } from '@/lib/firebase';
 import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
 import { useAuth } from '../../context/AuthContext';
+import { useTransactions } from '../../hooks/queries/useTransactions';
 import { StatementOfAccount } from './StatementOfAccount';
 import { generatePDF, sharePDF } from '../../lib/utils/pdf';
 
@@ -25,76 +26,64 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
   const [statusFilter, setStatusFilter] = useState<'ACTIVE' | 'VOIDED' | 'ALL'>('ACTIVE');
   const [datePreset, setDatePreset] = useState<DatePreset>('ALL');
   
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+
   
   // Pagination State
   const [currentPage, setCurrentPage] = useState(0);
   const [pageCursors, setPageCursors] = useState<(QueryDocumentSnapshot<DocumentData> | null)[]>([null]);
-  const [hasMore, setHasMore] = useState(true);
   const PAGE_SIZE = 50;
 
   // Reset pagination on filter change
   useEffect(() => {
     setCurrentPage(0);
     setPageCursors([null]);
-    setHasMore(true);
   }, [query, docFilter, paymentFilter, statusFilter, datePreset]);
 
+  const { startDate, endDate } = useMemo(() => {
+    let start: Date | undefined;
+    let end: Date | undefined;
+    
+    const now = new Date();
+    if (datePreset === 'TODAY') {
+      start = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+    } else if (datePreset === 'LAST_7') {
+      start = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      end = now;
+    } else if (datePreset === 'THIS_MONTH') {
+      start = new Date(now.getFullYear(), now.getMonth(), 1);
+      end = now;
+    }
+    return { startDate: start, endDate: end };
+  }, [datePreset]);
+
+  const { data, isLoading } = useTransactions(
+    profile?.store_id,
+    query,
+    docFilter,
+    paymentFilter,
+    startDate,
+    endDate,
+    statusFilter,
+    PAGE_SIZE,
+    pageCursors[currentPage]
+  );
+
+  const transactions = data?.data || [];
+  const hasMore = transactions.length >= PAGE_SIZE;
+
+  // Sync next page cursor when data loads
   useEffect(() => {
-    const fetchTx = async () => {
-      setIsLoading(true);
-      try {
-        let startDate: Date | undefined;
-        let endDate: Date | undefined;
-        
-        const now = new Date();
-        if (datePreset === 'TODAY') {
-          startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-          endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-        } else if (datePreset === 'LAST_7') {
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          endDate = now;
-        } else if (datePreset === 'THIS_MONTH') {
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-          endDate = now;
-        }
+    if (data?.lastDoc && hasMore) {
+      setPageCursors(prev => {
+        const newCursors = [...prev];
+        newCursors[currentPage + 1] = data.lastDoc;
+        return newCursors;
+      });
+    }
+  }, [data?.lastDoc, hasMore, currentPage]);
 
-        if (!profile?.store_id) return;
-        const res = await searchTransactions(
-          profile.store_id, 
-          query, 
-          docFilter, 
-          paymentFilter, 
-          startDate, 
-          endDate, 
-          statusFilter,
-          PAGE_SIZE,
-          pageCursors[currentPage]
-        );
-        
-        setTransactions(res.transactions);
-        
-        if (res.transactions.length < PAGE_SIZE) {
-          setHasMore(false);
-        } else {
-          setHasMore(true);
-          setPageCursors(prev => {
-            const newCursors = [...prev];
-            newCursors[currentPage + 1] = res.lastDoc;
-            return newCursors;
-          });
-        }
-      } catch (e) {
-        console.error("Search failed", e);
-      } finally {
-        setIsLoading(false);
-      }
-    };
 
-    const debounce = setTimeout(fetchTx, 400);
-    return () => clearTimeout(debounce);
-  }, [query, docFilter, paymentFilter, statusFilter, datePreset, profile?.store_id, currentPage, pageCursors]);
 
   const handleClearFilters = () => {
     setQuery('');

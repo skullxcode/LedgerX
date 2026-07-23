@@ -5,6 +5,8 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { Toaster } from 'react-hot-toast';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import { SearchDropdown } from './components/pos/SearchDropdown';
@@ -400,14 +402,27 @@ function MainApp() {
 // ============================================================================
 // ROOT PROVIDER WRAPPER
 // ============================================================================
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes
+      refetchOnWindowFocus: false, // We're using Firebase, so we don't want to over-fetch on focus
+    },
+  },
+});
+
 function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <Toaster position="top-right" />
-        <MainApp />
-      </AuthProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AuthProvider>
+          <Toaster position="top-right" />
+          <MainApp />
+        </AuthProvider>
+      </ThemeProvider>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
   );
 }
 
