@@ -9,7 +9,6 @@ import { StatementOfAccount } from './StatementOfAccount';
 import { TransactionFilterBar } from './TransactionFilterBar';
 import { DesktopTransactionTable } from './DesktopTransactionTable';
 import { MobileTransactionList } from './MobileTransactionList';
-import { VoidConfirmationModal } from './VoidConfirmationModal';
 import { exportToCSV } from '@/lib/utils/csv';
 
 export type DatePreset = 'ALL' | 'TODAY' | 'LAST_7' | 'THIS_MONTH' | 'CUSTOM';

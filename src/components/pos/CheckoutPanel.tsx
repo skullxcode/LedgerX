@@ -262,7 +262,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
         
         if (jobIds.length > 0) {
           try {
-            const { deleteJobCard } = await import('@/lib/firebase');
+            const { deleteJobCard } = await import('@/lib/firebase/api/jobCards');
             for (const jobId of jobIds) {
               await deleteJobCard(jobId);
             }

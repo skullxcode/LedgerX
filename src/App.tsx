@@ -57,7 +57,7 @@ const NAV_ITEMS: { id: TabType; label: string; icon: string }[] = [
 const HeaderProfileName = ({ defaultName }: { defaultName: string }) => {
   const { profile: businessProfile } = useBusiness();
   const displayName = businessProfile?.owner_name || businessProfile?.business_name || defaultName;
-  
+
   return (
     <p className="font-label-md text-primary font-bold group-hover:text-secondary transition-colors truncate max-w-[120px] md:max-w-[200px]">
       {displayName}
@@ -106,10 +106,10 @@ function MainApp() {
   const [challanTxId, setChallanTxId] = useState<string | null>(null);
   const [deepLinkCustomerId, setDeepLinkCustomerId] = useState<string | null>(null);
   const [deepLinkJobId, setDeepLinkJobId] = useState<string | null>(null);
-  
+
   // --- Authentication State ---
   const { user, profile, loading } = useAuth();
-  
+
   // --- Theme State ---
   const { theme, setTheme, isDark } = useTheme();
 
@@ -159,7 +159,7 @@ function MainApp() {
   if (!user) {
     return <LoginScreen />;
   }
-  
+
   // 3. Prompt for business profile creation if missing (Auth exists, but no Firestore profile)
   if (!profile) {
     return (
@@ -169,13 +169,13 @@ function MainApp() {
           <p className="text-on-surface-variant mb-6 text-sm">
             Your account exists, but your business profile is missing. Let's create it now.
           </p>
-          
+
           <form onSubmit={async (e) => {
             e.preventDefault();
             const fd = new FormData(e.currentTarget);
             const businessName = fd.get('businessName') as string;
             if (!businessName) return;
-            
+
             try {
               const idToken = await user.getIdToken();
               const res = await fetch('/api/auth/create-profile', {
@@ -188,7 +188,7 @@ function MainApp() {
                   ownerName: user.displayName || ''
                 })
               });
-              
+
               if (!res.ok) {
                 const data = await res.json();
                 throw new Error(data.error || 'Failed to create profile');
@@ -200,25 +200,25 @@ function MainApp() {
           }} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-on-surface mb-1">Business Name</label>
-              <input 
+              <input
                 name="businessName"
                 required
                 className="w-full border border-outline-variant rounded-lg p-3 bg-surface-container"
                 placeholder="e.g. Acme Corp"
               />
             </div>
-            
+
             <button type="submit" className="w-full py-3 bg-primary text-on-primary rounded-lg font-bold">
               Create Business Profile
             </button>
           </form>
 
           <div className="mt-6 pt-6 border-t border-outline-variant/30 text-center">
-            <button 
+            <button
               onClick={async () => {
-                const { auth } = await import('@/lib/firebase');
-                auth.signOut();
-              }} 
+                const { signOut } = await import('@/lib/firebase/api/auth');
+                signOut();
+              }}
               className="text-error font-medium hover:underline"
             >
               Log Out Instead
@@ -237,11 +237,11 @@ function MainApp() {
     <BusinessProvider>
       <POSProvider>
         <div className="bg-background font-body-md text-on-surface overflow-x-hidden min-h-screen flex">
-          
+
           {/* Mobile Overlay Background */}
           {isMobileMenuOpen && (
-            <div 
-              className="fixed inset-0 bg-black/50 z-40 md:hidden" 
+            <div
+              className="fixed inset-0 bg-black/50 z-40 md:hidden"
               onClick={() => setIsMobileMenuOpen(false)}
             />
           )}
@@ -258,7 +258,7 @@ function MainApp() {
                 <p className="font-label-md text-[10px] text-secondary tracking-wide">Enterprise Management</p>
               </div>
             </div>
-            
+
             {/* Navigation Links */}
             <nav className="flex-1 space-y-1 overflow-y-auto">
               {NAV_ITEMS.map((item) => {
@@ -270,11 +270,10 @@ function MainApp() {
                       setActiveTab(item.id);
                       setIsMobileMenuOpen(false);
                     }}
-                    className={`w-full flex items-center gap-3 px-4 py-3 transition-colors duration-200 border-l-4 ${
-                      isActive 
+                    className={`w-full flex items-center gap-3 px-4 py-3 transition-colors duration-200 border-l-4 ${isActive
                         ? 'text-primary dark:text-on-primary-fixed font-bold border-primary bg-surface-container'
                         : 'text-secondary dark:text-on-secondary-container hover:bg-surface-container-low border-transparent'
-                    }`}
+                      }`}
                   >
                     <span className="material-symbols-outlined" data-icon={item.icon}>{item.icon}</span>
                     <span className="font-label-md text-label-md">{item.label}</span>
@@ -287,10 +286,10 @@ function MainApp() {
                 );
               })}
             </nav>
-            
+
             {/* Quick Action Button */}
             <div className="mt-auto px-4 pb-4 pt-4">
-              <button 
+              <button
                 className="w-full py-3 px-4 bg-primary hover:bg-primary/90 text-on-primary rounded font-label-md text-label-md flex items-center justify-center gap-2 active:scale-95 transition-transform"
                 onClick={() => {
                   setActiveTab('POS');
@@ -305,11 +304,11 @@ function MainApp() {
 
           {/* Main Content Area */}
           <main className={`md:ml-64 flex-1 h-[100dvh] flex flex-col relative overflow-hidden w-full print:m-0 print:h-auto print:overflow-visible ${challanTxId ? 'print:hidden' : ''}`}>
-            
+
             {/* Header (TopAppBar) */}
             <header className="flex justify-between items-center w-full px-4 md:px-margin-desktop h-16 bg-surface-container-lowest dark:bg-surface-container-low border-b border-outline-variant dark:border-outline z-30 shrink-0 print:hidden">
               <div className="flex items-center flex-1 max-w-xl gap-2 md:gap-4">
-                <button 
+                <button
                   className="md:hidden text-secondary hover:bg-surface-container p-2 rounded-full active:scale-95 transition-transform shrink-0"
                   onClick={() => setIsMobileMenuOpen(true)}
                 >
@@ -319,12 +318,12 @@ function MainApp() {
                   <h2 className="font-headline-md text-primary font-bold">{NAV_ITEMS.find(n => n.id === activeTab)?.label || 'Dashboard'}</h2>
                 </div>
               </div>
-              
+
               {/* Header Actions & Profile */}
               <div className="flex items-center gap-2 md:gap-6 ml-2 md:ml-10">
                 <div className="flex items-center gap-2 md:gap-4">
                   {/* Theme Toggle */}
-                  <button 
+                  <button
                     onClick={() => setTheme(isDark ? 'light' : 'dark')}
                     className="text-secondary hover:bg-surface-container p-2 rounded-full active:scale-95 transition-transform relative"
                     title="Toggle Dark Mode"
@@ -334,7 +333,7 @@ function MainApp() {
                     </span>
                   </button>
                   <div className="relative">
-                    <button 
+                    <button
                       onClick={() => setIsNotificationsOpen(!isNotificationsOpen)}
                       className="hidden md:block text-secondary hover:bg-surface-container p-2 rounded-full active:scale-95 transition-transform relative"
                     >
@@ -343,8 +342,8 @@ function MainApp() {
                         <span className="absolute top-1 right-2 w-2 h-2 bg-error rounded-full ring-2 ring-surface"></span>
                       )}
                     </button>
-                    <NotificationDropdown 
-                      isOpen={isNotificationsOpen} 
+                    <NotificationDropdown
+                      isOpen={isNotificationsOpen}
                       onClose={() => setIsNotificationsOpen(false)}
                       onNavigate={(tab, id) => {
                         setActiveTab(tab as TabType);
@@ -353,7 +352,7 @@ function MainApp() {
                       }}
                     />
                   </div>
-                  <button 
+                  <button
                     onClick={() => setIsHelpOpen(true)}
                     className="hidden md:block text-secondary hover:bg-surface-container p-2 rounded-full active:scale-95 transition-transform"
                     title="Keyboard Shortcuts & Help (?)"
@@ -362,7 +361,7 @@ function MainApp() {
                   </button>
                 </div>
                 <div className="hidden md:block h-8 w-[1px] bg-outline-variant"></div>
-                
+
                 {/* Profile Click Target */}
                 <div className="flex items-center gap-3 cursor-pointer group" onClick={() => setActiveTab('SETTINGS')}>
                   <div className="text-right hidden sm:block">
@@ -448,9 +447,9 @@ function MainApp() {
 
           {/* Overlays / Modals */}
           {challanTxId && (
-            <DeliveryChallan 
-              transactionId={challanTxId} 
-              onClose={() => setChallanTxId(null)} 
+            <DeliveryChallan
+              transactionId={challanTxId}
+              onClose={() => setChallanTxId(null)}
               onConvertToInvoice={() => {
                 setChallanTxId(null);
                 setActiveTab('POS');

@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { addExpense, searchExpenses, updateExpense, deleteExpense } from '@/lib/firebase/api/expenses';
 import type { Expense } from '@/lib/firebase/types';
-import { VENDORS_QUERY_KEY } from './useVendors';
 
 export const EXPENSES_QUERY_KEY = 'expenses';
 
@@ -26,7 +25,7 @@ export const useExpenseMutations = (storeId: string | undefined) => {
 
   const invalidate = () => {
     queryClient.invalidateQueries({ queryKey: [EXPENSES_QUERY_KEY, storeId] });
-    queryClient.invalidateQueries({ queryKey: [VENDORS_QUERY_KEY, storeId] });
+    queryClient.invalidateQueries({ queryKey: ['vendors', storeId] });
   };
 
   const createMutation = useMutation({

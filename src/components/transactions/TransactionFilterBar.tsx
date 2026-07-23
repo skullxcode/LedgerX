@@ -1,6 +1,6 @@
 import React from 'react';
 import { DocumentType, PaymentStatus } from '@/lib/firebase/types';
-import { DatePreset } from './TransactionsDashboard';
+import type { DatePreset } from './TransactionsDashboard';
 
 export interface TransactionFilterBarProps {
   query: string;
