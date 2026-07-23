@@ -69,6 +69,8 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
    * Keyboard shortcuts for faster POS operations.
    * Ctrl+Enter: finalize/submit checkout.
    * Escape: clear cart (if not empty and not currently typing in an input).
+   * Ctrl+K: Focus item search.
+   * Ctrl+B: Toggle Payment Status.
    */
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -77,17 +79,26 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
 
       if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
         e.preventDefault();
-        // Trigger submit on the checkout form
         document.getElementById('checkout-submit-btn')?.click();
       }
 
       if (e.key === 'Escape' && !isTyping && cart.length > 0) {
         setIsConfirmClearOpen(true);
       }
+
+      if (e.key === 'k' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        document.getElementById('pos-search-input')?.focus();
+      }
+
+      if (e.key === 'b' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        setPaymentStatus(paymentStatus === PaymentStatus.PAID_NOW ? PaymentStatus.CREDIT : PaymentStatus.PAID_NOW);
+      }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [cart]);
+  }, [cart, paymentStatus, setPaymentStatus]);
 
   /**
    * Automatically search for existing customers as the user types a phone number or name.
@@ -97,10 +108,11 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
     return () => clearTimeout(timer);
   }, [customerSearchQuery]);
 
-  const { data: searchResults = [] } = useCustomers(
+  const { data: searchResponse } = useCustomers(
     profile?.store_id, 
     debouncedSearchQuery.length >= 3 ? debouncedSearchQuery : ''
   );
+  const searchResults = searchResponse?.data || [];
 
   const customerSuggestions = debouncedSearchQuery.length >= 3 ? searchResults : [];
 

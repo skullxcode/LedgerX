@@ -58,7 +58,7 @@ export const searchVendors = async (storeId: string, searchTerm?: string): Promi
   let q = query(collection(db, 'Vendors'), where('store_id', '==', storeId));
   
   const querySnapshot = await getDocs(q);
-  let vendors = querySnapshot.docs.map(d => d.data() as Vendor);
+  let vendors = querySnapshot.docs.map(d => d.data() as Vendor).filter(v => !v.is_deleted);
 
   if (searchTerm) {
     const lowerTerm = searchTerm.toLowerCase();
@@ -124,5 +124,8 @@ export const updateVendorBalance = async (vendorId: string, amountChange: number
  */
 export const deleteVendor = async (vendorId: string): Promise<void> => {
   const docRef = doc(db, 'Vendors', vendorId);
-  await deleteDoc(docRef);
+  await updateDoc(docRef, {
+    is_deleted: true,
+    updated_at: serverTimestamp(),
+  });
 };

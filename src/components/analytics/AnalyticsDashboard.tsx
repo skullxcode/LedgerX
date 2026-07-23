@@ -4,6 +4,7 @@ import { app, type Transaction, type Customer, type InventoryItem, type JobCard,
 import { useAuth } from '../../context/AuthContext';
 import { ResponsiveContainer, AreaChart, Area, XAxis, Tooltip, CartesianGrid, BarChart, Bar, Legend } from 'recharts';
 import { formatCurrency } from '../../lib/utils/formatters';
+import { Skeleton } from '../ui/Skeleton';
 import toast from 'react-hot-toast';
 
 class DashboardErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
@@ -209,7 +210,45 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
   }, [profile?.store_id]);
 
   if (loading) {
-    return <div className="flex h-full items-center justify-center">Loading dashboard...</div>;
+    return (
+      <div className="max-w-container-max mx-auto h-[calc(100dvh-4rem)] p-4 overflow-y-auto">
+        <div className="flex justify-between items-end mb-8 mt-2">
+          <div>
+            <Skeleton className="w-48 h-8 mb-2" />
+            <Skeleton className="w-64 h-4" />
+          </div>
+          <div className="flex gap-3">
+            <Skeleton className="w-32 h-10" />
+            <Skeleton className="w-32 h-10" />
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-gutter">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="col-span-12 md:col-span-4 bg-surface-container-lowest border border-outline-variant p-6 rounded-lg">
+              <div className="flex justify-between">
+                <Skeleton className="w-10 h-10 rounded" />
+                <Skeleton className="w-16 h-4" />
+              </div>
+              <div className="mt-6">
+                <Skeleton className="w-24 h-4 mb-2" />
+                <Skeleton className="w-32 h-8" />
+              </div>
+            </div>
+          ))}
+          
+          <div className="col-span-12 lg:col-span-8 bg-surface-container-lowest border border-outline-variant p-6 rounded-lg h-[350px]">
+             <Skeleton className="w-48 h-6 mb-8" />
+             <Skeleton className="w-full h-64" />
+          </div>
+          
+          <div className="col-span-12 bg-surface-container-lowest border border-outline-variant p-6 rounded-lg h-[350px]">
+             <Skeleton className="w-48 h-6 mb-8" />
+             <Skeleton className="w-full h-64" />
+          </div>
+        </div>
+      </div>
+    );
   }
 
   // Calculate percentage change for Revenue

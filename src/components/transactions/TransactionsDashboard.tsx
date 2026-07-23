@@ -5,7 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTransactions } from '../../hooks/queries/useTransactions';
 import { useDebounce } from '../../hooks/useDebounce';
 import { StatementOfAccount } from './StatementOfAccount';
-import { generatePDF, sharePDF } from '../../lib/utils/pdf';
+
 import { TransactionFilterBar } from './TransactionFilterBar';
 import { DesktopTransactionTable } from './DesktopTransactionTable';
 import { MobileTransactionList } from './MobileTransactionList';
@@ -132,21 +132,7 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
             onClick={() => window.print()}
           >
             <span className="material-symbols-outlined text-[18px]">print</span>
-            Print Batch
-          </button>
-          <button
-            className="bg-surface-container-lowest border border-outline-variant px-4 py-2 flex items-center gap-2 font-label-md hover:bg-surface-container transition-colors rounded text-primary"
-            onClick={() => generatePDF('print-statement-of-account', `Statement_${new Date().toISOString().split('T')[0]}`)}
-          >
-            <span className="material-symbols-outlined text-[18px]">download</span>
-            Download PDF
-          </button>
-          <button
-            className="bg-surface-container-lowest border border-outline-variant px-4 py-2 flex items-center gap-2 font-label-md hover:bg-surface-container transition-colors rounded text-primary"
-            onClick={() => sharePDF('print-statement-of-account', `Statement_${new Date().toISOString().split('T')[0]}`, 'Statement of Account', 'Here is your Statement of Account.')}
-          >
-            <span className="material-symbols-outlined text-[18px]">share</span>
-            Share
+            Print Batch / Save as PDF
           </button>
         </div>
       </div>

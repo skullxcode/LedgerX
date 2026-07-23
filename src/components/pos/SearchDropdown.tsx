@@ -125,6 +125,7 @@ export const SearchDropdown: React.FC = () => {
         <div className="relative">
           <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-secondary">search</span>
           <input 
+            id="pos-search-input"
             type="text" 
             placeholder="Search inventory by name or SKU..." 
             className="w-full bg-surface-container-lowest border border-outline-variant rounded-full py-3 pl-10 pr-4 text-body-md outline-none focus:border-primary transition-colors shadow-sm"

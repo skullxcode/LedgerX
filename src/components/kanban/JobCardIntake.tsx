@@ -67,7 +67,7 @@ export const JobCardIntake: React.FC<{ onComplete: () => void, onCancel: () => v
     } catch (error: any) {
       console.error("Failed to create job card", error);
       const msg = error?.message || error?.code || String(error);
-      alert(`Error creating job card: ${msg}`);
+      toast.error(`Error creating job card: ${msg}`);
     } finally {
       setIsSubmitting(false);
     }

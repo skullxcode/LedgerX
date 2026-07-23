@@ -2,15 +2,22 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { searchCustomers, getCustomer, createCustomer, updateCustomer } from '@/lib/firebase/api/customers';
 import type { Customer } from '@/lib/firebase';
 
+import type { QueryDocumentSnapshot, DocumentData } from 'firebase/firestore';
+
 export const CUSTOMERS_QUERY_KEY = 'customers';
 export const CUSTOMER_DETAIL_QUERY_KEY = 'customer_detail';
 
-export const useCustomers = (storeId: string | undefined, searchTerm: string = '') => {
+export const useCustomers = (
+  storeId: string | undefined, 
+  searchTerm: string = '',
+  pageSize: number = 50,
+  startAfterDoc?: QueryDocumentSnapshot<DocumentData> | null
+) => {
   return useQuery({
-    queryKey: [CUSTOMERS_QUERY_KEY, storeId, searchTerm],
+    queryKey: [CUSTOMERS_QUERY_KEY, storeId, searchTerm, pageSize, startAfterDoc?.id],
     queryFn: async () => {
-      if (!storeId) return [];
-      return searchCustomers(storeId, searchTerm);
+      if (!storeId) return { data: [], lastDoc: null };
+      return searchCustomers(storeId, searchTerm, pageSize, startAfterDoc);
     },
     enabled: !!storeId,
   });

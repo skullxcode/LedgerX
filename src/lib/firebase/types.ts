@@ -105,9 +105,16 @@ export interface Customer extends AuditBase {
 // ============================================================================
 
 export interface GSTBreakdown {
-  taxable_amount: number;
-  tax_amount: number;
+  taxable_amount?: number;
+  tax_amount?: number;
   tax_slab: number; // The GST% that was applied
+  cgst_rate?: number;
+  cgst?: number;
+  sgst_rate?: number;
+  sgst?: number;
+  igst_rate?: number;
+  igst?: number;
+  total_tax?: number;
 }
 
 export interface TransactionItem {

@@ -7,7 +7,11 @@ import {
   query, 
   where, 
   getDocs, 
-  Timestamp 
+  Timestamp,
+  limit,
+  startAfter,
+  QueryDocumentSnapshot,
+  DocumentData
 } from "firebase/firestore";
 import { db } from "../config";
 import type { Customer } from "../types";
@@ -44,30 +48,41 @@ export const getCustomer = async (storeId: string, customerId: string): Promise<
  * @param storeId - The store/tenant ID.
  * @param searchTerm - The string to search for.
  */
-export const searchCustomers = async (storeId: string, searchTerm: string): Promise<Customer[]> => {
+export const searchCustomers = async (
+  storeId: string, 
+  searchTerm: string,
+  pageSize: number = 50,
+  startAfterDoc?: QueryDocumentSnapshot<DocumentData> | null
+): Promise<{ data: Customer[], lastDoc: QueryDocumentSnapshot<DocumentData> | null }> => {
   try {
-    const q = query(
-      collection(db, "Customers"),
+    let constraints: any[] = [
       where("store_id", "==", storeId)
-    );
+    ];
+
+    if (searchTerm) {
+      constraints.push(where("search_terms", "array-contains", searchTerm.toLowerCase()));
+    }
+
+    let q = query(collection(db, "Customers"), ...constraints);
+    
+    // We cannot combine array-contains with orderBy without a composite index. 
+    // We will rely on default document ID ordering which is adequate for simple pagination.
+    if (startAfterDoc) {
+      q = query(q, startAfter(startAfterDoc));
+    }
+    
+    q = query(q, limit(pageSize));
     
     const querySnapshot = await getDocs(q);
     
-    // Filter out logically deleted customers
+    // Filter out logically deleted customers (could also be done via a where clause if indexed, but this is fine for soft-delete)
     const activeCustomers = querySnapshot.docs
       .map((d) => d.data() as Customer)
       .filter(c => !c.is_deleted);
     
-    if (!searchTerm) {
-      return activeCustomers;
-    }
-    
-    const lowerTerm = searchTerm.toLowerCase();
-    return activeCustomers.filter(c => 
-      (c.name || '').toLowerCase().includes(lowerTerm) || 
-      (c.phone || '').includes(lowerTerm) ||
-      (c.search_terms || []).some(term => term.includes(lowerTerm))
-    );
+    const lastDoc = querySnapshot.docs.length > 0 ? querySnapshot.docs[querySnapshot.docs.length - 1] : null;
+
+    return { data: activeCustomers, lastDoc };
   } catch (error) {
     logger.error("Failed to search customers", error as Error);
     throw error;

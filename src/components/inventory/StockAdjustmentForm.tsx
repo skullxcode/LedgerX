@@ -39,7 +39,7 @@ export const StockAdjustmentForm: React.FC<StockAdjustmentFormProps> = ({ item, 
     } catch (error: any) {
       console.error("Stock adjustment error:", error);
       const msg = error?.message || error?.code || String(error);
-      alert(`Failed to adjust stock: ${msg}`);
+      toast.error(`Failed to adjust stock: ${msg}`);
     } finally {
       setIsSubmitting(false);
     }

@@ -4,7 +4,7 @@ import { BusinessProvider, useBusiness } from './context/BusinessContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { LoginScreen } from './components/auth/LoginScreen';
-import { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from 'react-hot-toast';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -173,7 +173,7 @@ function MainApp() {
               }
               window.location.reload();
             } catch (error: any) {
-              alert("Failed to create profile: " + error.message);
+              toast.error("Failed to create profile: " + error.message);
             }
           }} className="space-y-4">
             <div>

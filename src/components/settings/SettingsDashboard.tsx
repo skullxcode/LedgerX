@@ -86,10 +86,9 @@ export const SettingsDashboard: React.FC = () => {
     }
     try {
       await sendPasswordResetEmail(auth, user.email);
-      alert(`Password reset link sent to ${user.email}`);
+      toast.success(`Password reset link sent to ${user.email}`);
     } catch (e: any) {
-      console.error(e);
-      alert(`Failed to send password reset email: ${e.message}`);
+      toast.error(`Failed to send password reset email: ${e.message}`);
     }
   };
 

@@ -63,7 +63,7 @@ export const VendorList: React.FC = () => {
           placeholder="Search vendors by name, phone..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          icon="search"
+          leftIcon={<span className="material-symbols-outlined text-[18px]">search</span>}
         />
       </div>
 

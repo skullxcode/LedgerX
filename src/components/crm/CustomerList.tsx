@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { type Customer } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 import { useCustomers } from '../../hooks/queries/useCustomers';
+import { Skeleton } from '../ui/Skeleton';
 
 interface CustomerListProps {
   onSelect: (customer: Customer) => void;
@@ -12,8 +13,11 @@ interface CustomerListProps {
 export const CustomerList: React.FC<CustomerListProps> = ({ onSelect, onAddNew, selectedId }) => {
   const { profile } = useAuth();
   const [query, setQuery] = useState('');
+  const [pageSize, setPageSize] = useState(50);
   const [showPendingOnly, setShowPendingOnly] = useState(false);
-  const { data: allCustomers = [] } = useCustomers(profile?.store_id, query);
+  const { data: searchResponse, isLoading } = useCustomers(profile?.store_id, query, pageSize);
+  const allCustomers = searchResponse?.data || [];
+  const hasMore = allCustomers.length >= pageSize;
 
   const displayedCustomers = showPendingOnly
     ? allCustomers.filter(c => c.udhaar_balance && c.udhaar_balance > 0)
@@ -40,7 +44,10 @@ export const CustomerList: React.FC<CustomerListProps> = ({ onSelect, onAddNew, 
             className="w-full border border-outline-variant rounded py-2 pl-10 pr-4 focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-body-md transition-colors"
             placeholder="Search customers..."
             value={query}
-            onChange={e => setQuery(e.target.value)}
+            onChange={e => {
+              setQuery(e.target.value);
+              setPageSize(50);
+            }}
           />
         </div>
         <button
@@ -58,7 +65,17 @@ export const CustomerList: React.FC<CustomerListProps> = ({ onSelect, onAddNew, 
       
       <div className="flex-1 overflow-y-auto p-2 bg-surface-container-lowest">
         <div className="flex flex-col gap-1">
-          {displayedCustomers.map(c => (
+          {isLoading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="p-3 rounded-lg border border-transparent">
+                <div className="flex justify-between items-start mb-1">
+                  <Skeleton className="w-1/2 h-5" />
+                  <Skeleton className="w-1/4 h-3" />
+                </div>
+                <Skeleton className="w-1/3 h-4" />
+              </div>
+            ))
+          ) : displayedCustomers.map(c => (
             <div 
               key={c.customer_id} 
               className={`p-3 rounded-lg cursor-pointer transition-colors flex flex-col gap-0.5 ${
@@ -79,14 +96,22 @@ export const CustomerList: React.FC<CustomerListProps> = ({ onSelect, onAddNew, 
               </div>
             </div>
           ))}
-          {showPendingOnly && displayedCustomers.length === 0 && (
+          {!isLoading && showPendingOnly && displayedCustomers.length === 0 && (
             <div className="text-center p-6 text-secondary font-body-md italic text-sm">No customers with pending balances.</div>
           )}
-          {query && !showPendingOnly && displayedCustomers.length === 0 && (
+          {!isLoading && query && !showPendingOnly && displayedCustomers.length === 0 && (
             <div className="text-center p-6 text-secondary font-body-md italic text-sm">No customers found.</div>
           )}
-          {!query && !showPendingOnly && displayedCustomers.length === 0 && (
+          {!isLoading && !query && !showPendingOnly && displayedCustomers.length === 0 && (
             <div className="text-center p-6 text-secondary font-body-md italic text-sm">Type to search customers</div>
+          )}
+          {!isLoading && hasMore && !showPendingOnly && (
+            <button
+              onClick={() => setPageSize(p => p + 50)}
+              className="mt-4 py-2 w-full bg-surface-container-high hover:bg-surface-container rounded font-label-md text-primary transition-colors border border-outline-variant"
+            >
+              Load More
+            </button>
           )}
         </div>
       </div>
