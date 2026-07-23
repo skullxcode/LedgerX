@@ -61,7 +61,6 @@ export const createPdfBlob = async (elementId: string): Promise<Blob> => {
  */
 export const generatePDF = async (elementId: string, filename: string): Promise<void> => {
   try {
-    alert('Starting PDF generation... This may take a few seconds.');
     const blob = await createPdfBlob(elementId);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -73,7 +72,6 @@ export const generatePDF = async (elementId: string, filename: string): Promise<
     URL.revokeObjectURL(url);
   } catch (error) {
     console.error('Error generating PDF:', error);
-    alert('Error generating PDF: ' + (error instanceof Error ? error.message : String(error)));
     throw error;
   }
 };
@@ -110,7 +108,6 @@ export const sharePDF = async (elementId: string, filename: string, title: strin
       return;
     }
     console.error('Error sharing PDF:', error);
-    alert('Error sharing PDF: ' + (error instanceof Error ? error.message : String(error)));
     throw error;
   }
 };
