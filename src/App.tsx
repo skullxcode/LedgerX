@@ -2,8 +2,10 @@ import { useState, useEffect, Suspense, lazy } from "react";
 import { POSProvider } from './context/POSContext';
 import { BusinessProvider, useBusiness } from './context/BusinessContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { ThemeProvider, useTheme } from './context/ThemeContext';
 import { LoginScreen } from './components/auth/LoginScreen';
 import { Toaster } from 'react-hot-toast';
+import { AnimatePresence, motion } from 'framer-motion';
 
 import { SearchDropdown } from './components/pos/SearchDropdown';
 import { CheckoutPanel } from './components/pos/CheckoutPanel';
@@ -80,6 +82,9 @@ function MainApp() {
   
   // --- Authentication State ---
   const { user, profile, loading } = useAuth();
+  
+  // --- Theme State ---
+  const { theme, setTheme, isDark } = useTheme();
 
   /**
    * Persist active tab selection to local storage and update URL hash.
@@ -278,11 +283,21 @@ function MainApp() {
               
               {/* Header Actions & Profile */}
               <div className="flex items-center gap-2 md:gap-6 ml-2 md:ml-10">
-                <div className="hidden items-center gap-4">
-                  <button className="text-secondary hover:bg-surface-container p-2 rounded-full active:scale-95 transition-transform relative">
+                <div className="flex items-center gap-2 md:gap-4">
+                  {/* Theme Toggle */}
+                  <button 
+                    onClick={() => setTheme(isDark ? 'light' : 'dark')}
+                    className="text-secondary hover:bg-surface-container p-2 rounded-full active:scale-95 transition-transform relative"
+                    title="Toggle Dark Mode"
+                  >
+                    <span className="material-symbols-outlined">
+                      {isDark ? 'light_mode' : 'dark_mode'}
+                    </span>
+                  </button>
+                  <button className="hidden md:block text-secondary hover:bg-surface-container p-2 rounded-full active:scale-95 transition-transform relative">
                     <span className="material-symbols-outlined" data-icon="notifications">notifications</span>
                   </button>
-                  <button className="text-secondary hover:bg-surface-container p-2 rounded-full active:scale-95 transition-transform">
+                  <button className="hidden md:block text-secondary hover:bg-surface-container p-2 rounded-full active:scale-95 transition-transform">
                     <span className="material-symbols-outlined" data-icon="help_outline">help_outline</span>
                   </button>
                 </div>
@@ -302,55 +317,66 @@ function MainApp() {
             </header>
 
             {/* Active Tab Content */}
-            <div className="flex-1 overflow-y-auto w-full h-full">
-              <Suspense fallback={<div className="flex h-full items-center justify-center text-secondary font-body-md animate-pulse">Loading Module...</div>}>
-                {activeTab === 'ANALYTICS' && (
-                  <div className="p-margin-desktop">
-                    <AnalyticsDashboard onNavigate={(tab, id) => {
-                      setActiveTab(tab as TabType);
-                      if (tab === 'CRM' && id) setDeepLinkCustomerId(id);
-                      if (tab === 'REPAIRS' && id) setDeepLinkJobId(id);
-                    }} />
-                  </div>
-                )}
+            <div className="flex-1 overflow-y-auto w-full h-full relative">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="w-full h-full"
+                >
+                  <Suspense fallback={<div className="flex h-full items-center justify-center text-secondary font-body-md animate-pulse">Loading Module...</div>}>
+                    {activeTab === 'ANALYTICS' && (
+                      <div className="p-margin-desktop h-full">
+                        <AnalyticsDashboard onNavigate={(tab, id) => {
+                          setActiveTab(tab as TabType);
+                          if (tab === 'CRM' && id) setDeepLinkCustomerId(id);
+                          if (tab === 'REPAIRS' && id) setDeepLinkJobId(id);
+                        }} />
+                      </div>
+                    )}
 
-                {activeTab === 'POS' && (
-                  <div className="flex flex-col lg:flex-row h-full w-full">
-                    <div className="flex-1 min-h-0 overflow-y-auto">
-                      <SearchDropdown />
-                    </div>
-                    <div className="w-full lg:w-[420px] shrink-0 h-[50vh] lg:h-full border-t lg:border-t-0 lg:border-l border-outline-variant z-10 bg-surface-container-lowest shadow-[0_-4px_20px_rgba(0,0,0,0.05)] lg:shadow-none">
-                      <CheckoutPanel onShowChallan={setChallanTxId} />
-                    </div>
-                  </div>
-                )}
+                    {activeTab === 'POS' && (
+                      <div className="flex flex-col lg:flex-row h-full w-full">
+                        <div className="flex-1 min-h-0 overflow-y-auto">
+                          <SearchDropdown />
+                        </div>
+                        <div className="w-full lg:w-[420px] shrink-0 h-[50vh] lg:h-full border-t lg:border-t-0 lg:border-l border-outline-variant z-10 bg-surface-container-lowest shadow-[0_-4px_20px_rgba(0,0,0,0.05)] lg:shadow-none">
+                          <CheckoutPanel onShowChallan={setChallanTxId} />
+                        </div>
+                      </div>
+                    )}
 
-                {activeTab === 'INVENTORY' && <InventoryDashboard />}
+                    {activeTab === 'INVENTORY' && <InventoryDashboard />}
 
-                {activeTab === 'REPAIRS' && (
-                  <div className="p-margin-desktop max-w-container-max mx-auto">
-                    <KanbanBoard onSwitchToPOS={() => setActiveTab('POS')} initialJobId={deepLinkJobId} onClearDeepLink={() => setDeepLinkJobId(null)} />
-                  </div>
-                )}
+                    {activeTab === 'REPAIRS' && (
+                      <div className="p-margin-desktop max-w-container-max mx-auto h-full">
+                        <KanbanBoard onSwitchToPOS={() => setActiveTab('POS')} initialJobId={deepLinkJobId} onClearDeepLink={() => setDeepLinkJobId(null)} />
+                      </div>
+                    )}
 
-                {activeTab === 'TRANSACTIONS' && (
-                  <div className="p-margin-desktop h-[calc(100vh-4rem)]">
-                    <TransactionsDashboard onViewTransaction={setChallanTxId} />
-                  </div>
-                )}
+                    {activeTab === 'TRANSACTIONS' && (
+                      <div className="p-margin-desktop h-full">
+                        <TransactionsDashboard onViewTransaction={setChallanTxId} />
+                      </div>
+                    )}
 
-                {activeTab === 'CRM' && (
-                  <div className="p-margin-desktop">
-                    <CRMDashboard onViewTransaction={setChallanTxId} initialCustomerId={deepLinkCustomerId} />
-                  </div>
-                )}
+                    {activeTab === 'CRM' && (
+                      <div className="p-margin-desktop h-full">
+                        <CRMDashboard onViewTransaction={setChallanTxId} initialCustomerId={deepLinkCustomerId} />
+                      </div>
+                    )}
 
-                {activeTab === 'SETTINGS' && (
-                  <div className="p-margin-desktop">
-                    <SettingsDashboard />
-                  </div>
-                )}
-              </Suspense>
+                    {activeTab === 'SETTINGS' && (
+                      <div className="p-margin-desktop h-full">
+                        <SettingsDashboard />
+                      </div>
+                    )}
+                  </Suspense>
+                </motion.div>
+              </AnimatePresence>
             </div>
           </main>
 
@@ -376,10 +402,12 @@ function MainApp() {
 // ============================================================================
 function App() {
   return (
-    <AuthProvider>
-      <Toaster position="top-right" />
-      <MainApp />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <Toaster position="top-right" />
+        <MainApp />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

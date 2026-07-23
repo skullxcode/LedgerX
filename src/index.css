@@ -115,3 +115,40 @@
     transform-origin: top center;
   }
 }
+
+/* Dark Mode Palette */
+.dark {
+  --color-background: #0f1115;
+  --color-on-background: #e2e8f0;
+  
+  --color-primary: #ffffff;
+  --color-on-primary: #000000;
+  
+  --color-secondary: #94a3b8;
+  --color-on-secondary: #ffffff;
+  
+  --color-surface: #0f1115;
+  --color-on-surface: #e2e8f0;
+  
+  --color-surface-container-lowest: #13161c;
+  --color-surface-container-low: #1a1d24;
+  --color-surface-container: #1f232b;
+  --color-surface-container-high: #272c36;
+  --color-surface-container-highest: #333945;
+  
+  --color-outline: #64748b;
+  --color-outline-variant: #334155;
+  
+  --color-error: #f87171;
+  --color-error-container: #7f1d1d;
+  --color-on-error-container: #fecaca;
+  
+  --color-primary-container: #1e293b;
+  --color-on-primary-container: #cbd5e1;
+  
+  --color-secondary-container: #0f172a;
+  --color-on-secondary-container: #94a3b8;
+  
+  --color-tertiary-container: #082f49;
+  --color-on-tertiary-container: #7dd3fc;
+}

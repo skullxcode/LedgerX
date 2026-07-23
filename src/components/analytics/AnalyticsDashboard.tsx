@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getFirestore, collection, getDocs, query, where } from 'firebase/firestore';
 import { app, type Transaction, type Customer, type InventoryItem, type JobCard } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
+import { ResponsiveContainer, AreaChart, Area, XAxis, Tooltip, CartesianGrid } from 'recharts';
 
 class DashboardErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
   constructor(props: {children: React.ReactNode}) {
@@ -228,7 +229,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
       {/* Bento Grid Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-gutter mb-gutter">
         {/* Total Revenue Card */}
-        <div className="col-span-12 md:col-span-4 bg-white border border-outline-variant p-6 rounded-lg flex flex-col justify-between">
+        <div className="col-span-12 md:col-span-4 bg-white border border-outline-variant p-6 rounded-lg flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
           <div className="flex justify-between items-start">
             <div className="w-10 h-10 bg-surface-container-low flex items-center justify-center rounded">
               <span className="material-symbols-outlined text-primary text-[20px]" data-weight="fill">point_of_sale</span>
@@ -252,7 +253,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
         </div>
 
         {/* Total Pending Credit (Udhaar) */}
-        <div className="col-span-12 md:col-span-4 bg-white border border-outline-variant p-6 rounded-lg flex flex-col justify-between">
+        <div className="col-span-12 md:col-span-4 bg-white border border-outline-variant p-6 rounded-lg flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
           <div className="flex justify-between items-start">
             <div className="w-10 h-10 bg-error-container flex items-center justify-center rounded">
               <span className="material-symbols-outlined text-error text-[20px]" data-weight="fill">assignment_late</span>
@@ -268,7 +269,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
         </div>
 
         {/* Total Inventory Value */}
-        <div className="col-span-12 md:col-span-4 bg-white border border-outline-variant p-6 rounded-lg flex flex-col justify-between">
+        <div className="col-span-12 md:col-span-4 bg-white border border-outline-variant p-6 rounded-lg flex flex-col justify-between hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
           <div className="flex justify-between items-start">
             <div className="w-10 h-10 bg-secondary-container flex items-center justify-center rounded">
               <span className="material-symbols-outlined text-on-secondary-container text-[20px]" data-weight="fill">inventory_2</span>
@@ -287,8 +288,8 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
           </div>
         </div>
 
-        {/* Custom SVG Line Chart */}
-        <div className="col-span-12 lg:col-span-8 bg-white border border-outline-variant p-6 rounded-lg">
+        {/* Custom SVG Line Chart replaced by Recharts AreaChart */}
+        <div className="col-span-12 lg:col-span-8 bg-white border border-outline-variant p-6 rounded-lg hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
           <div className="flex justify-between items-center mb-8">
             <div>
               <h4 className="font-headline-md text-headline-md text-primary">Revenue Trends</h4>
@@ -302,51 +303,44 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
             </div>
           </div>
           
-          <div className="h-64 relative overflow-hidden bg-surface-container-lowest border border-outline-variant/20 rounded">
-            <svg className="w-full h-full" viewBox="0 0 1000 200" preserveAspectRatio="none">
-              <defs>
-                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#0f172a" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#0f172a" stopOpacity={0} />
-                </linearGradient>
-              </defs>
-              
-              {/* Grid Lines */}
-              {[0, 1, 2, 3].map(i => (
-                <line key={i} x1="0" y1={50 * i} x2="1000" y2={50 * i} stroke="#e2e8f0" strokeDasharray="4 4" />
-              ))}
-
-              {(() => {
-                const maxRev = Math.max(...displayChartData.map(d => d.revenue), 100);
-                const points = displayChartData.map((d, i) => {
-                  const x = (i / (displayChartData.length - 1)) * 1000;
-                  const y = 180 - (d.revenue / maxRev) * 160;
-                  return `${x},${y}`;
-                });
-                const pathData = `M 0,200 L 0,${180 - (displayChartData[0]?.revenue / maxRev) * 160 || 180} L ${points.join(' L ')} L 1000,200 Z`;
-                const lineData = `M ${points.join(' L ')}`;
-
-                return (
-                  <>
-                    <path d={pathData} fill="url(#colorRevenue)" />
-                    <path d={lineData} fill="none" stroke="#0f172a" strokeWidth="3" />
-                  </>
-                );
-              })()}
-            </svg>
-            
-            {/* Custom Tooltip Overlay Simulation (Labels) */}
-            <div className="absolute bottom-0 w-full flex justify-between px-2 pb-2 opacity-50">
-              {displayChartData.map((d, i) => {
-                if (displayChartData.length > 10 && i % Math.floor(displayChartData.length / 5) !== 0 && i !== displayChartData.length - 1) return null;
-                return <span key={i} className="text-[10px] text-secondary">{d.name}</span>;
-              })}
-            </div>
+          <div className="h-64 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={displayChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.2} />
+                    <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-outline-variant)" opacity={0.5} />
+                <XAxis 
+                  dataKey="name" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fill: 'var(--color-secondary)', fontSize: 10 }}
+                  minTickGap={20}
+                />
+                <Tooltip 
+                  contentStyle={{ backgroundColor: 'var(--color-surface)', borderColor: 'var(--color-outline-variant)', borderRadius: '8px' }}
+                  itemStyle={{ color: 'var(--color-primary)', fontWeight: 'bold' }}
+                  labelStyle={{ color: 'var(--color-secondary)', marginBottom: '4px' }}
+                  formatter={(value: number) => [`₹${value.toLocaleString()}`, 'Revenue']}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="revenue" 
+                  stroke="var(--color-primary)" 
+                  strokeWidth={3}
+                  fillOpacity={1} 
+                  fill="url(#colorRevenue)" 
+                />
+              </AreaChart>
+            </ResponsiveContainer>
           </div>
         </div>
 
         {/* Recent Activity Table (Asymmetric Span) */}
-        <div className="col-span-12 lg:col-span-4 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col">
+        <div className="col-span-12 lg:col-span-4 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
           <div className="p-6 border-b border-outline-variant">
             <h4 className="font-headline-md text-headline-md text-primary">Recent Transactions</h4>
             <p className="text-secondary text-body-md">Latest 5 ledger entries</p>
@@ -390,7 +384,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
         </div>
 
         {/* Pending Customers & Active Services Row */}
-        <div className="col-span-12 lg:col-span-6 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col">
+        <div className="col-span-12 lg:col-span-6 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
           <div className="p-6 border-b border-outline-variant">
             <h4 className="font-headline-md text-headline-md text-primary">Pending Payments</h4>
             <p className="text-secondary text-body-md">Customers with outstanding Udhaar</p>
@@ -416,7 +410,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
           </div>
         </div>
 
-        <div className="col-span-12 lg:col-span-6 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col">
+        <div className="col-span-12 lg:col-span-6 bg-white border border-outline-variant rounded-lg overflow-hidden flex flex-col hover:-translate-y-1 hover:shadow-lg transition-all duration-300 ease-out">
           <div className="p-6 border-b border-outline-variant">
             <h4 className="font-headline-md text-headline-md text-primary">Active Repairs</h4>
             <p className="text-secondary text-body-md">Latest ongoing repair jobs</p>
