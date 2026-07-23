@@ -5,12 +5,20 @@ import { useAuth } from '../../context/AuthContext';
 import { JobCardIntake } from './JobCardIntake';
 import { addInventoryItem } from '@/lib/firebase';
 
-interface KanbanBoardProps {
+export interface KanbanBoardProps {
+  /** Callback to switch to the POS tab, triggered when a job is completed and billed */
   onSwitchToPOS: () => void;
+  /** Optional Job ID to highlight upon loading */
   initialJobId?: string | null;
+  /** Callback to clear the deep link highlight */
   onClearDeepLink?: () => void;
 }
 
+/**
+ * A Kanban board for managing service/repair jobs (JobCards).
+ * Supports drag-and-drop status changes, adding parts from inventory,
+ * and transitioning completed jobs directly to the POS for billing.
+ */
 export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initialJobId, onClearDeepLink }) => {
   const { profile } = useAuth();
   const [jobs, setJobs] = useState<JobCard[]>([]);

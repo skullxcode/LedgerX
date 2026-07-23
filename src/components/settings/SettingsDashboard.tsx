@@ -4,6 +4,10 @@ import { sendPasswordResetEmail } from 'firebase/auth';
 import { useBusiness } from '../../context/BusinessContext';
 import { useAuth } from '../../context/AuthContext';
 
+/**
+ * Settings Dashboard for managing the business profile, contact information,
+ * and dangerous actions like wiping store data or signing out.
+ */
 export const SettingsDashboard: React.FC = () => {
   const { user, profile: authProfile } = useAuth();
   const { profile, refreshProfile } = useBusiness();

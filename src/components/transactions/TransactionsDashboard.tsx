@@ -5,10 +5,15 @@ import { StatementOfAccount } from './StatementOfAccount';
 
 type DatePreset = 'ALL' | 'TODAY' | 'LAST_7' | 'THIS_MONTH';
 
-interface TransactionsDashboardProps {
+export interface TransactionsDashboardProps {
+  /** Optional callback triggered to view a transaction detail modal */
   onViewTransaction?: (txId: string) => void;
 }
 
+/**
+ * Dashboard for browsing, searching, and filtering the global transaction ledger.
+ * Renders both a responsive UI and a printable Statement of Account.
+ */
 export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ onViewTransaction }) => {
   const { profile } = useAuth();
   const [query, setQuery] = useState('');

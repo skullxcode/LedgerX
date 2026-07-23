@@ -4,11 +4,17 @@ import { CustomerProfile } from './CustomerProfile';
 import { type Customer, getCustomer, createCustomer, getLatestDocumentNo } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 
-interface CRMDashboardProps {
+export interface CRMDashboardProps {
+  /** Optional callback to view a specific transaction from the customer's history */
   onViewTransaction?: (txId: string) => void;
+  /** Optional Customer ID to load and select by default */
   initialCustomerId?: string | null;
 }
 
+/**
+ * The Customer Relationship Management (CRM) dashboard.
+ * Provides a split-pane view with a searchable customer list and detailed customer profiles.
+ */
 export const CRMDashboard: React.FC<CRMDashboardProps> = ({ onViewTransaction, initialCustomerId }) => {
   const { profile, user } = useAuth();
   const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);

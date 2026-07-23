@@ -25,7 +25,16 @@ class DashboardErrorBoundary extends React.Component<{children: React.ReactNode}
   }
 }
 
-export const AnalyticsDashboard: React.FC<{ onNavigate?: (tab: string, id?: string) => void }> = ({ onNavigate }) => {
+export interface AnalyticsDashboardProps {
+  /** Optional callback to navigate to a specific tab */
+  onNavigate?: (tab: string, id?: string) => void;
+}
+
+/**
+ * The Analytics Dashboard component providing an overview of store performance,
+ * revenue metrics, active jobs, and pending udhaar (credit).
+ */
+export const AnalyticsDashboard: React.FC<AnalyticsDashboardProps> = ({ onNavigate }) => {
   return (
     <DashboardErrorBoundary>
       <AnalyticsDashboardInner onNavigate={onNavigate} />
@@ -33,7 +42,7 @@ export const AnalyticsDashboard: React.FC<{ onNavigate?: (tab: string, id?: stri
   );
 };
 
-const AnalyticsDashboardInner: React.FC<{ onNavigate?: (tab: string, id?: string) => void }> = ({ onNavigate }) => {
+const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate }) => {
   const { profile } = useAuth();
   const [monthlyRevenue, setMonthlyRevenue] = useState(0);
   const [lastMonthRevenue, setLastMonthRevenue] = useState(0);
