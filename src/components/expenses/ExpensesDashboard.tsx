@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useExpenses, useExpenseMutations } from '../../hooks/queries/useExpenses';
 import { ExpenseForm } from './ExpenseForm';
+import { VendorList } from './VendorList';
 import { type Expense } from '@/lib/firebase';
 
 const formatCurrency = (amount: number) => `₹${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
@@ -9,6 +10,7 @@ const formatCurrency = (amount: number) => `₹${amount.toLocaleString(undefined
 export const ExpensesDashboard: React.FC = () => {
   const { profile } = useAuth();
   
+  const [activeTab, setActiveTab] = useState<'EXPENSES' | 'VENDORS'>('EXPENSES');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'PAID' | 'UNPAID'>('ALL');
   const { data: expenses = [], isLoading } = useExpenses(profile?.store_id, undefined, undefined, statusFilter);
   const { deleteMutation } = useExpenseMutations(profile?.store_id);
@@ -43,21 +45,45 @@ export const ExpensesDashboard: React.FC = () => {
   return (
     <div className="flex flex-col h-full bg-background relative overflow-hidden">
       {/* Header section */}
-      <div className="p-4 md:p-8 shrink-0 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-outline-variant bg-surface-container-lowest">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-on-surface tracking-tight mb-2">Expenses & Payables</h1>
-          <p className="text-on-surface-variant font-medium">Track your business outgoing cash flow.</p>
+      <div className="p-4 md:p-8 shrink-0 flex flex-col gap-6 border-b border-outline-variant bg-surface-container-lowest">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-on-surface tracking-tight mb-2">Expenses & Payables</h1>
+            <p className="text-on-surface-variant font-medium">Track your business outgoing cash flow and vendors.</p>
+          </div>
+          {activeTab === 'EXPENSES' && (
+            <button
+              onClick={handleAdd}
+              className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-xl font-semibold shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all w-full md:w-auto"
+            >
+              <span className="material-symbols-outlined text-[20px]">add</span>
+              Add Expense
+            </button>
+          )}
         </div>
-        <button
-          onClick={handleAdd}
-          className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-on-primary rounded-xl font-semibold shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all w-full md:w-auto"
-        >
-          <span className="material-symbols-outlined text-[20px]">add</span>
-          Add Expense
-        </button>
+
+        {/* Custom Tabs */}
+        <div className="flex items-center gap-6 overflow-x-auto border-b border-outline-variant pb-[-1px]">
+          <button
+            className={`pb-3 text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-colors relative ${activeTab === 'EXPENSES' ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+            onClick={() => setActiveTab('EXPENSES')}
+          >
+            Expense Ledger
+            {activeTab === 'EXPENSES' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full"></div>}
+          </button>
+          <button
+            className={`pb-3 text-sm font-bold uppercase tracking-wider whitespace-nowrap transition-colors relative ${activeTab === 'VENDORS' ? 'text-primary' : 'text-on-surface-variant hover:text-on-surface'}`}
+            onClick={() => setActiveTab('VENDORS')}
+          >
+            Vendors & Payees
+            {activeTab === 'VENDORS' && <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-t-full"></div>}
+          </button>
+        </div>
       </div>
 
-      {/* Metrics */}
+      {activeTab === 'EXPENSES' ? (
+        <>
+          {/* Metrics */}
       <div className="p-4 md:p-8 shrink-0 flex gap-4">
         <div className="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant flex-1 shadow-sm">
           <p className="text-sm font-semibold text-on-surface-variant uppercase tracking-wider mb-2">Total Paid (This View)</p>
@@ -167,7 +193,11 @@ export const ExpensesDashboard: React.FC = () => {
             </table>
           </div>
         </div>
-      </div>
+        </div>
+        </>
+      ) : (
+        <VendorList />
+      )}
 
       <ExpenseForm 
         isOpen={isFormOpen} 

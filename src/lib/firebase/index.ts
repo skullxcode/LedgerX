@@ -22,3 +22,4 @@ export {
 export * from "./api/settings";
 export * from "./api/auth";
 export * from "./api/expenses";
+export * from "./api/vendors";

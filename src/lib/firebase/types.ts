@@ -262,7 +262,19 @@ export enum ExpenseCategory {
   UTILITIES = "UTILITIES",
   RENT = "RENT",
   MAINTENANCE = "MAINTENANCE",
+  VENDOR_PAYMENT = "VENDOR_PAYMENT",
   OTHER = "OTHER"
+}
+
+export interface Vendor extends AuditBase {
+  vendor_id: string;
+  store_id: string;
+  name: string;
+  phone?: string;
+  address?: string;
+  gstin?: string;
+  payable_balance: number;
+  search_terms: string[];
 }
 
 export interface Expense extends AuditBase {
@@ -270,6 +282,7 @@ export interface Expense extends AuditBase {
   store_id: string;
   amount: number;
   category: ExpenseCategory | string;
+  vendor_id?: string;
   vendor_name?: string;
   date: Timestamp | any;
   notes?: string;
