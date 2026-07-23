@@ -34,9 +34,14 @@ export const InventoryDashboard: React.FC = () => {
     return items.reduce((acc, item) => acc + (item.selling_price * (item.current_stock || 0)), 0);
   }, [items]);
 
-  const lowStockCount = useMemo(() => {
-    return items.filter(item => (item.current_stock ?? 0) < 5).length;
+  const lowStockItems = useMemo(() => {
+    return items.filter(item => {
+      const threshold = item.min_stock ?? 5;
+      return (item.current_stock ?? 0) <= threshold && item.is_active;
+    });
   }, [items]);
+
+  const lowStockCount = lowStockItems.length;
 
   const activeCategories = useMemo(() => {
     const categories = new Set(items.map(item => item.category).filter(Boolean));
@@ -208,6 +213,25 @@ export const InventoryDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Low Stock Alert Banner */}
+      {lowStockCount > 0 && (
+        <div className="mb-6 bg-error/10 border border-error/30 rounded-xl px-5 py-4 flex items-start gap-4">
+          <span className="material-symbols-outlined text-error text-[28px] mt-0.5 shrink-0">warning</span>
+          <div className="flex-1">
+            <p className="font-bold text-error text-sm mb-1">{lowStockCount} item{lowStockCount !== 1 ? 's' : ''} running low on stock!</p>
+            <div className="flex flex-wrap gap-2 mt-2">
+              {lowStockItems.slice(0, 5).map(item => (
+                <span key={item.item_id} className="inline-flex items-center gap-1 bg-error/10 text-error border border-error/20 text-xs px-2 py-0.5 rounded-full font-medium">
+                  {item.name}
+                  <span className="font-bold">({item.current_stock} left)</span>
+                </span>
+              ))}
+              {lowStockCount > 5 && <span className="text-xs text-error font-medium self-center">+{lowStockCount - 5} more</span>}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* High Density Data Grid */}
       <div className="flex-1 bg-surface-container-lowest border border-outline-variant flex flex-col">

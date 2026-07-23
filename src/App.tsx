@@ -12,6 +12,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { SearchDropdown } from './components/pos/SearchDropdown';
 import { CheckoutPanel } from './components/pos/CheckoutPanel';
 import { DeliveryChallan } from './components/pos/DeliveryChallan';
+import { useInventory } from './hooks/queries/useInventory';
 
 // ============================================================================
 // LAZY LOADED MODULES
@@ -89,6 +90,13 @@ function MainApp() {
   
   // --- Theme State ---
   const { theme, setTheme, isDark } = useTheme();
+
+  // --- Low Stock Alert Badge ---
+  const { data: inventoryItems = [] } = useInventory(profile?.store_id);
+  const lowStockCount = inventoryItems.filter(item => {
+    const threshold = item.min_stock ?? 5;
+    return (item.current_stock ?? 0) <= threshold && item.is_active;
+  }).length;
 
   /**
    * Persist active tab selection to local storage and update URL hash.
@@ -248,6 +256,11 @@ function MainApp() {
                   >
                     <span className="material-symbols-outlined" data-icon={item.icon}>{item.icon}</span>
                     <span className="font-label-md text-label-md">{item.label}</span>
+                    {item.id === 'INVENTORY' && lowStockCount > 0 && (
+                      <span className="ml-auto bg-error text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full min-w-[18px] text-center">
+                        {lowStockCount > 99 ? '99+' : lowStockCount}
+                      </span>
+                    )}
                   </button>
                 );
               })}
