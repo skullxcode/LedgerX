@@ -93,13 +93,28 @@ export const updateVendor = async (vendorId: string, updates: Partial<Vendor>): 
 
 /**
  * Internal helper to safely update vendor payable balance.
- * Use runTransaction for safe concurrent increments/decrements.
+ * Uses runTransaction to prevent the balance from becoming negative.
  */
 export const updateVendorBalance = async (vendorId: string, amountChange: number): Promise<void> => {
   const docRef = doc(db, 'Vendors', vendorId);
-  await updateDoc(docRef, {
-    payable_balance: increment(amountChange),
-    updated_at: serverTimestamp()
+  
+  await runTransaction(db, async (transaction) => {
+    const vendorDoc = await transaction.get(docRef);
+    if (!vendorDoc.exists()) {
+      throw new Error("Vendor does not exist!");
+    }
+    
+    const currentBalance = vendorDoc.data().payable_balance || 0;
+    const newBalance = currentBalance + amountChange;
+    
+    if (newBalance < 0) {
+      throw new Error("Payment amount exceeds outstanding balance. Cannot have a negative payable balance.");
+    }
+    
+    transaction.update(docRef, {
+      payable_balance: newBalance,
+      updated_at: serverTimestamp()
+    });
   });
 };
 
