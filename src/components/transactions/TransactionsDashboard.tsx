@@ -10,8 +10,9 @@ import { TransactionFilterBar } from './TransactionFilterBar';
 import { DesktopTransactionTable } from './DesktopTransactionTable';
 import { MobileTransactionList } from './MobileTransactionList';
 import { exportToCSV } from '@/lib/utils/csv';
+import { DatePreset } from "./TransactionFilterBar";
 
-export type DatePreset = 'ALL' | 'TODAY' | 'LAST_7' | 'THIS_MONTH' | 'CUSTOM';
+
 
 export interface TransactionsDashboardProps {
   /** Optional callback triggered to view a transaction detail modal */
