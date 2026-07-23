@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { type Customer, type Transaction, type JobCard, getTransactionsByCustomer, getJobCardsByCustomer, updateCustomer, deleteCustomer, updateCustomerUdhaarBalance } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 interface CustomerProfileProps {
   customer: Customer;
@@ -284,7 +285,7 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
                       await updateCustomerUdhaarBalance(profile.store_id, customer.customer_id, -amount);
                       window.location.reload();
                     } catch (e) {
-                      alert("Failed to record payment");
+                      toast.error("Failed to record payment");
                     }
                   }
                 }}
@@ -325,7 +326,7 @@ export const CustomerProfile: React.FC<CustomerProfileProps> = ({ customer, onVi
                       await updateCustomerUdhaarBalance(profile.store_id, customer.customer_id, amount);
                       window.location.reload();
                     } catch (e) {
-                      alert("Failed to add udhaar");
+                      toast.error("Failed to add udhaar");
                     }
                   }
                 }}

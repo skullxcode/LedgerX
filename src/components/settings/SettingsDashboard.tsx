@@ -3,6 +3,7 @@ import { updateBusinessProfile, wipeStoreData, signOut, auth, type BusinessProfi
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { useBusiness } from '../../context/BusinessContext';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 /**
  * Settings Dashboard for managing the business profile, contact information,
@@ -51,10 +52,10 @@ export const SettingsDashboard: React.FC = () => {
         signature_name: formData.signature_name || '',
       });
       await refreshProfile();
-      alert("Settings saved successfully!");
+      toast.success("Settings saved successfully!");
     } catch (e) {
       console.error(e);
-      alert("Failed to save settings");
+      toast.error("Failed to save settings");
     } finally {
       setIsSaving(false);
     }
@@ -67,11 +68,11 @@ export const SettingsDashboard: React.FC = () => {
     setIsWiping(true);
     try {
       await wipeStoreData(storeId);
-      alert("All store data has been successfully wiped.");
+      toast.success("All store data has been successfully wiped.");
       window.location.reload(); 
     } catch (e) {
       console.error(e);
-      alert("Failed to wipe data.");
+      toast.error("Failed to wipe data.");
     } finally {
       setIsWiping(false);
       setShowWipeModal(false);
@@ -80,7 +81,7 @@ export const SettingsDashboard: React.FC = () => {
 
   const handlePasswordReset = async () => {
     if (!user?.email) {
-      alert("No email address found for your account.");
+      toast.error("No email address found for your account.");
       return;
     }
     try {

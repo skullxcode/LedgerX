@@ -7,6 +7,7 @@ import {
   type TransactionItem, 
   type Customer 
 } from '@/lib/firebase';
+import toast from 'react-hot-toast';
 
 // ============================================================================
 // TYPES

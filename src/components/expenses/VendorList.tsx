@@ -4,6 +4,7 @@ import { useVendors, useVendorMutations } from '../../hooks/queries/useVendors';
 import { Modal } from '../ui/Modal';
 import { Input } from '../ui/Input';
 import type { Vendor } from '@/lib/firebase';
+import toast from 'react-hot-toast';
 
 const formatCurrency = (amount: number) => `₹${amount.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
 
@@ -11,10 +12,25 @@ export const VendorList: React.FC = () => {
   const { profile } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const { data: vendors = [], isLoading } = useVendors(profile?.store_id, searchTerm);
+  const { deleteMutation } = useVendorMutations(profile?.store_id);
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedVendor, setSelectedVendor] = useState<Vendor | null>(null);
+
+  const handleDelete = async (vendor: Vendor) => {
+    if (vendor.payable_balance > 0) {
+      toast.error(`Cannot delete ${vendor.name} — they have an outstanding balance of ₹${vendor.payable_balance.toFixed(2)}.`);
+      return;
+    }
+    if (!window.confirm(`Delete ${vendor.name}? This cannot be undone.`)) return;
+    try {
+      await deleteMutation.mutateAsync(vendor.vendor_id);
+      toast.success(`${vendor.name} has been deleted.`);
+    } catch (err) {
+      toast.error('Failed to delete vendor.');
+    }
+  };
 
   return (
     <div className="flex-1 overflow-auto px-4 md:px-8 pb-8 mt-6">
@@ -59,15 +75,25 @@ export const VendorList: React.FC = () => {
                   <h3 className="font-bold text-lg text-on-surface">{vendor.name}</h3>
                   {vendor.phone && <p className="text-sm text-on-surface-variant flex items-center gap-1 mt-1"><span className="material-symbols-outlined text-[14px]">call</span> {vendor.phone}</p>}
                 </div>
-                <button
-                  onClick={() => {
-                    setSelectedVendor(vendor);
-                    setIsFormOpen(true);
-                  }}
-                  className="p-1.5 text-on-surface-variant hover:text-primary rounded-full hover:bg-surface-variant transition-colors"
-                >
-                  <span className="material-symbols-outlined text-[18px]">edit</span>
-                </button>
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => {
+                      setSelectedVendor(vendor);
+                      setIsFormOpen(true);
+                    }}
+                    className="p-1.5 text-on-surface-variant hover:text-primary rounded-full hover:bg-surface-variant transition-colors"
+                    title="Edit vendor"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">edit</span>
+                  </button>
+                  <button
+                    onClick={() => handleDelete(vendor)}
+                    className="p-1.5 text-on-surface-variant hover:text-error rounded-full hover:bg-error/10 transition-colors"
+                    title="Delete vendor"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                  </button>
+                </div>
               </div>
 
               <div className="mt-auto pt-4 border-t border-outline-variant flex justify-between items-end">
@@ -148,7 +174,7 @@ const VendorFormModal: React.FC<{ isOpen: boolean, onClose: () => void, initialD
       onClose();
     } catch (err) {
       console.error(err);
-      alert("Failed to save vendor.");
+      toast.error("Failed to save vendor.");
     }
   };
 
@@ -199,7 +225,7 @@ const RecordPaymentModal: React.FC<{ isOpen: boolean, onClose: () => void, vendo
       });
       onClose();
     } catch (err) {
-      alert("Failed to record payment.");
+      toast.error("Failed to record payment.");
     }
   };
 

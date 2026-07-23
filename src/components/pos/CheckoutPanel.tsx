@@ -11,6 +11,7 @@ import {
   type Customer, 
   searchCustomers 
 } from '@/lib/firebase';
+import toast from 'react-hot-toast';
 
 export interface CheckoutPanelProps {
   /** Callback triggered when a transaction successfully finalizes. Returns the transaction ID. */
@@ -119,7 +120,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
     if (!customer) {
       if (isCreatingNewCustomer) {
         if (!customerName.trim() || !customerPhone.trim()) {
-          alert("Customer Name and Mobile No are required for new customers.");
+          toast.error("Customer Name and Mobile No are required for new customers.");
           return;
         }
       } else {
@@ -128,7 +129,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
         // If they searched but didn't pick, let's treat it as WALK_IN with no name unless they typed one.
         if (customerSearchQuery.trim()) {
           // Attempting to checkout without selecting a customer from search
-          alert("Please select a customer from the search results, or click '+ Add New Customer' to create one.");
+          toast.error("Please select a customer from the search results, or click '+ Add New Customer' to create one.");
           return;
         }
       }
@@ -238,7 +239,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
           }
         }
       } else {
-        alert("Quotation saved successfully!");
+        toast.success("Quotation saved successfully!");
       }
       
       // 3. Reset State

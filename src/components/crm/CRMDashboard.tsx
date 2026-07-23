@@ -4,6 +4,7 @@ import { CustomerProfile } from './CustomerProfile';
 import { UdhaarDashboard } from './UdhaarDashboard';
 import { type Customer, getCustomer, createCustomer, getLatestDocumentNo } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 export interface CRMDashboardProps {
   /** Optional callback to view a specific transaction from the customer's history */
@@ -127,7 +128,7 @@ export const CRMDashboard: React.FC<CRMDashboardProps> = ({ onViewTransaction, i
                 const newCust = await getCustomer(profile.store_id, custId);
                 if (newCust) setSelectedCustomer(newCust);
               } catch (err: any) {
-                alert("Failed to create customer: " + err.message);
+                toast.error("Failed to create customer: " + err.message);
               } finally {
                 setIsSubmitting(false);
               }

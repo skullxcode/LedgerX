@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { JobCardStatus, createJobCard, createCustomer, searchCustomers, getLatestDocumentNo, type Customer } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 export const JobCardIntake: React.FC<{ onComplete: () => void, onCancel: () => void }> = ({ onComplete, onCancel }) => {
   const { profile } = useAuth();

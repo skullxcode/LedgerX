@@ -6,6 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useBusiness } from '../../context/BusinessContext';
 import { usePOS } from '../../context/POSContext';
 import { generatePDF, sharePDF } from '../../lib/utils/pdf';
+import toast from 'react-hot-toast';
 
 export interface DeliveryChallanProps {
   /** The unique ID of the transaction to display */
@@ -62,11 +63,11 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
       try {
         if (!authProfile?.store_id) return;
         await voidTransaction(authProfile.store_id, transactionId, authProfile.uid, "Voided from viewer");
-        alert("Transaction voided successfully.");
+        toast.success("Transaction voided successfully.");
         onClose();
       } catch (error) {
         console.error("Failed to void", error);
-        alert("Failed to void transaction");
+        toast.error("Failed to void transaction");
       }
     }
   };

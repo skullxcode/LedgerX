@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { adjustStock, type InventoryItem, type AdjustmentReason } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
+import toast from 'react-hot-toast';
 
 export interface StockAdjustmentFormProps {
   /** The inventory item to adjust */

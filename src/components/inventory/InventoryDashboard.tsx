@@ -6,6 +6,7 @@ import { useInventory } from '../../hooks/queries/useInventory';
 import { InventoryList } from './InventoryList';
 import { InventoryForm } from './InventoryForm';
 import { BulkImportModal } from './BulkImportModal';
+import toast from 'react-hot-toast';
 
 /**
  * The main dashboard for managing the store's inventory.
@@ -82,7 +83,7 @@ export const InventoryDashboard: React.FC = () => {
    */
   const handleExportCSV = () => {
     if (items.length === 0) {
-      alert("No inventory data to export");
+      toast.error("No inventory data to export");
       return;
     }
     const headers = "SKU,Name,Category,Type,Stock,Purchase Price,Selling Price,GST%\n";

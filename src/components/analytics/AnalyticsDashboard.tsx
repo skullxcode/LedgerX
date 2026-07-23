@@ -3,6 +3,7 @@ import { getFirestore, collection, getDocs, query, where } from 'firebase/firest
 import { app, type Transaction, type Customer, type InventoryItem, type JobCard, type Expense } from '@/lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 import { ResponsiveContainer, AreaChart, Area, XAxis, Tooltip, CartesianGrid, BarChart, Bar, Legend } from 'recharts';
+import toast from 'react-hot-toast';
 
 class DashboardErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: Error | null}> {
   constructor(props: {children: React.ReactNode}) {
@@ -217,7 +218,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
 
   const handleExportCSV = () => {
     if (recentTxs.length === 0) {
-      alert("No data to export");
+      toast.error("No data to export");
       return;
     }
     const headers = "Date,Reference,Customer,Amount\n";

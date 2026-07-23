@@ -6,6 +6,7 @@ import { useExpenseMutations } from '../../hooks/queries/useExpenses';
 import { useVendors, useVendorMutations } from '../../hooks/queries/useVendors';
 import { ExpenseCategory, type Expense } from '@/lib/firebase';
 import { Timestamp } from 'firebase/firestore';
+import toast from 'react-hot-toast';
 
 interface ExpenseFormProps {
   isOpen: boolean;
@@ -52,7 +53,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ isOpen, onClose, initi
     if (!profile?.store_id) return;
 
     if (status === 'UNPAID' && !vendorId) {
-      alert("Please select a registered vendor to record an unpaid expense.");
+      toast.error("Please select a registered vendor to record an unpaid expense.");
       return;
     }
 
@@ -104,7 +105,7 @@ export const ExpenseForm: React.FC<ExpenseFormProps> = ({ isOpen, onClose, initi
       onClose();
     } catch (error) {
       console.error("Failed to save expense", error);
-      alert("Failed to save expense");
+      toast.error("Failed to save expense");
     }
   };
 

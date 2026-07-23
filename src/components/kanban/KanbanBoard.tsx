@@ -4,6 +4,7 @@ import { usePOS } from '../../context/POSContext';
 import { useAuth } from '../../context/AuthContext';
 import { JobCardIntake } from './JobCardIntake';
 import { addInventoryItem } from '@/lib/firebase';
+import toast from 'react-hot-toast';
 
 export interface KanbanBoardProps {
   /** Callback to switch to the POS tab, triggered when a job is completed and billed */
@@ -266,9 +267,9 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
                     } as any);
                     setIsAddingInventory(false);
                     setInvName(''); setInvCategory(''); setInvSellPrice(''); setInvPurchasePrice(''); setInvGst('18'); setInvStock('1');
-                    alert('Item added to inventory!');
+                    toast.success('Item added to inventory!');
                   } catch(e) {
-                    alert('Failed to add item.');
+                    toast.error('Failed to add item.');
                   } finally {
                     setIsSavingInv(false);
                   }

@@ -99,3 +99,12 @@ export const updateVendorBalance = async (vendorId: string, amountChange: number
     updated_at: serverTimestamp()
   });
 };
+
+/**
+ * Permanently deletes a vendor document.
+ * Note: This should only be done if there are no outstanding payables.
+ */
+export const deleteVendor = async (vendorId: string): Promise<void> => {
+  const docRef = doc(db, 'Vendors', vendorId);
+  await deleteDoc(docRef);
+};
