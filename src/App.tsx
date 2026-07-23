@@ -88,7 +88,7 @@ function MainApp() {
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   const { user, profile, loading } = useAuth();
-  const { data: notifications = [] } = useNotifications(profile?.store_id);
+  const { data: rawNotifications = [] } = useNotifications(profile?.store_id);
   // Global key listener for '?'
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -116,6 +116,8 @@ function MainApp() {
 
   // --- Low Stock Alert Badge ---
   const dismissedIds = useDismissedNotifications();
+  // Filter dismissed notifications — same logic as NotificationDropdown for a consistent count
+  const notifications = rawNotifications.filter(n => !dismissedIds.includes(n.id));
   const { data: inventoryItems = [] } = useInventory(profile?.store_id);
   const lowStockCount = inventoryItems.filter(item => {
     const threshold = item.min_stock ?? 5;
