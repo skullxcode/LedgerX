@@ -17,6 +17,7 @@ import { SearchDropdown } from './components/pos/SearchDropdown';
 import { CheckoutPanel } from './components/pos/CheckoutPanel';
 import { DeliveryChallan } from './components/pos/DeliveryChallan';
 import { useInventory } from './hooks/queries/useInventory';
+import { useDismissedNotifications } from './hooks/useDismissedNotifications';
 
 // ============================================================================
 // LAZY LOADED MODULES
@@ -114,10 +115,13 @@ function MainApp() {
   const { theme, setTheme, isDark } = useTheme();
 
   // --- Low Stock Alert Badge ---
+  const dismissedIds = useDismissedNotifications();
   const { data: inventoryItems = [] } = useInventory(profile?.store_id);
   const lowStockCount = inventoryItems.filter(item => {
     const threshold = item.min_stock ?? 5;
-    return (item.current_stock ?? 0) <= threshold && item.is_active;
+    const isLow = (item.current_stock ?? 0) <= threshold && item.is_active;
+    const notifId = `stock-${item.item_id}`;
+    return isLow && !dismissedIds.includes(notifId);
   }).length;
 
   /**

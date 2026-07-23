@@ -5,6 +5,7 @@ import { getFirestore, collection, getDocs, query, where } from 'firebase/firest
 import { useAuth } from '../../context/AuthContext';
 import { useInventory } from '../../hooks/queries/useInventory';
 import { formatCurrency } from '../../lib/utils/formatters';
+import { useDismissedNotifications } from '../../hooks/useDismissedNotifications';
 import { InventoryList } from './InventoryList';
 import { InventoryForm } from './InventoryForm';
 import { BulkImportModal } from './BulkImportModal';
@@ -37,12 +38,15 @@ export const InventoryDashboard: React.FC = () => {
     return items.reduce((acc, item) => acc + (item.selling_price * (item.current_stock || 0)), 0);
   }, [items]);
 
+  const dismissedIds = useDismissedNotifications();
   const lowStockItems = useMemo(() => {
     return items.filter(item => {
       const threshold = item.min_stock ?? 5;
-      return (item.current_stock ?? 0) <= threshold && item.is_active;
+      const isLow = (item.current_stock ?? 0) <= threshold && item.is_active;
+      const notifId = `stock-${item.item_id}`;
+      return isLow && !dismissedIds.includes(notifId);
     });
-  }, [items]);
+  }, [items, dismissedIds]);
 
   const lowStockCount = lowStockItems.length;
 

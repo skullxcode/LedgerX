@@ -154,6 +154,7 @@ export const useNotificationActions = () => {
     if (!dismissedIds.includes(id)) {
       dismissedIds.push(id);
       localStorage.setItem('ledgerx_dismissed_notifications', JSON.stringify(dismissedIds));
+      window.dispatchEvent(new Event('ledgerx_notifications_dismissed'));
     }
 
     // 2. Optimistically update the cache
