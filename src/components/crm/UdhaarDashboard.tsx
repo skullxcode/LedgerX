@@ -21,7 +21,8 @@ export const UdhaarDashboard: React.FC = () => {
   const queryClient = useQueryClient();
 
   // Fetch ALL customers, then filter client-side for those with udhaar_balance > 0
-  const { data: allCustomers = [], isLoading } = useCustomers(profile?.store_id, '');
+  const { data: searchResponse, isLoading } = useCustomers(profile?.store_id, '');
+  const allCustomers = searchResponse?.data || [];
 
   const [searchTerm, setSearchTerm] = useState('');
   const [collectingFor, setCollectingFor] = useState<Customer | null>(null);
