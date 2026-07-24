@@ -124,11 +124,11 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
   useEffect(() => {
     const fetchNextDocNo = async () => {
       if (!profile?.store_id) return;
-      let prefix = 'INV-';
+      let prefix = profile.invoice_prefix || 'INV-';
       if (documentType === DocumentType.QUOTE) {
-        prefix = 'QT-';
+        prefix = profile.quote_prefix || 'QT-';
       } else if (formatMode === FormatMode.INFORMAL) {
-        prefix = 'CH-';
+        prefix = profile.memo_prefix || 'CH-';
       }
       
       try {
@@ -140,7 +140,7 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
       }
     };
     fetchNextDocNo();
-  }, [documentType, formatMode, profile?.store_id]);
+  }, [documentType, formatMode, profile?.store_id, profile?.invoice_prefix, profile?.quote_prefix, profile?.memo_prefix]);
 
   /**
    * Handles the submission of the cart, applying taxes, creating customers if necessary, 
@@ -285,11 +285,11 @@ export const CheckoutPanel: React.FC<CheckoutPanelProps> = ({ onShowChallan }) =
       setIsCreatingNewCustomer(false);
       
       // Refresh the next document number automatically
-      let prefix = 'INV-';
+      let prefix = profile.invoice_prefix || 'INV-';
       if (documentType === DocumentType.QUOTE) {
-        prefix = 'QT-';
+        prefix = profile.quote_prefix || 'QT-';
       } else if (formatMode === FormatMode.INFORMAL) {
-        prefix = 'CH-';
+        prefix = profile.memo_prefix || 'CH-';
       }
       const nextNo = await getLatestDocumentNo(profile.store_id, prefix);
       setDocumentNo(nextNo);

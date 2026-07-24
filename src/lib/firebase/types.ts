@@ -218,6 +218,9 @@ export interface BusinessProfile extends AuditBase {
   quotation_terms?: string;
   delivery_memo_terms?: string;
   signature_name?: string;
+  invoice_prefix?: string;
+  quote_prefix?: string;
+  memo_prefix?: string;
 }
 
 export interface UserProfile extends AuditBase {

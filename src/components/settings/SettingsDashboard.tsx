@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { updateBusinessProfile, wipeStoreData } from '@/lib/firebase/api/settings';
+import { getCurrentSequenceNumber, setNextSequenceNumber } from '@/lib/firebase/api/transactions';
 import { signOut } from '@/lib/firebase/api/auth';
 import { auth } from '@/lib/firebase/config';
 import { type BusinessProfile } from '@/lib/firebase/types';
@@ -19,10 +20,19 @@ export const SettingsDashboard: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [isWiping, setIsWiping] = useState(false);
   const [showWipeModal, setShowWipeModal] = useState(false);
+  const [nextInvNum, setNextInvNum] = useState<number | ''>('');
+  const [nextQuoteNum, setNextQuoteNum] = useState<number | ''>('');
+  const [nextMemoNum, setNextMemoNum] = useState<number | ''>('');
 
   useEffect(() => {
     if (profile) {
       setFormData(profile);
+      const storeId = profile.store_id;
+      if (storeId) {
+        getCurrentSequenceNumber(storeId, profile.invoice_prefix || 'INV-').then(n => setNextInvNum(n));
+        getCurrentSequenceNumber(storeId, profile.quote_prefix || 'QT-').then(n => setNextQuoteNum(n));
+        getCurrentSequenceNumber(storeId, profile.memo_prefix || 'CH-').then(n => setNextMemoNum(n));
+      }
     }
   }, [profile]);
 
@@ -54,7 +64,22 @@ export const SettingsDashboard: React.FC = () => {
         quotation_terms: formData.quotation_terms || '',
         delivery_memo_terms: formData.delivery_memo_terms || '',
         signature_name: formData.signature_name || '',
+        invoice_prefix: formData.invoice_prefix || '',
+        quote_prefix: formData.quote_prefix || '',
+        memo_prefix: formData.memo_prefix || '',
       });
+      
+      // Update sequence numbers if specified
+      if (nextInvNum !== '') {
+        await setNextSequenceNumber(storeId, formData.invoice_prefix || 'INV-', Number(nextInvNum));
+      }
+      if (nextQuoteNum !== '') {
+        await setNextSequenceNumber(storeId, formData.quote_prefix || 'QT-', Number(nextQuoteNum));
+      }
+      if (nextMemoNum !== '') {
+        await setNextSequenceNumber(storeId, formData.memo_prefix || 'CH-', Number(nextMemoNum));
+      }
+      
       await refreshProfile();
       toast.success("Settings saved successfully!");
     } catch (e) {
@@ -302,7 +327,74 @@ export const SettingsDashboard: React.FC = () => {
                   placeholder="e.g. Goods once sold will not be taken back..."
                 />
               </div>
-              <div className="space-y-2">
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                <div className="space-y-2">
+                  <label className="block font-label-md text-label-md text-on-surface">Invoice Prefix</label>
+                  <input 
+                    className="w-full border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-body-md p-3 transition-colors" 
+                    type="text" 
+                    value={formData.invoice_prefix || ''} 
+                    onChange={e => handleChange('invoice_prefix', e.target.value)}
+                    placeholder="e.g. INV-"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block font-label-md text-label-md text-on-surface">Invoice Start Number</label>
+                  <input 
+                    className="w-full border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-body-md p-3 transition-colors" 
+                    type="number" 
+                    value={nextInvNum} 
+                    onChange={e => setNextInvNum(e.target.value === '' ? '' : Number(e.target.value))}
+                    placeholder="e.g. 1"
+                  />
+                  <p className="text-[11px] text-secondary">The sequence number for the next generated invoice.</p>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block font-label-md text-label-md text-on-surface">Quotation Prefix</label>
+                  <input 
+                    className="w-full border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-body-md p-3 transition-colors" 
+                    type="text" 
+                    value={formData.quote_prefix || ''} 
+                    onChange={e => handleChange('quote_prefix', e.target.value)}
+                    placeholder="e.g. QT-"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block font-label-md text-label-md text-on-surface">Quotation Start Number</label>
+                  <input 
+                    className="w-full border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-body-md p-3 transition-colors" 
+                    type="number" 
+                    value={nextQuoteNum} 
+                    onChange={e => setNextQuoteNum(e.target.value === '' ? '' : Number(e.target.value))}
+                    placeholder="e.g. 1"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block font-label-md text-label-md text-on-surface">Delivery Memo Prefix</label>
+                  <input 
+                    className="w-full border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-body-md p-3 transition-colors" 
+                    type="text" 
+                    value={formData.memo_prefix || ''} 
+                    onChange={e => handleChange('memo_prefix', e.target.value)}
+                    placeholder="e.g. CH-"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="block font-label-md text-label-md text-on-surface">Delivery Memo Start Number</label>
+                  <input 
+                    className="w-full border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-body-md p-3 transition-colors" 
+                    type="number" 
+                    value={nextMemoNum} 
+                    onChange={e => setNextMemoNum(e.target.value === '' ? '' : Number(e.target.value))}
+                    placeholder="e.g. 1"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2 mt-6">
                 <label className="block font-label-md text-label-md text-on-surface">Quotation Terms & Conditions</label>
                 <textarea 
                   className="w-full border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-body-md p-3 transition-colors resize-y min-h-[80px]" 

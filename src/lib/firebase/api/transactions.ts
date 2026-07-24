@@ -212,6 +212,27 @@ export const getLatestDocumentNo = async (storeId: string, prefix: string): Prom
   return assignedDocNo;
 };
 
+/**
+ * Gets the current sequence number for a given prefix (without incrementing).
+ */
+export const getCurrentSequenceNumber = async (storeId: string, prefix: string): Promise<number> => {
+  const counterRef = doc(db, "Counters", `${storeId}_${prefix}`);
+  const counterSnap = await getDoc(counterRef);
+  if (counterSnap.exists()) {
+    return counterSnap.data().current_value + 1;
+  }
+  return 1;
+};
+
+/**
+ * Sets the next sequence number for a given prefix.
+ * To make the NEXT document be 'nextNum', we set the current_value to 'nextNum - 1'.
+ */
+export const setNextSequenceNumber = async (storeId: string, prefix: string, nextNum: number): Promise<void> => {
+  const counterRef = doc(db, "Counters", `${storeId}_${prefix}`);
+  await setDoc(counterRef, { current_value: nextNum - 1 }, { merge: true });
+};
+
 // ============================================================================
 // WRITE OPERATIONS (TRANSACTIONS)
 // ============================================================================
