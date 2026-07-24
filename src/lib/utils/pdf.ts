@@ -4,9 +4,10 @@ import { toJpeg } from 'html-to-image';
 /**
  * Captures an HTML element and converts it to a PDF Blob using html2canvas and jspdf.
  * @param elementId The ID of the HTML element to capture.
+ * @param autoPrint Whether to inject a script to auto-print when opened in a PDF viewer.
  * @returns A Promise that resolves to a Blob containing the PDF data.
  */
-export const createPdfBlob = async (elementId: string): Promise<Blob> => {
+export const createPdfBlob = async (elementId: string, autoPrint: boolean = false): Promise<Blob> => {
   const element = document.getElementById(elementId);
   if (!element) {
     throw new Error(`Element with id ${elementId} not found`);
@@ -46,6 +47,10 @@ export const createPdfBlob = async (elementId: string): Promise<Blob> => {
     const imgY = 0; // Top align
 
     pdf.addImage(imgData, 'JPEG', imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+    
+    if (autoPrint) {
+      pdf.autoPrint();
+    }
     
     // Convert to Blob instead of saving directly to allow sharing
     return pdf.output('blob');
@@ -109,5 +114,30 @@ export const sharePDF = async (elementId: string, filename: string, title: strin
     }
     console.error('Error sharing PDF:', error);
     throw error;
+  }
+};
+
+/**
+ * Generates a PDF from an HTML element and opens it in a new tab to print natively.
+ * @param elementId The ID of the HTML element to capture.
+ */
+export const printPDF = async (elementId: string): Promise<void> => {
+  try {
+    const blob = await createPdfBlob(elementId, true);
+    const url = URL.createObjectURL(blob);
+    
+    const printWindow = window.open(url, '_blank');
+    if (!printWindow) {
+      console.warn("Popup blocked. Could not open print window.");
+      // Fallback: trigger normal print if popups are blocked
+      window.print();
+    }
+    
+    // Note: We don't revoke the URL immediately because the new tab needs time to load it.
+    // The browser will clean up blob URLs when the document is unloaded.
+  } catch (error) {
+    console.error('Error printing PDF:', error);
+    // Fallback to normal window print if PDF generation fails
+    window.print();
   }
 };

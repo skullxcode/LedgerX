@@ -3,7 +3,7 @@ import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { type Transaction, DocumentType } from '@/lib/firebase/types';
 import { voidTransaction } from '@/lib/firebase/api/transactions';
 import { numberToWords } from '@/lib/firebase/utils/numberToWords';
-import { generatePDF, sharePDF } from '@/lib/utils/pdf';
+import { generatePDF, sharePDF, printPDF } from '@/lib/utils/pdf';
 import { app } from '@/lib/firebase/config';
 import { useAuth } from '../../context/AuthContext';
 import { useBusiness } from '../../context/BusinessContext';
@@ -175,7 +175,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
           <div className="flex gap-2">
             <button 
               className="flex items-center gap-1.5 px-4 py-2 bg-primary text-on-primary rounded font-bold text-[11px] uppercase transition-all active:opacity-80" 
-              onClick={() => window.print()}
+              onClick={() => printPDF('print-invoice')}
             >
               <span className="material-symbols-outlined text-[16px]">print</span>
               Print

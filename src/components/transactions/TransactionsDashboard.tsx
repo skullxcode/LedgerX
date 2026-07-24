@@ -10,7 +10,7 @@ import { TransactionFilterBar } from './TransactionFilterBar';
 import { DesktopTransactionTable } from './DesktopTransactionTable';
 import { MobileTransactionList } from './MobileTransactionList';
 import { exportToCSV } from '@/lib/utils/csv';
-import { generatePDF, sharePDF } from '@/lib/utils/pdf';
+import { generatePDF, sharePDF, printPDF } from '@/lib/utils/pdf';
 import { DatePreset } from "./TransactionFilterBar";
 
 
@@ -154,7 +154,7 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
           </button>
           <button
             className="bg-surface-container-lowest border border-outline-variant px-4 py-2 flex items-center gap-2 font-label-md hover:bg-surface-container transition-colors rounded"
-            onClick={() => window.print()}
+            onClick={() => printPDF('print-statement-of-account')}
           >
             <span className="material-symbols-outlined text-[18px]">print</span>
             Print Batch
