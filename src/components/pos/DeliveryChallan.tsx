@@ -236,7 +236,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
             <div className="text-[12px] font-bold">
               {!isUntaxed && profile?.gstin && `GSTIN: ${profile.gstin}`}
             </div>
-            <div className="text-[12px] italic uppercase text-right absolute right-0 top-0">
+            <div className="text-[12px] italic uppercase text-right absolute right-0 -top-4">
               {printMode === DocumentType.FINAL_SALE && !isUntaxed && "(ORIGINAL FOR RECIPIENT)"}
             </div>
           </div>
