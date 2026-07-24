@@ -158,7 +158,7 @@ const AnalyticsDashboardInner: React.FC<AnalyticsDashboardProps> = ({ onNavigate
         const activeJobs: JobCard[] = [];
         jobsSnap.docs.forEach(doc => {
           const job = doc.data() as JobCard;
-          if (job.status !== 'READY') {
+          if (job.status !== 'READY' && !job.is_deleted) {
             activeJobs.push(job);
           }
         });
