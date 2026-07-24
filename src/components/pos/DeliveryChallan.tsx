@@ -459,6 +459,13 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
                       : (profile?.invoice_terms || '1. Goods once sold will not be taken back.\n2. Subject to local jurisdiction.')}
                   </p>
                 </div>
+                {printMode === 'MEMO' && (
+                  <div className="mt-8 w-48">
+                    <span className="text-[11px] font-bold text-center block w-full border-t border-black pt-1">
+                      Receiver's Signature
+                    </span>
+                  </div>
+                )}
               </div>
 
               {/* Bank Details & Signature Block */}
