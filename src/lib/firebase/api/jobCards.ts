@@ -117,6 +117,29 @@ export const createJobCard = async (
 };
 
 /**
+ * Updates an existing Job Card's core details (customer, device, issue, cost).
+ * 
+ * @param jobId - The Job Card ID.
+ * @param updates - The fields to update.
+ */
+export const updateJobCardDetails = async (
+  jobId: string, 
+  updates: Partial<Pick<JobCard, "customer_id" | "customer_name" | "customer_phone" | "customer_address" | "customer_gstin" | "device_make_model" | "reported_issue" | "estimated_cost" | "advance_paid">>
+): Promise<void> => {
+  const docRef = doc(db, "JobCards", jobId);
+  
+  const payload = Object.entries(updates).reduce((acc, [k, v]) => {
+    if (v !== undefined) acc[k] = v;
+    return acc;
+  }, {} as Record<string, any>);
+  
+  if (Object.keys(payload).length > 0) {
+    payload.updated_at = Timestamp.now();
+    await updateDoc(docRef, payload);
+  }
+};
+
+/**
  * Updates the status of an existing Job Card.
  * If the status is moved to 'READY', the completion date is automatically recorded.
  * 

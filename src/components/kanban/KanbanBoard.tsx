@@ -28,6 +28,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
   const [jobs, setJobs] = useState<JobCard[]>([]);
   const { addToCart, setCustomer } = usePOS();
   const [isAddingJob, setIsAddingJob] = useState(false);
+  const [editingJob, setEditingJob] = useState<JobCard | null>(null);
   const [isAddingInventory, setIsAddingInventory] = useState(false);
   const [invName, setInvName] = useState('');
   const [invCategory, setInvCategory] = useState('');
@@ -181,6 +182,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
                     onDragEnd={() => setDraggingJobId(null)}
                     onComplete={() => handleCompleteAndBill(job)}
                     onStatusChange={(status) => handleStatusChange(job.job_id, status)}
+                    onEdit={() => setEditingJob(job)}
                     storeId={profile?.store_id}
                     onRefresh={fetchJobs}
                     isHighlighted={initialJobId === job.job_id}
@@ -193,11 +195,21 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
         </div>
       </section>
 
-      {isAddingJob && (
-        <div className="fixed inset-0 bg-primary/20 backdrop-blur-sm z-[60] flex items-center justify-center">
+      {/* Job Card Intake Modal */}
+      {(isAddingJob || editingJob) && (
+        <div className="fixed inset-0 bg-primary/20 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <JobCardIntake 
-            onComplete={() => { setIsAddingJob(false); fetchJobs(); }} 
-            onCancel={() => setIsAddingJob(false)} 
+            initialJob={editingJob}
+            onComplete={() => {
+              setIsAddingJob(false);
+              setEditingJob(null);
+              fetchJobs();
+              toast.success(editingJob ? 'Job Card updated successfully!' : 'Job Card created successfully!');
+            }} 
+            onCancel={() => {
+              setIsAddingJob(false);
+              setEditingJob(null);
+            }} 
           />
         </div>
       )}
@@ -295,11 +307,12 @@ const JobCardItem: React.FC<{
   onDragEnd: () => void;
   onComplete: () => void;
   onStatusChange: (status: JobCardStatus) => void;
+  onEdit: () => void;
   storeId?: string;
   onRefresh: () => void;
   isHighlighted?: boolean;
   onHighlightClear?: () => void;
-}> = ({ job, isDragging, onDragStart, onDragEnd, onComplete, onStatusChange, storeId, onRefresh, isHighlighted, onHighlightClear }) => {
+}> = ({ job, isDragging, onDragStart, onDragEnd, onComplete, onStatusChange, onEdit, storeId, onRefresh, isHighlighted, onHighlightClear }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [partSearch, setPartSearch] = useState('');
   const [searchResults, setSearchResults] = useState<InventoryItem[]>([]);
@@ -365,7 +378,16 @@ const JobCardItem: React.FC<{
         <span className={`${getBadgeStyle(job.status)} text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter`}>
           {job.status.replace('_', ' ')}
         </span>
-        <span className="text-outline font-code text-code">#{job.job_id.substring(0, 8)}</span>
+        <div className="flex items-center gap-2">
+          <button 
+            className="text-secondary hover:text-primary transition-colors flex items-center" 
+            onClick={(e) => { e.stopPropagation(); onEdit(); }}
+            title="Edit Repair Card"
+          >
+            <span className="material-symbols-outlined text-[16px]">edit</span>
+          </button>
+          <span className="text-outline font-code text-code">#{job.job_id.substring(0, 8)}</span>
+        </div>
       </div>
       <h4 className="font-headline-md text-label-md font-bold text-primary mb-1">{job.customer_name}</h4>
       <p className="text-secondary text-body-md mb-3">{job.device}</p>

@@ -1,22 +1,22 @@
-import { useState } from "react";
-import { JobCardStatus, type Customer } from '@/lib/firebase/types';
-import { createJobCard } from '@/lib/firebase/api/jobCards';
+import { useState, useEffect } from "react";
+import { type JobCard, JobCardStatus, type Customer } from '@/lib/firebase/types';
+import { createJobCard, updateJobCardDetails } from '@/lib/firebase/api/jobCards';
 import { createCustomer, searchCustomers } from '@/lib/firebase/api/customers';
 import { getLatestDocumentNo } from '@/lib/firebase/api/transactions';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 
-export const JobCardIntake: React.FC<{ onComplete: () => void, onCancel: () => void }> = ({ onComplete, onCancel }) => {
+export const JobCardIntake: React.FC<{ onComplete: () => void, onCancel: () => void, initialJob?: JobCard | null }> = ({ onComplete, onCancel, initialJob }) => {
   const { profile } = useAuth();
-  const [customerName, setCustomerName] = useState('');
-  const [customerPhone, setCustomerPhone] = useState('');
-  const [customerAddress, setCustomerAddress] = useState('');
-  const [customerGstin, setCustomerGstin] = useState('');
-  const [device, setDevice] = useState('');
-  const [reportedIssue, setReportedIssue] = useState('');
-  const [estimatedCost, setEstimatedCost] = useState('');
+  const [customerName, setCustomerName] = useState(initialJob?.customer_name || '');
+  const [customerPhone, setCustomerPhone] = useState(initialJob?.customer_phone || '');
+  const [customerAddress, setCustomerAddress] = useState(initialJob?.customer_address || '');
+  const [customerGstin, setCustomerGstin] = useState(initialJob?.customer_gstin || '');
+  const [device, setDevice] = useState(initialJob?.device || '');
+  const [reportedIssue, setReportedIssue] = useState(initialJob?.reported_issue || '');
+  const [estimatedCost, setEstimatedCost] = useState(initialJob?.estimated_cost?.toString() || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(initialJob?.customer_id ? { customer_id: initialJob.customer_id, name: initialJob.customer_name, phone: initialJob.customer_phone, address: initialJob.customer_address, gstin: initialJob.customer_gstin } as Customer : null);
   const [searchResults, setSearchResults] = useState<Customer[]>([]);
 
   const handlePhoneChange = async (val: string) => {
@@ -52,19 +52,32 @@ export const JobCardIntake: React.FC<{ onComplete: () => void, onCancel: () => v
         await createCustomer(profile.store_id, finalCustomerId, customerName, customerPhone, customerAddress, customerGstin);
       }
 
-      await createJobCard(profile.store_id, {
-        customer_id: finalCustomerId,
-        customer_name: customerName,
-        customer_phone: customerPhone,
-        customer_address: customerAddress,
-        customer_gstin: customerGstin,
-        device: device,
-        device_model: '',
-        reported_issue: reportedIssue,
-        status: JobCardStatus.RECEIVED,
-        estimated_cost: parseFloat(estimatedCost) || 0,
-        parts_used: [],
-      });
+      if (initialJob?.job_id) {
+        await updateJobCardDetails(initialJob.job_id, {
+          customer_id: finalCustomerId,
+          customer_name: customerName,
+          customer_phone: customerPhone,
+          customer_address: customerAddress,
+          customer_gstin: customerGstin,
+          device: device,
+          reported_issue: reportedIssue,
+          estimated_cost: parseFloat(estimatedCost) || 0,
+        });
+      } else {
+        await createJobCard(profile.store_id, {
+          customer_id: finalCustomerId,
+          customer_name: customerName,
+          customer_phone: customerPhone,
+          customer_address: customerAddress,
+          customer_gstin: customerGstin,
+          device: device,
+          device_model: '',
+          reported_issue: reportedIssue,
+          status: JobCardStatus.RECEIVED,
+          estimated_cost: parseFloat(estimatedCost) || 0,
+          parts_used: [],
+        });
+      }
       
       onComplete();
     } catch (error: any) {
@@ -79,7 +92,7 @@ export const JobCardIntake: React.FC<{ onComplete: () => void, onCancel: () => v
   return (
     <div className="bg-surface-container-lowest w-full max-w-[700px] mx-4 p-4 md:p-8 rounded border border-outline-variant shadow-[0_4px_20px_rgba(15,23,42,0.04)] max-h-[90dvh] overflow-y-auto">
       <div className="flex justify-between items-center mb-6">
-        <h3 className="font-headline-md text-headline-md text-primary">New Service Intake</h3>
+        <h3 className="font-headline-md text-headline-md text-primary">{initialJob ? 'Update Service Intake' : 'New Service Intake'}</h3>
         <button className="text-secondary hover:text-primary transition-colors" onClick={onCancel}>
           <span className="material-symbols-outlined" data-icon="close">close</span>
         </button>
@@ -187,11 +200,11 @@ export const JobCardIntake: React.FC<{ onComplete: () => void, onCancel: () => v
             Cancel
           </button>
           <button 
-            type="submit"
-            className="px-8 py-3 bg-primary rounded font-label-md text-label-md text-on-primary shadow-[0_4px_20px_rgba(15,23,42,0.04)] hover:opacity-90 transition-opacity disabled:opacity-50"
+            type="submit" 
             disabled={isSubmitting}
+            className="flex-1 bg-primary text-on-primary py-3 rounded font-label-md hover:opacity-90 transition-opacity disabled:opacity-50"
           >
-            {isSubmitting ? 'Creating...' : 'Create Job Card'}
+            {isSubmitting ? 'Saving...' : initialJob ? 'Update Job Card' : 'Create Job Card'}
           </button>
         </div>
       </form>
