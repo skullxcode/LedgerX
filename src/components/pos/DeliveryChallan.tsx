@@ -205,7 +205,7 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
       <div className="flex-1 overflow-auto p-4 md:p-8 flex justify-start md:justify-center items-start print:p-0">
         <div 
           id="print-invoice" 
-          className="bg-white shrink-0 w-[800px] min-h-[1100px] text-black shadow-xl border border-gray-300 p-6 sm:p-8 md:p-10 flex flex-col relative print:shadow-none print:border-none print:m-0 print:p-0 print:w-full print:bg-white print:text-black"
+          className="bg-white shrink-0 w-[800px] min-h-[1100px] text-black shadow-xl border border-gray-300 p-6 sm:p-8 md:p-10 flex flex-col relative print:shadow-none print:border-none print:m-0 print:p-0 print:bg-white print:text-black"
         >
           
           {transaction.status === 'VOIDED' && (

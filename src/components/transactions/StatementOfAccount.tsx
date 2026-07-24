@@ -25,7 +25,7 @@ export const StatementOfAccount: React.FC<Props> = ({ transactions, dateRange })
   const closingBalance = totalCharges - totalPayments;
 
   return (
-    <div id="print-statement-of-account" className="hidden print:block text-black bg-white absolute top-0 left-0 w-full min-h-screen z-[99999] p-8 font-sans">
+    <div id="print-statement-of-account" className="hidden print:block text-black bg-white absolute top-0 left-0 min-h-screen z-[99999] p-8 font-sans">
       
       {/* Header Section */}
       <div className="flex justify-between items-start border-b-[3px] border-black pb-6 mb-8">
