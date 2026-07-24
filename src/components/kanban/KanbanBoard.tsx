@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { type JobCard, JobCardStatus, type InventoryItem, type JobCardPart, type Customer } from '@/lib/firebase/types';
-import { updateJobCardStatus, addPartToJobCard, getJobCards } from '@/lib/firebase/api/jobCards';
+import { updateJobCardStatus, addPartToJobCard, getJobCards, deleteJobCard } from '@/lib/firebase/api/jobCards';
 import { searchInventory } from '@/lib/firebase/api/inventory';
 import { getCustomer } from '@/lib/firebase/api/customers';
 import { usePOS } from '../../context/POSContext';
@@ -183,6 +183,17 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
                     onComplete={() => handleCompleteAndBill(job)}
                     onStatusChange={(status) => handleStatusChange(job.job_id, status)}
                     onEdit={() => setEditingJob(job)}
+                    onDelete={async () => {
+                      if (window.confirm("Are you sure you want to delete this repair card? This cannot be undone.")) {
+                        try {
+                          await deleteJobCard(job.job_id);
+                          toast.success("Repair card deleted successfully");
+                          fetchJobs();
+                        } catch(e) {
+                          toast.error("Failed to delete repair card");
+                        }
+                      }
+                    }}
                     storeId={profile?.store_id}
                     onRefresh={fetchJobs}
                     isHighlighted={initialJobId === job.job_id}
@@ -308,11 +319,12 @@ const JobCardItem: React.FC<{
   onComplete: () => void;
   onStatusChange: (status: JobCardStatus) => void;
   onEdit: () => void;
+  onDelete: () => void;
   storeId?: string;
   onRefresh: () => void;
   isHighlighted?: boolean;
   onHighlightClear?: () => void;
-}> = ({ job, isDragging, onDragStart, onDragEnd, onComplete, onStatusChange, onEdit, storeId, onRefresh, isHighlighted, onHighlightClear }) => {
+}> = ({ job, isDragging, onDragStart, onDragEnd, onComplete, onStatusChange, onEdit, onDelete, storeId, onRefresh, isHighlighted, onHighlightClear }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [partSearch, setPartSearch] = useState('');
   const [searchResults, setSearchResults] = useState<InventoryItem[]>([]);
@@ -385,6 +397,13 @@ const JobCardItem: React.FC<{
             title="Edit Repair Card"
           >
             <span className="material-symbols-outlined text-[16px]">edit</span>
+          </button>
+          <button 
+            className="text-secondary hover:text-error transition-colors flex items-center" 
+            onClick={(e) => { e.stopPropagation(); onDelete(); }}
+            title="Delete Repair Card"
+          >
+            <span className="material-symbols-outlined text-[16px]">delete</span>
           </button>
           <span className="text-outline font-code text-code">#{job.job_id.substring(0, 8)}</span>
         </div>

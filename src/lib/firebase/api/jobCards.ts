@@ -140,6 +140,19 @@ export const updateJobCardDetails = async (
 };
 
 /**
+ * Soft deletes a Job Card by setting is_deleted to true.
+ * 
+ * @param jobId - The Job Card ID.
+ */
+export const deleteJobCard = async (jobId: string): Promise<void> => {
+  const docRef = doc(db, "JobCards", jobId);
+  await updateDoc(docRef, {
+    is_deleted: true,
+    updated_at: Timestamp.now()
+  });
+};
+
+/**
  * Updates the status of an existing Job Card.
  * If the status is moved to 'READY', the completion date is automatically recorded.
  * 
