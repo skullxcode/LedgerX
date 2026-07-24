@@ -13,6 +13,9 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: 'autoUpdate',
         includeAssets: ['favicon.png'],
+        workbox: {
+          maximumFileSizeToCacheInBytes: 5000000 // 5MB
+        },
         manifest: {
           name: 'LedgerX Enterprise',
           short_name: 'LedgerX',
