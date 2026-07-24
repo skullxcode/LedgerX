@@ -449,11 +449,13 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
               <div className="w-[55%] border-r-2 border-black p-2 flex flex-col justify-between">
                 <div>
                   <span className="font-bold text-[12px] block mb-1">
-                    {printMode === DocumentType.QUOTE ? 'Terms & Conditions' : 'Declaration'}
+                    {printMode === DocumentType.QUOTE || printMode === 'MEMO' ? 'Terms & Conditions' : 'Declaration'}
                   </span>
                   <p className="text-[10px] whitespace-pre-wrap leading-tight">
                     {printMode === DocumentType.QUOTE 
                       ? (profile?.quotation_terms || '1. Quotation is valid for 30 days.\n2. Taxes inclusive.')
+                      : printMode === 'MEMO'
+                      ? (profile?.delivery_memo_terms || '1. Received goods in good condition.\n2. Subject to local jurisdiction.')
                       : (profile?.invoice_terms || '1. Goods once sold will not be taken back.\n2. Subject to local jurisdiction.')}
                   </p>
                 </div>

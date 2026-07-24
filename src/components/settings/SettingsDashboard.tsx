@@ -52,6 +52,7 @@ export const SettingsDashboard: React.FC = () => {
         bank_name: formData.bank_name || '',
         invoice_terms: formData.invoice_terms || '',
         quotation_terms: formData.quotation_terms || '',
+        delivery_memo_terms: formData.delivery_memo_terms || '',
         signature_name: formData.signature_name || '',
       });
       await refreshProfile();
@@ -308,6 +309,15 @@ export const SettingsDashboard: React.FC = () => {
                   value={formData.quotation_terms || ''} 
                   onChange={e => handleChange('quotation_terms', e.target.value)}
                   placeholder="e.g. Rates are valid for 30 days only..."
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="block font-label-md text-label-md text-on-surface">Delivery Memo Terms & Conditions</label>
+                <textarea 
+                  className="w-full border border-outline-variant rounded focus:border-primary focus:ring-1 focus:ring-primary outline-none font-body-md text-body-md p-3 transition-colors resize-y min-h-[80px]" 
+                  value={formData.delivery_memo_terms || ''} 
+                  onChange={e => handleChange('delivery_memo_terms', e.target.value)}
+                  placeholder="e.g. Received goods in good condition..."
                 />
               </div>
               <div className="space-y-2">

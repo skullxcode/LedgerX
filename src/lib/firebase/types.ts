@@ -216,6 +216,7 @@ export interface BusinessProfile extends AuditBase {
   logo_url?: string;
   invoice_terms?: string;
   quotation_terms?: string;
+  delivery_memo_terms?: string;
   signature_name?: string;
 }
 
