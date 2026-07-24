@@ -7,6 +7,7 @@ import { usePOS } from '../../context/POSContext';
 import { useAuth } from '../../context/AuthContext';
 import { JobCardIntake } from './JobCardIntake';
 import { addInventoryItem } from '@/lib/firebase/api/inventory';
+import { ConfirmationDialog } from '../ui/ConfirmationDialog';
 import toast from 'react-hot-toast';
 
 export interface KanbanBoardProps {
@@ -29,6 +30,8 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
   const { addToCart, setCustomer } = usePOS();
   const [isAddingJob, setIsAddingJob] = useState(false);
   const [editingJob, setEditingJob] = useState<JobCard | null>(null);
+  const [jobToDelete, setJobToDelete] = useState<JobCard | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [isAddingInventory, setIsAddingInventory] = useState(false);
   const [invName, setInvName] = useState('');
   const [invCategory, setInvCategory] = useState('');
@@ -183,17 +186,7 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
                     onComplete={() => handleCompleteAndBill(job)}
                     onStatusChange={(status) => handleStatusChange(job.job_id, status)}
                     onEdit={() => setEditingJob(job)}
-                    onDelete={async () => {
-                      if (window.confirm("Are you sure you want to delete this repair card? This cannot be undone.")) {
-                        try {
-                          await deleteJobCard(job.job_id);
-                          toast.success("Repair card deleted successfully");
-                          fetchJobs();
-                        } catch(e) {
-                          toast.error("Failed to delete repair card");
-                        }
-                      }
-                    }}
+                    onDelete={() => setJobToDelete(job)}
                     storeId={profile?.store_id}
                     onRefresh={fetchJobs}
                     isHighlighted={initialJobId === job.job_id}
@@ -224,6 +217,31 @@ export const KanbanBoard: React.FC<KanbanBoardProps> = ({ onSwitchToPOS, initial
           />
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmationDialog
+        isOpen={!!jobToDelete}
+        onCancel={() => setJobToDelete(null)}
+        onConfirm={async () => {
+          if (!jobToDelete) return;
+          setIsDeleting(true);
+          try {
+            await deleteJobCard(jobToDelete.job_id);
+            toast.success("Repair card deleted successfully");
+            setJobToDelete(null);
+            fetchJobs();
+          } catch(e) {
+            toast.error("Failed to delete repair card");
+          } finally {
+            setIsDeleting(false);
+          }
+        }}
+        title="Delete Repair Card"
+        message="Are you sure you want to delete this repair card? This cannot be undone."
+        confirmLabel="Delete"
+        isDestructive={true}
+        isProcessing={isDeleting}
+      />
 
       {/* Add to Inventory Modal */}
       {isAddingInventory && (
