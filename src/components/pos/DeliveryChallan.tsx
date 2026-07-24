@@ -3,6 +3,7 @@ import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { type Transaction, DocumentType } from '@/lib/firebase/types';
 import { voidTransaction } from '@/lib/firebase/api/transactions';
 import { numberToWords } from '@/lib/firebase/utils/numberToWords';
+import { generatePDF, sharePDF } from '@/lib/utils/pdf';
 import { app } from '@/lib/firebase/config';
 import { useAuth } from '../../context/AuthContext';
 import { useBusiness } from '../../context/BusinessContext';
@@ -171,13 +172,29 @@ export const DeliveryChallan: React.FC<DeliveryChallanProps> = ({ transactionId,
             )}
           </div>
 
-          <button 
-            className="flex items-center gap-1.5 px-4 py-2 bg-primary text-on-primary rounded font-bold text-[11px] uppercase transition-all active:opacity-80" 
-            onClick={() => window.print()}
-          >
-            <span className="material-symbols-outlined text-[16px]">print</span>
-            Print / Save as PDF
-          </button>
+          <div className="flex gap-2">
+            <button 
+              className="flex items-center gap-1.5 px-4 py-2 bg-primary text-on-primary rounded font-bold text-[11px] uppercase transition-all active:opacity-80" 
+              onClick={() => window.print()}
+            >
+              <span className="material-symbols-outlined text-[16px]">print</span>
+              Print
+            </button>
+            <button 
+              className="flex items-center gap-1.5 px-4 py-2 bg-surface-container-high hover:bg-surface-container-highest text-primary rounded font-bold text-[11px] uppercase transition-all" 
+              onClick={() => generatePDF('print-invoice', `Invoice_${transaction.custom_doc_no || transaction.transaction_id.substring(0,8)}`)}
+            >
+              <span className="material-symbols-outlined text-[16px]">download</span>
+              Download PDF
+            </button>
+            <button 
+              className="flex items-center gap-1.5 px-4 py-2 bg-surface-container-high hover:bg-surface-container-highest text-primary rounded font-bold text-[11px] uppercase transition-all" 
+              onClick={() => sharePDF('print-invoice', `Invoice_${transaction.custom_doc_no || transaction.transaction_id.substring(0,8)}`, 'Invoice', 'Here is your invoice.')}
+            >
+              <span className="material-symbols-outlined text-[16px]">share</span>
+              Share
+            </button>
+          </div>
           
           {transaction.document_type === DocumentType.QUOTE && (
             <button 

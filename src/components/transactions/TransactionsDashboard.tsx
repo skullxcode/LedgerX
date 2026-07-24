@@ -10,6 +10,7 @@ import { TransactionFilterBar } from './TransactionFilterBar';
 import { DesktopTransactionTable } from './DesktopTransactionTable';
 import { MobileTransactionList } from './MobileTransactionList';
 import { exportToCSV } from '@/lib/utils/csv';
+import { generatePDF, sharePDF } from '@/lib/utils/pdf';
 import { DatePreset } from "./TransactionFilterBar";
 
 
@@ -156,7 +157,21 @@ export const TransactionsDashboard: React.FC<TransactionsDashboardProps> = ({ on
             onClick={() => window.print()}
           >
             <span className="material-symbols-outlined text-[18px]">print</span>
-            Print Batch / Save as PDF
+            Print Batch
+          </button>
+          <button
+            className="bg-surface-container-lowest border border-outline-variant px-4 py-2 flex items-center gap-2 font-label-md hover:bg-surface-container transition-colors rounded"
+            onClick={() => generatePDF('print-statement-of-account', `Statement_${new Date().toISOString().split('T')[0]}`)}
+          >
+            <span className="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+            Download PDF
+          </button>
+          <button
+            className="bg-surface-container-lowest border border-outline-variant px-4 py-2 flex items-center gap-2 font-label-md hover:bg-surface-container transition-colors rounded"
+            onClick={() => sharePDF('print-statement-of-account', `Statement_${new Date().toISOString().split('T')[0]}`, 'Statement of Account', 'Here is your Statement of Account.')}
+          >
+            <span className="material-symbols-outlined text-[18px]">share</span>
+            Share
           </button>
         </div>
       </div>
